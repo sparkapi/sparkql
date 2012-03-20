@@ -33,17 +33,28 @@ rule
 
   field
   	: STANDARD_FIELD
-  	; 
+  	;
   
   condition
     : literal
+    | literal_list
+    ;
+  
+  literal_list
+    : literals
+    | literal_list COMMA literals { result = tokenize_multiple(val[0], val[2]) }
     ;
     
-  literal
+  # Literals that support multiple
+  literals
     : INTEGER
     | DECIMAL
     | CHARACTER
-    | DATE
+    ;
+  
+  # Literals that support single only
+  literal
+    : DATE
     | DATETIME
     | BOOLEAN
     ;
@@ -82,6 +93,13 @@ end
   def tokenize_group(expressions)
     puts "tokenize_group: #{expressions.inspect}"
     expressions
+  end
+
+  def tokenize_multiple(lit1, lit2)
+    array = Array(lit1)
+    array << lit2
+    puts "tokenize_multiple: #{array.inspect}"
+    array
   end
   
   

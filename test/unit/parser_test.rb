@@ -45,7 +45,13 @@ class ParserTest < Test::Unit::TestCase
     assert_equal 11, expression.last[:value]
     assert_equal 'Or', expression.last[:conjunction]
   end
-  
+
+  def test_muliples
+    @parser = Parser.new
+    expression = @parser.parse('(Test Eq 10,11,12)')
+    assert_equal [10,11,12], expression[:value]
+  end
+    
   def parse(q,v)
     expression = @parser.parse(q)
     puts "Expression #{expression.inspect}"

@@ -10,7 +10,7 @@ require 'racc/parser.rb'
 module Sparkql
   class Parser < Racc::Parser
 
-module_eval(<<'...end sparkql.y/module_eval...', 'sparkql.y', 56)
+module_eval(<<'...end sparkql.y/module_eval...', 'sparkql.y', 67)
   
   def parse(str)
     @lexer = Sparkql::Lexer.new(str)
@@ -41,6 +41,13 @@ module_eval(<<'...end sparkql.y/module_eval...', 'sparkql.y', 56)
     puts "tokenize_group: #{expressions.inspect}"
     expressions
   end
+
+  def tokenize_multiple(lit1, lit2)
+    array = Array(lit1)
+    array << lit2
+    puts "tokenize_multiple: #{array.inspect}"
+    array
+  end
   
   
   def on_error(error_token_id, error_value, value_stack)
@@ -58,57 +65,66 @@ module_eval(<<'...end sparkql.y/module_eval...', 'sparkql.y', 56)
 ##### State transition tables begin ###
 
 racc_action_table = [
-    20,    21,    23,    16,    18,    19,     2,     2,     5,     5,
-    11,     2,    14,     5,    13,    11,     9,    12 ]
+    23,    24,    16,    17,    19,    21,    23,    24,    16,     2,
+     2,     5,     5,     2,    11,     5,    13,    14,    12,    11,
+    26,    10 ]
 
 racc_action_check = [
-    12,    12,    12,    12,    12,    12,    11,     2,    11,     2,
-    10,     0,    10,     0,     9,     3,     1,     7 ]
+    12,    12,    12,    12,    12,    12,    26,    26,    26,     2,
+     0,     2,     0,    11,     9,    11,     9,    10,     8,     4,
+    20,     3 ]
 
 racc_action_pointer = [
-     6,    16,     2,    11,   nil,   nil,   nil,    14,   nil,    14,
-     6,     1,    -8,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
-   nil,   nil,   nil,   nil ]
+     5,   nil,     4,    21,    15,   nil,   nil,   nil,    15,    10,
+    17,     8,    -9,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+    12,   nil,   nil,   nil,   nil,   nil,    -3,   nil ]
 
 racc_action_default = [
-    -2,   -17,   -17,    -1,    -3,    -9,    -4,   -17,    -6,   -17,
-   -17,   -17,   -17,    24,    -8,    -7,   -14,   -10,   -15,   -16,
-   -11,   -12,    -5,   -13 ]
+    -2,    -6,   -20,   -20,    -1,    -9,    -3,    -4,   -20,   -20,
+   -20,   -20,   -20,    -8,    28,    -7,   -16,   -17,   -10,   -18,
+   -11,   -19,   -12,   -14,   -15,    -5,   -20,   -13 ]
 
 racc_goto_table = [
-     3,    15,    10,     1,    22,    17 ]
+    22,     4,    25,     9,    15,    18,    20,     3,   nil,   nil,
+   nil,   nil,   nil,   nil,    27 ]
 
 racc_goto_check = [
-     2,     3,     2,     1,     6,     8 ]
+    10,     2,     6,     2,     3,     8,     9,     1,   nil,   nil,
+   nil,   nil,   nil,   nil,    10 ]
 
 racc_goto_pointer = [
-   nil,     3,     0,   -10,   nil,   nil,    -8,   nil,    -7 ]
+   nil,     7,     1,    -7,   nil,   nil,   -10,   nil,    -7,    -6,
+   -12 ]
 
 racc_goto_default = [
-   nil,   nil,   nil,     4,     6,     7,   nil,     8,   nil ]
+   nil,   nil,   nil,     6,     7,     8,   nil,     1,   nil,   nil,
+   nil ]
 
 racc_reduce_table = [
   0, 0, :racc_error,
-  1, 15, :_reduce_none,
-  0, 15, :_reduce_2,
   1, 16, :_reduce_none,
-  1, 16, :_reduce_none,
-  3, 17, :_reduce_5,
+  0, 16, :_reduce_2,
   1, 17, :_reduce_none,
-  3, 18, :_reduce_7,
-  3, 21, :_reduce_8,
-  1, 19, :_reduce_none,
+  1, 17, :_reduce_none,
+  3, 18, :_reduce_5,
+  1, 18, :_reduce_none,
+  3, 19, :_reduce_7,
+  3, 22, :_reduce_8,
   1, 20, :_reduce_none,
-  1, 22, :_reduce_none,
-  1, 22, :_reduce_none,
-  1, 22, :_reduce_none,
-  1, 22, :_reduce_none,
-  1, 22, :_reduce_none,
-  1, 22, :_reduce_none ]
+  1, 21, :_reduce_none,
+  1, 21, :_reduce_none,
+  1, 24, :_reduce_none,
+  3, 24, :_reduce_13,
+  1, 25, :_reduce_none,
+  1, 25, :_reduce_none,
+  1, 25, :_reduce_none,
+  1, 23, :_reduce_none,
+  1, 23, :_reduce_none,
+  1, 23, :_reduce_none ]
 
-racc_reduce_n = 17
+racc_reduce_n = 20
 
-racc_shift_n = 24
+racc_shift_n = 28
 
 racc_token_table = {
   false => 0,
@@ -119,14 +135,15 @@ racc_token_table = {
   :LPAREN => 5,
   :RPAREN => 6,
   :STANDARD_FIELD => 7,
-  :INTEGER => 8,
-  :DECIMAL => 9,
-  :CHARACTER => 10,
-  :DATE => 11,
-  :DATETIME => 12,
-  :BOOLEAN => 13 }
+  :COMMA => 8,
+  :INTEGER => 9,
+  :DECIMAL => 10,
+  :CHARACTER => 11,
+  :DATE => 12,
+  :DATETIME => 13,
+  :BOOLEAN => 14 }
 
-racc_nt_base = 14
+racc_nt_base = 15
 
 racc_use_result_var = true
 
@@ -155,6 +172,7 @@ Racc_token_to_s_table = [
   "LPAREN",
   "RPAREN",
   "STANDARD_FIELD",
+  "COMMA",
   "INTEGER",
   "DECIMAL",
   "CHARACTER",
@@ -169,7 +187,9 @@ Racc_token_to_s_table = [
   "field",
   "condition",
   "group",
-  "literal" ]
+  "literal",
+  "literal_list",
+  "literals" ]
 
 Racc_debug_parser = false
 
@@ -221,13 +241,24 @@ module_eval(<<'.,.,', 'sparkql.y', 30)
 
 # reduce 12 omitted
 
-# reduce 13 omitted
+module_eval(<<'.,.,', 'sparkql.y', 44)
+  def _reduce_13(val, _values, result)
+     result = tokenize_multiple(val[0], val[2]) 
+    result
+  end
+.,.,
 
 # reduce 14 omitted
 
 # reduce 15 omitted
 
 # reduce 16 omitted
+
+# reduce 17 omitted
+
+# reduce 18 omitted
+
+# reduce 19 omitted
 
 def _reduce_none(val, _values, result)
   val[0]

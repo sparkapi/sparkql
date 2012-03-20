@@ -19,6 +19,8 @@ class Sparkql::Lexer < StringScanner
       when value = scan(RPAREN)
         leveldown
         [:RPAREN, value]
+      when value = scan(/\,/)
+        [:COMMA,value]
       when value = scan(OPERATOR)
         [:OPERATOR,value]
       when value = scan(CONJUNCTION)
