@@ -10,57 +10,12 @@ require 'racc/parser.rb'
 module Sparkql
   class Parser < Racc::Parser
 
-module_eval(<<'...end sparkql.y/module_eval...', 'sparkql.y', 67)
+module_eval(<<'...end sparkql.y/module_eval...', 'sparkql.y', 66)
+  include Sparkql::ParserTools
+  include Sparkql::ParserCompatibility
   
-  def parse(str)
-    @lexer = Sparkql::Lexer.new(str)
-    do_parse
-  end
-
-  def next_token
-    t = @lexer.shift
-	while t[0] == :SPACE or t[0] == :NEWLINE
-	  t = @lexer.shift
-	end
-	t
-  end
+  attr_accessor :configuration, :value_prefix
   
-  def tokenize_expression(field, op, val)
-    expression = {:field => field, :operator => op, :value => val, :conjunction => 'And', :level => @lexer.level, :block_group => @lexer.block_group_identifier }
-    puts "TOKEN: #{expression.inspect}"
-    expression
-  end
-
-  def tokenize_conjunction(exp1, conj, exp2)
-    exp2[:conjunction] = conj
-    puts "tokenize_conjunction: #{conj.inspect}"
-    [exp1, exp2]
-  end
-  
-  def tokenize_group(expressions)
-    puts "tokenize_group: #{expressions.inspect}"
-    expressions
-  end
-
-  def tokenize_multiple(lit1, lit2)
-    array = Array(lit1)
-    array << lit2
-    puts "tokenize_multiple: #{array.inspect}"
-    array
-  end
-  
-  
-  def on_error(error_token_id, error_value, value_stack)
-    puts "ERROR #{error_token_id} - #{error_value} - #{value_stack}"
-    token_name = token_to_str(error_token_id)
-    token_name.downcase!
-    token = error_value.to_s.inspect
-    str = 'parse error on '
-    str << token_name << ' ' unless token_name == token
-    str << token
-    @lexer.error(str)
-  end  
-
 ...end sparkql.y/module_eval...
 ##### State transition tables begin ###
 
@@ -219,14 +174,14 @@ module_eval(<<'.,.,', 'sparkql.y', 20)
 
 # reduce 6 omitted
 
-module_eval(<<'.,.,', 'sparkql.y', 26)
+module_eval(<<'.,.,', 'sparkql.y', 25)
   def _reduce_7(val, _values, result)
      result = tokenize_conjunction(val[0], val[1],val[2]) 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'sparkql.y', 30)
+module_eval(<<'.,.,', 'sparkql.y', 29)
   def _reduce_8(val, _values, result)
      result = tokenize_group(val[1]) 
     result
@@ -241,7 +196,7 @@ module_eval(<<'.,.,', 'sparkql.y', 30)
 
 # reduce 12 omitted
 
-module_eval(<<'.,.,', 'sparkql.y', 44)
+module_eval(<<'.,.,', 'sparkql.y', 43)
   def _reduce_13(val, _values, result)
      result = tokenize_multiple(val[0], val[2]) 
     result

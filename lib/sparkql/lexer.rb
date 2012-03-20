@@ -1,14 +1,17 @@
 class Sparkql::Lexer < StringScanner
   include Sparkql::Token
 
-  def initialize(str, file=nil, line=1)
+  def initialize(str, value_escaper)
     str.freeze
     super(str, false) # DO NOT dup str
-    @line = line
+    @value_index = -1
+    @value_prefix = "db_parser_value_"
     @level = 0
     @block_group_identifier = 0
+    @escaper = value_escaper
   end
   
+  # Lookup the next matching token
   def shift
     token = case
       when value = scan(SPACE)
@@ -26,25 +29,26 @@ class Sparkql::Lexer < StringScanner
       when value = scan(CONJUNCTION)
         [:CONJUNCTION,value]
       when value = scan(STANDARD_FIELD)
+        @last_field = value
         [:STANDARD_FIELD,value]
       when value = scan(DECIMAL)
-        [:DECIMAL,decimal_escape(value)]
+        literal :DECIMAL, decimal_escape(value)
       when value = scan(INTEGER)
-        [:INTEGER,integer_escape(value)]
+        literal :INTEGER, integer_escape(value)
       when value = scan(CHARACTER)
-        [:CHARACTER,character_escape(value)]
+        literal :CHARACTER, character_escape(value)
       when value = scan(DATETIME)
-        [:DATETIME,datetime_escape(value)]
+        literal :DATETIME, datetime_escape(value)
       when value = scan(DATE)
-        [:DATE,date_escape(value)]
+        literal :DATE, date_escape(value)
       when value = scan(BOOLEAN)
-        [:BOOLEAN,boolean_escape(value)]
+        literal :BOOLEAN, boolean_escape(value)
       when empty?
         [false, false] # end of file, \Z don't work with StringScanner
       else
         [:UNKNOWN, "ERROR: '#{self.string}'"]
     end
-    puts "TOKEN: #{token} VALUE: #{value}"
+#    puts "TOKEN: #{token.inspect}"
     value.freeze
     token.freeze
   end
@@ -70,30 +74,47 @@ class Sparkql::Lexer < StringScanner
     puts("Parse error: #{msg}")
   end
   
+  def literal(symbol, value)
+    node = {
+      :type => symbol.to_s.downcase.to_sym,
+      :value => value
+    }
+    [symbol, node]
+  end
+  
   # processes escape characters for a given string.  May be overridden by
   # child classes.
   def character_escape( string )
-    string.gsub(/^\'/,'').gsub(/\'$/,'').gsub(/\\'/, "'")
+    @escaper.character_escape( string )
   end
   
   def integer_escape( string )
-    string.to_i
+    @escaper.integer_escape( string )
   end
   
   def decimal_escape( string )
-    string.to_f
+    @escaper.decimal_escape( string )
   end
   
   def date_escape(string)
-    Date.parse(string)
+    @escaper.date_escape( string )
   end
   
   def datetime_escape(string)
-    DateTime.parse(string)
+    @escaper.datetime_escape( string )
   end
   
   def boolean_escape(string)
-    "true" == string
+    @escaper.boolean_escape( string )
   end
-
+  
+  def next_field_key
+    @value_index += 1
+    @value_prefix + @value_index.to_s
+  end
+  
+  def last_field
+    @last_field
+  end
+  
 end

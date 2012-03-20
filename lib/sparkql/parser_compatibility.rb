@@ -1,0 +1,148 @@
+# Required interface for existing parser implementations
+module Sparkql::ParserCompatibility
+  
+  MAXIMUM_MULTIPLE_VALUES = 25
+  MAXIMUM_EXPRESSIONS = 50
+  MAXIMUM_LEVEL_DEPTH = 1
+  
+  # TODO I Really don't think this is required anymore
+  # Ordered by precidence.
+  FILTER_VALUES = [
+    {
+      :type => :datetime,
+      :regex => /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}T[0-9]{2}\:[0-9]{2}\:[0-9]{2}\.[0-9]{6}$/
+    },
+    {
+      :type => :date,
+      :regex => /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/
+    },
+    {
+      :type => :character,
+      :regex => /^'([^'\\]*(\\.[^'\\]*)*)'$/, # Strings must be single quoted.  Any inside single quotes must be escaped.
+      :multiple => /^'([^'\\]*(\\.[^'\\]*)*)'/
+    },
+    {
+      :type => :integer,
+      :regex => /^\-?[0-9]+$/,
+      :multiple => /^\-?[0-9]+/
+    },
+    {
+      :type => :decimal,
+      :regex => /^\-?[0-9]+\.[0-9]+$/,
+      :multiple => /^\-?[0-9]+\.[0-9]+/
+    }
+  ]
+  
+  # To be implemented by child class.
+  # Shall return a valid query string for the respective database,
+  # or nil if the source could not be processed.  It may be possible to return a valid
+  # SQL string AND have errors ( as checked by errors? ), but this will be left
+  # to the discretion of the child class.
+  def compile( source, mapper )
+   raise NotImplementedError
+  end
+  
+  # Returns a list of expressions tokenized in the following format:
+  # [{ :field => IdentifierName, :operator => "Eq", :value => "'Fargo'", :type => :character, :conjunction => "And" }]
+  # This step will set errors if source is not syntactically correct.
+  def tokenize( source )
+    raise ArgumentError, "You must supply a source string to tokenize!" unless source.is_a?(String)
+
+    # Reset the parser error stack
+    @errors = []
+      
+    expressions = self.parse(source)
+    expressions
+  end
+  
+  # Returns an array of errors.  This is an array of ParserError objects
+  def errors
+    @errors = [] unless defined?(@errors)
+    @errors
+  end
+  
+  # Delegator for methods to process the error list.
+  def process_errors
+    Sparkql::ErrorsProcessor.new(@errors)
+  end
+  
+  # delegate :errors?, :fatal_errors?, :dropped_errors?, :recovered_errors?, :to => :process_errors
+  # Since I don't have rails delegate...
+  def errors?
+    process_errors.errors?
+  end
+  def fatal_errors?
+    process_errors.fatal_errors?
+  end
+  def dropped_errors?
+    process_errors.dropped_errors?
+  end
+  def recovered_errors?
+    process_errors.recovered_errors?
+  end
+  
+  def escape_value_list( expression )
+    final_list = []
+    expression[:value].each do | value |
+      new_exp = {
+        :value => value,
+        :type => expression[:type]
+      }
+      final_list << escape_value(new_exp)
+    end
+    expression[:value] = final_list
+  end
+
+  # processes escape characters for a given string.  May be overridden by
+  # child classes.
+  def character_escape( string )
+    string.gsub(/^\'/,'').gsub(/\'$/,'').gsub(/\\'/, "'")
+  end
+
+  def integer_escape( string )
+    string.to_i
+  end
+
+  def decimal_escape( string )
+    string.to_f
+  end
+
+  def date_escape(string)
+    Date.parse(string)
+  end
+
+  def datetime_escape(string)
+    DateTime.parse(string)
+  end
+
+  def boolean_escape(string)
+    "true" == string
+  end
+  
+  # Returns the rule hash for a given type
+  def rules_for_type( type )
+    FILTER_VALUES.each do |rule|
+      return rule if rule[:type] == type
+    end
+    nil
+  end
+  
+  # true if a given type supports multiple values
+  def supports_multiple?( type )
+    rules_for_type(type).include?( :multiple )
+  end
+  
+  private
+  
+  def tokenizer_error( error_hash )
+    self.errors << Sparkql::ParserError.new( error_hash )
+  end
+  alias :compile_error :tokenizer_error
+  
+  def type_error( expression, expected )
+      compile_error(:token => expression[:field], :expression => expression,
+            :message => "expected #{expected} but found #{expression[:type]}",
+            :status => :fatal )
+  end
+  
+end
