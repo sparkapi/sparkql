@@ -15,15 +15,16 @@ rule
   expressions
     : expression
     | conjunction
-    | group
     ;
     
   expression
     : field OPERATOR condition { result = tokenize_expression(val[0], val[1],val[2]) }
+    | group
     ;
   
+  
   conjunction
-    : expressions CONJUNCTION expressions { result = tokenize_conjunction(val[0], val[1],val[2]) }
+    : expressions CONJUNCTION expression { result = tokenize_conjunction(val[0], val[1],val[2]) }
     ;
   
   group
