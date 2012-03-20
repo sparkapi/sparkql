@@ -27,7 +27,12 @@ module Sparkql::ParserTools
   def tokenize_conjunction(exp1, conj, exp2)
     exp2[:conjunction] = conj
     puts "tokenize_conjunction: #{conj.inspect}"
-    [exp1, exp2]
+    if exp1.kind_of? Hash
+      ary = [exp1, exp2]
+    else
+      ary = Array(exp1) << exp2
+    end
+    ary
   end
   
   def tokenize_group(expressions)
