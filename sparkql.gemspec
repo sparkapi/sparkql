@@ -8,8 +8,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Wade McEwen"]
   s.email       = ["wade@fbsdata.com"]
   s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.summary     = %q{API Parser engine for filter searching}
+  s.description = %q{Specification and base implementation of the Spark API parsing system.}
 
   s.rubyforge_project = "sparkql"
 
@@ -18,7 +18,11 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  # specify any dependencies here; for example:
-  # s.add_development_dependency "rspec"
-  # s.add_runtime_dependency "rest-client"
+  s.add_development_dependency 'racc', '1.4.8'
+  s.add_development_dependency 'flexmls_gems', '0.2.8'
+  s.add_development_dependency 'rake', '~> 0.9.2'
+  s.add_development_dependency 'test-unit', '~> 2.1.0'
+  s.add_development_dependency 'ci_reporter', '~> 1.6'
+  s.add_development_dependency 'rcov', '~> 0.9.9'
+
 end
