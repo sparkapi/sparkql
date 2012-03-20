@@ -10,7 +10,7 @@ require 'racc/parser.rb'
 module Sparkql
   class Parser < Racc::Parser
 
-module_eval(<<'...end sparkql.y/module_eval...', 'sparkql.y', 48)
+module_eval(<<'...end sparkql.y/module_eval...', 'sparkql.y', 55)
   
   def parse(str)
     @lexer = Sparkql::Lexer.new(str)
@@ -26,7 +26,7 @@ module_eval(<<'...end sparkql.y/module_eval...', 'sparkql.y', 48)
   end
   
   def tokenize_expression(field, op, val)
-    expression = {:field => field, :operator => op, :value => val, :conjunction => 'And' }
+    expression = {:field => field, :operator => op, :value => val, :conjunction => 'And', :level => @lexer.level, :block_group => @lexer.block_group_identifier }
     puts "TOKEN: #{expression.inspect}"
     expression
   end
@@ -36,6 +36,12 @@ module_eval(<<'...end sparkql.y/module_eval...', 'sparkql.y', 48)
     puts "tokenize_conjunction: #{conj.inspect}"
     [exp1, exp2]
   end
+  
+  def tokenize_group(expressions)
+    puts "tokenize_group: #{expressions.inspect}"
+    expressions
+  end
+  
   
   def on_error(error_token_id, error_value, value_stack)
     puts "ERROR #{error_token_id} - #{error_value} - #{value_stack}"
@@ -53,15 +59,15 @@ module_eval(<<'...end sparkql.y/module_eval...', 'sparkql.y', 48)
 
 racc_action_table = [
     20,    21,    22,    16,    18,    19,     2,     2,     5,     5,
-    11,     9,    13,    14,     5,    12 ]
+     2,    11,     5,    14,    13,    12,    11,     9,    11 ]
 
 racc_action_check = [
     12,    12,    12,    12,    12,    12,     2,     0,     2,     0,
-     4,     1,     9,    10,    11,     8 ]
+    11,    10,    11,    10,     9,     8,     3,     1,    15 ]
 
 racc_action_pointer = [
-     2,    11,     1,   nil,     6,   nil,   nil,   nil,    12,    12,
-     7,     7,    -8,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+     2,    17,     1,    12,   nil,   nil,   nil,   nil,    12,    14,
+     7,     5,    -8,   nil,   nil,    14,   nil,   nil,   nil,   nil,
    nil,   nil,   nil,   nil ]
 
 racc_action_default = [
@@ -70,13 +76,15 @@ racc_action_default = [
    -11,   -12,   -13,    -6 ]
 
 racc_goto_table = [
-     3,    15,    10,     1,    23,    17 ]
+     3,    23,    10,     1,    17,   nil,   nil,   nil,   nil,   nil,
+   nil,    15 ]
 
 racc_goto_check = [
-     2,     3,     2,     1,     7,     8 ]
+     2,     7,     2,     1,     8,   nil,   nil,   nil,   nil,   nil,
+   nil,     2 ]
 
 racc_goto_pointer = [
-   nil,     3,     0,   -10,   nil,   nil,   nil,    -8,    -7 ]
+   nil,     3,     0,   nil,   nil,   nil,   nil,   -11,    -8 ]
 
 racc_goto_default = [
    nil,   nil,   nil,     4,     6,     7,     8,   nil,   nil ]
@@ -90,7 +98,7 @@ racc_reduce_table = [
   1, 16, :_reduce_none,
   3, 17, :_reduce_6,
   3, 18, :_reduce_7,
-  3, 19, :_reduce_none,
+  3, 19, :_reduce_8,
   1, 20, :_reduce_none,
   1, 21, :_reduce_none,
   1, 22, :_reduce_none,
@@ -110,8 +118,8 @@ racc_token_table = {
   :UMINUS => 2,
   :OPERATOR => 3,
   :CONJUNCTION => 4,
-  "(" => 5,
-  ")" => 6,
+  :LPAREN => 5,
+  :RPAREN => 6,
   :STANDARD_FIELD => 7,
   :INTEGER => 8,
   :DECIMAL => 9,
@@ -146,8 +154,8 @@ Racc_token_to_s_table = [
   "UMINUS",
   "OPERATOR",
   "CONJUNCTION",
-  "\"(\"",
-  "\")\"",
+  "LPAREN",
+  "RPAREN",
   "STANDARD_FIELD",
   "INTEGER",
   "DECIMAL",
@@ -200,7 +208,12 @@ module_eval(<<'.,.,', 'sparkql.y', 25)
   end
 .,.,
 
-# reduce 8 omitted
+module_eval(<<'.,.,', 'sparkql.y', 29)
+  def _reduce_8(val, _values, result)
+     result = tokenize_group(val[1]) 
+    result
+  end
+.,.,
 
 # reduce 9 omitted
 

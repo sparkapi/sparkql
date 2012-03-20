@@ -3,6 +3,8 @@ module Sparkql::Token
   NEWLINE = /\r\n|\n\r|\r|\n/
   OPERATOR = /Eq|Ne|Gt|Ge|Lt|Le/
   CONJUNCTION = /And|Or/
+  LPAREN = /\(/
+  RPAREN = /\)/
   STANDARD_FIELD = /[A-Z]+[A-Za-z]*/
   INTEGER = /^\-?[0-9]+/
   DECIMAL = /^\-?[0-9]+\.[0-9]+/

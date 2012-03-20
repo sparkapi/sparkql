@@ -5,12 +5,20 @@ class Sparkql::Lexer < StringScanner
     str.freeze
     super(str, false) # DO NOT dup str
     @line = line
+    @level = 0
+    @block_group_identifier = 0
   end
   
   def shift
     token = case
       when value = scan(SPACE)
         [:SPACE, value]
+      when value = scan(LPAREN)
+        levelup
+        [:LPAREN, value]
+      when value = scan(RPAREN)
+        leveldown
+        [:RPAREN, value]
       when value = scan(OPERATOR)
         [:OPERATOR,value]
       when value = scan(CONJUNCTION)
@@ -37,6 +45,23 @@ class Sparkql::Lexer < StringScanner
     puts "TOKEN: #{token} VALUE: #{value}"
     value.freeze
     token.freeze
+  end
+  
+  def level
+    @level
+  end
+
+  def block_group_identifier
+    @block_group_identifier
+  end
+  
+  def levelup
+    @level += 1
+    @block_group_identifier += 1
+  end
+  
+  def leveldown
+    @level -= 1
   end
   
   def error(msg)

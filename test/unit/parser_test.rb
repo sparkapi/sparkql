@@ -22,6 +22,20 @@ class ParserTest < Test::Unit::TestCase
     assert_equal 11, expression.last[:value]
     assert_equal 'Or', expression.last[:conjunction]
   end
+
+  def test_grouping
+    @parser = Parser.new
+    expression = @parser.parse('(Test Eq 10)')
+    assert_equal 10, expression[:value]
+    expression = @parser.parse('(Test Eq 10 Or Test Ne 11)')
+    assert_equal 10, expression.first[:value]
+    assert_equal 11, expression.last[:value]
+    assert_equal 'Or', expression.last[:conjunction]
+    expression = @parser.parse('(Test Eq 10 Or (Test Ne 11))')
+    assert_equal 10, expression.first[:value]
+    assert_equal 11, expression.last[:value]
+    assert_equal 'Or', expression.last[:conjunction]
+  end
   
   def parse(q,v)
     expression = @parser.parse(q)
