@@ -5,6 +5,8 @@ module Sparkql::ParserCompatibility
   MAXIMUM_EXPRESSIONS = 50
   MAXIMUM_LEVEL_DEPTH = 1
   
+  
+  
   # TODO I Really don't think this is required anymore
   # Ordered by precidence.
   FILTER_VALUES = [
@@ -30,8 +32,14 @@ module Sparkql::ParserCompatibility
       :type => :decimal,
       :regex => /^\-?[0-9]+\.[0-9]+$/,
       :multiple => /^\-?[0-9]+\.[0-9]+/
+    },
+    {
+      :type => :boolean,
+      :regex => /^true|false$/
     }
   ]
+  
+  OPERATORS_SUPPORTING_MULTIPLES = ["Eq","Ne"]
   
   # To be implemented by child class.
   # Shall return a valid query string for the respective database,
@@ -132,6 +140,13 @@ module Sparkql::ParserCompatibility
     rules_for_type(type).include?( :multiple )
   end
   
+  def value_prefix()
+    @lexer.value_prefix()
+  end
+  def value_prefix=(val)
+    @lexer.value_prefix = val
+  end
+  
   private
   
   def tokenizer_error( error_hash )
@@ -144,5 +159,31 @@ module Sparkql::ParserCompatibility
             :message => "expected #{expected} but found #{expression[:type]}",
             :status => :fatal )
   end
+  
+  # Builds the correct operator based on the type and the value.
+  # default should be the operator provided in the actual filter string
+  def get_operator(expression, default )
+    f = rules_for_type(expression[:type])
+    if f == nil 
+      puts "WTF DERP #{expression.inspect}"
+    end
+    if f[:multiple] && multiple_values?( expression[:value])
+      puts "OP #{default}"
+      return nil unless operator_supports_multiples?(default)
+      return default == "Ne" ? "Not In" : "In"
+    elsif default == "Ne"
+      return "Not Eq"
+    end
+    default
+  end
+  
+  def multiple_values?(value)
+    value.to_a.size > 1
+  end
+  
+  def operator_supports_multiples?(operator)
+    OPERATORS_SUPPORTING_MULTIPLES.include?(operator)
+  end
+
   
 end

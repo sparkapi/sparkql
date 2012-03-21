@@ -66,7 +66,7 @@ end
   include Sparkql::ParserTools
   include Sparkql::ParserCompatibility
   
-  attr_accessor :configuration, :value_prefix
+  attr_accessor :configuration
   
 ---- footer
 

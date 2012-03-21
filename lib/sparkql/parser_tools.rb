@@ -6,7 +6,9 @@ module Sparkql::ParserTools
     results = do_parse
     
     puts "Result #{results.inspect}"
-    results
+    max = Sparkql::ParserCompatibility::MAXIMUM_EXPRESSIONS
+    return if results.nil?
+    results.size > max ? results[0,max] : results
   end
 
   def next_token
@@ -18,21 +20,17 @@ module Sparkql::ParserTools
   end
   
   def tokenize_expression(field, op, val)
-    expression = val.merge({:field => field, :operator => op, :conjunction => 'And', 
+    expression = val.merge({:field => field, :operator => get_operator(val,op), :conjunction => 'And', 
       :level => @lexer.level, :block_group => @lexer.block_group_identifier})
+      
     #puts "TOKEN: #{expression.inspect}"
-    expression
+    [expression]
   end
 
   def tokenize_conjunction(exp1, conj, exp2)
-    exp2[:conjunction] = conj
+    exp2.first[:conjunction] = conj
     puts "tokenize_conjunction: #{conj.inspect}"
-    if exp1.kind_of? Hash
-      ary = [exp1, exp2]
-    else
-      ary = Array(exp1) << exp2
-    end
-    ary
+    exp1 + exp2
   end
   
   def tokenize_group(expressions)
@@ -45,9 +43,8 @@ module Sparkql::ParserTools
       tokenizer_error(:token => @lexer.last_field, :message => "Type mismatch in field list.") 
     end
     array = Array(lit1[:value])
-    array << lit2[:value]
-    if array.size > Sparkql::ParserCompatibility::MAXIMUM_MULTIPLE_VALUES
-      tokenizer_error(:token => @lexer.last_field, :message => "Maximimum values reached for field.") 
+    unless array.size > Sparkql::ParserCompatibility::MAXIMUM_MULTIPLE_VALUES
+      array << lit2[:value]
     end
     puts "tokenize_multiple: #{array.inspect}"
     {

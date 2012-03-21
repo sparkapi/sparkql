@@ -9,6 +9,7 @@ class Sparkql::Lexer < StringScanner
     @level = 0
     @block_group_identifier = 0
     @escaper = value_escaper
+    @expression_count = 0
   end
   
   # Lookup the next matching token
@@ -31,16 +32,16 @@ class Sparkql::Lexer < StringScanner
       when value = scan(STANDARD_FIELD)
         @last_field = value
         [:STANDARD_FIELD,value]
+      when value = scan(DATETIME)
+        literal :DATETIME, datetime_escape(value)
+      when value = scan(DATE)
+        literal :DATE, date_escape(value)
       when value = scan(DECIMAL)
         literal :DECIMAL, decimal_escape(value)
       when value = scan(INTEGER)
         literal :INTEGER, integer_escape(value)
       when value = scan(CHARACTER)
-        literal :CHARACTER, character_escape(value)
-      when value = scan(DATETIME)
-        literal :DATETIME, datetime_escape(value)
-      when value = scan(DATE)
-        literal :DATE, date_escape(value)
+        literal :CHARACTER, character_escape("'#{value}'")
       when value = scan(BOOLEAN)
         literal :BOOLEAN, boolean_escape(value)
       when empty?

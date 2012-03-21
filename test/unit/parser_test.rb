@@ -8,7 +8,7 @@ class ParserTest < Test::Unit::TestCase
     parse 'Test Eq 10',10
     parse 'Test Eq 10.0',10.0
     parse 'Test Eq true',true
-    parse "Test Eq 'false'",'false'
+    parse "Test Eq 'false'","'false'"
   end
   
   def test_conjunction
@@ -34,7 +34,7 @@ class ParserTest < Test::Unit::TestCase
 
   def test_grouping
     @parser = Parser.new
-    expression = @parser.parse('(Test Eq 10)')
+    expression = @parser.parse('(Test Eq 10)').first
     assert_equal 10, expression[:value]
     expression = @parser.parse('(Test Eq 10 Or Test Ne 11)')
     assert_equal 10, expression.first[:value]
@@ -48,15 +48,15 @@ class ParserTest < Test::Unit::TestCase
 
   def test_multiples
     @parser = Parser.new
-    expression = @parser.parse('(Test Eq 10,11,12)')
+    expression = @parser.parse('(Test Eq 10,11,12)').first
     assert_equal [10,11,12], expression[:value]
   end
     
   def parse(q,v)
-    expression = @parser.parse(q)
-    puts "Expression #{expression.inspect}"
+    expressions = @parser.parse(q)
+    puts "Expression #{expressions.inspect}"
     assert !@parser.errors?, "Unexpected error parsing #{q}"
-    assert_equal v, expression[:value], "Expression #{expression.inspect}"
+    assert_equal v, expressions.first[:value], "Expression #{expressions.inspect}"
   end
 
   def test_derp
