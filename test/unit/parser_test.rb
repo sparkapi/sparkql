@@ -85,5 +85,18 @@ class ParserTest < Test::Unit::TestCase
     assert @parser.errors?, "Should be nil: #{expressions}"
     assert @parser.fatal_errors?, "Should be nil: #{@parser.errors.inspect}"
   end
+
+  def test_functions
+    filter = "City Eq days(7)"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal "function date", expressions.first[:value], "Expression #{expressions.inspect}"
+    filter = "City Eq now()"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal "function now", expressions.first[:value], "Expression #{expressions.inspect}"
+  end
     
 end

@@ -10,7 +10,7 @@ require 'racc/parser.rb'
 module Sparkql
   class Parser < Racc::Parser
 
-module_eval(<<'...end sparkql.y/module_eval...', 'sparkql.y', 66)
+module_eval(<<'...end sparkql.y/module_eval...', 'sparkql.y', 86)
   include Sparkql::ParserTools
   include Sparkql::ParserCompatibility
   
@@ -18,66 +18,78 @@ module_eval(<<'...end sparkql.y/module_eval...', 'sparkql.y', 66)
 ##### State transition tables begin ###
 
 racc_action_table = [
-    23,    24,    16,    17,    19,    21,    23,    24,    16,     2,
-     2,     5,     5,     2,    11,     5,    13,    14,    12,    11,
-    26,    10 ]
+    34,     2,    29,     4,    28,    16,    18,    19,    21,    23,
+    27,    11,    28,    16,    18,    19,    21,    23,    28,    16,
+    18,    19,    21,    23,    37,    12,    11,    38,    13,     2,
+    10,     4,    28,    16,    18,     2,    14,     4,    30 ]
 
 racc_action_check = [
-    12,    12,    12,    12,    12,    12,    26,    26,    26,     2,
-     0,     2,     0,    11,     9,    11,     9,    10,     8,     4,
-    20,     3 ]
+    30,    11,    22,    11,    30,    30,    30,    30,    30,    30,
+    12,     5,    12,    12,    12,    12,    12,    12,    38,    38,
+    38,    38,    38,    38,    33,     8,     9,    33,     9,     2,
+     3,     2,    29,    29,    29,     0,    10,     0,    25 ]
 
 racc_action_pointer = [
-     5,   nil,     4,    21,    15,   nil,   nil,   nil,    15,    10,
-    17,     8,    -9,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
-    12,   nil,   nil,   nil,   nil,   nil,    -3,   nil ]
+    30,   nil,    24,    30,   nil,     7,   nil,   nil,    22,    22,
+    36,    -4,     2,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,   nil,    -7,   nil,   nil,    33,   nil,   nil,   nil,    22,
+    -6,   nil,   nil,    18,   nil,   nil,   nil,   nil,     8,   nil ]
 
 racc_action_default = [
-    -2,    -6,   -20,   -20,    -1,    -9,    -3,    -4,   -20,   -20,
-   -20,   -20,   -20,    -8,    28,    -7,   -16,   -17,   -10,   -18,
-   -11,   -19,   -12,   -14,   -15,    -5,   -20,   -13 ]
+    -2,    -6,   -28,   -28,    -9,    -1,    -3,    -4,   -28,   -28,
+   -28,   -28,   -28,    -8,    40,    -7,   -23,    -5,   -24,   -25,
+   -10,   -26,   -11,   -27,   -12,   -28,   -20,   -15,   -22,   -28,
+   -28,   -21,   -18,   -28,   -13,   -16,   -19,   -14,   -28,   -17 ]
 
 racc_goto_table = [
-    22,     4,    25,     9,    15,    18,    20,     3,   nil,   nil,
-   nil,   nil,   nil,   nil,    27 ]
+    26,    35,     5,    22,     9,    20,    17,    24,    25,    39,
+    33,    15,     3,   nil,   nil,   nil,   nil,    31 ]
 
 racc_goto_check = [
-    10,     2,     6,     2,     3,     8,     9,     1,   nil,   nil,
-   nil,   nil,   nil,   nil,    10 ]
+    14,    13,     2,     9,     2,     8,     6,    10,    11,    13,
+    12,     3,     1,   nil,   nil,   nil,   nil,    14 ]
 
 racc_goto_pointer = [
-   nil,     7,     1,    -7,   nil,   nil,   -10,   nil,    -7,    -6,
-   -12 ]
+   nil,    12,     2,     0,   nil,   nil,    -6,   nil,    -7,    -9,
+    -5,    -4,   -20,   -29,   -12 ]
 
 racc_goto_default = [
-   nil,   nil,   nil,     6,     7,     8,   nil,     1,   nil,   nil,
-   nil ]
+   nil,   nil,   nil,     6,     7,     8,   nil,     1,    32,   nil,
+   nil,   nil,   nil,   nil,    36 ]
 
 racc_reduce_table = [
   0, 0, :racc_error,
-  1, 16, :_reduce_none,
-  0, 16, :_reduce_2,
   1, 17, :_reduce_none,
-  1, 17, :_reduce_none,
-  3, 18, :_reduce_5,
+  0, 17, :_reduce_2,
   1, 18, :_reduce_none,
-  3, 19, :_reduce_7,
-  3, 22, :_reduce_8,
-  1, 20, :_reduce_none,
+  1, 18, :_reduce_none,
+  3, 19, :_reduce_5,
+  1, 19, :_reduce_none,
+  3, 20, :_reduce_7,
+  3, 23, :_reduce_8,
   1, 21, :_reduce_none,
-  1, 21, :_reduce_none,
+  1, 22, :_reduce_none,
+  1, 22, :_reduce_none,
+  1, 22, :_reduce_none,
+  3, 26, :_reduce_13,
+  4, 26, :_reduce_14,
+  1, 27, :_reduce_none,
+  1, 28, :_reduce_none,
+  3, 28, :_reduce_none,
+  1, 29, :_reduce_none,
+  1, 29, :_reduce_none,
+  1, 25, :_reduce_none,
+  3, 25, :_reduce_21,
+  1, 30, :_reduce_none,
+  1, 30, :_reduce_none,
+  1, 30, :_reduce_none,
   1, 24, :_reduce_none,
-  3, 24, :_reduce_13,
-  1, 25, :_reduce_none,
-  1, 25, :_reduce_none,
-  1, 25, :_reduce_none,
-  1, 23, :_reduce_none,
-  1, 23, :_reduce_none,
-  1, 23, :_reduce_none ]
+  1, 24, :_reduce_none,
+  1, 24, :_reduce_none ]
 
-racc_reduce_n = 20
+racc_reduce_n = 28
 
-racc_shift_n = 28
+racc_shift_n = 40
 
 racc_token_table = {
   false => 0,
@@ -88,15 +100,16 @@ racc_token_table = {
   :LPAREN => 5,
   :RPAREN => 6,
   :STANDARD_FIELD => 7,
-  :COMMA => 8,
-  :INTEGER => 9,
-  :DECIMAL => 10,
-  :CHARACTER => 11,
-  :DATE => 12,
-  :DATETIME => 13,
-  :BOOLEAN => 14 }
+  :KEYWORD => 8,
+  :COMMA => 9,
+  :INTEGER => 10,
+  :DECIMAL => 11,
+  :CHARACTER => 12,
+  :DATE => 13,
+  :DATETIME => 14,
+  :BOOLEAN => 15 }
 
-racc_nt_base = 15
+racc_nt_base = 16
 
 racc_use_result_var = true
 
@@ -125,6 +138,7 @@ Racc_token_to_s_table = [
   "LPAREN",
   "RPAREN",
   "STANDARD_FIELD",
+  "KEYWORD",
   "COMMA",
   "INTEGER",
   "DECIMAL",
@@ -142,6 +156,10 @@ Racc_token_to_s_table = [
   "group",
   "literal",
   "literal_list",
+  "function",
+  "function_name",
+  "function_args",
+  "function_arg",
   "literals" ]
 
 Racc_debug_parser = false
@@ -196,12 +214,17 @@ module_eval(<<'.,.,', 'sparkql.y', 29)
 
 module_eval(<<'.,.,', 'sparkql.y', 43)
   def _reduce_13(val, _values, result)
-     result = tokenize_multiple(val[0], val[2]) 
+     result = tokenize_function(val[0], []) 
     result
   end
 .,.,
 
-# reduce 14 omitted
+module_eval(<<'.,.,', 'sparkql.y', 44)
+  def _reduce_14(val, _values, result)
+     result = tokenize_function(val[0], val[2]) 
+    result
+  end
+.,.,
 
 # reduce 15 omitted
 
@@ -212,6 +235,27 @@ module_eval(<<'.,.,', 'sparkql.y', 43)
 # reduce 18 omitted
 
 # reduce 19 omitted
+
+# reduce 20 omitted
+
+module_eval(<<'.,.,', 'sparkql.y', 63)
+  def _reduce_21(val, _values, result)
+     result = tokenize_multiple(val[0], val[2]) 
+    result
+  end
+.,.,
+
+# reduce 22 omitted
+
+# reduce 23 omitted
+
+# reduce 24 omitted
+
+# reduce 25 omitted
+
+# reduce 26 omitted
+
+# reduce 27 omitted
 
 def _reduce_none(val, _values, result)
   val[0]

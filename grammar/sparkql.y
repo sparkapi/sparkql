@@ -37,8 +37,28 @@ rule
   condition
     : literal
     | literal_list
+    | function
     ;
-  
+    
+  function
+    : function_name LPAREN RPAREN { result = tokenize_function(val[0], []) }
+    | function_name LPAREN function_args RPAREN { result = tokenize_function(val[0], val[2]) }
+    ;
+    
+  function_name
+    : KEYWORD
+    ;
+    
+  function_args
+    : function_arg
+    | function_args COMMA function_arg
+    ; 
+    
+  function_arg
+    : literal
+    | literals
+    ;
+    
   literal_list
     : literals
     | literal_list COMMA literals { result = tokenize_multiple(val[0], val[2]) }

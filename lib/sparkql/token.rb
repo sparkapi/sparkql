@@ -5,6 +5,7 @@ module Sparkql::Token
   CONJUNCTION = /And|Or/
   LPAREN = /\(/
   RPAREN = /\)/
+  KEYWORD = /[A-Za-z]+/
   STANDARD_FIELD = /[A-Z]+[A-Za-z]*/
   INTEGER = /^\-?[0-9]+/
   DECIMAL = /^\-?[0-9]+\.[0-9]+/

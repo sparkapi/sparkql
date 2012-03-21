@@ -18,10 +18,11 @@ module Sparkql::ParserTools
   end
   
   def tokenize_expression(field, op, val)
-    operator = get_operator(val,op)
+    operator = get_operator(val,op) unless val.nil?
     block_group = (@lexer.level == 0) ? 0 : @lexer.block_group_identifier
-    expression = val.merge({:field => field, :operator => operator, :conjunction => 'And', 
-      :level => @lexer.level, :block_group => block_group})
+    expression = {:field => field, :operator => operator, :conjunction => 'And', 
+      :level => @lexer.level, :block_group => block_group}
+    expression = val.merge(expression) unless val.nil?
     if @lexer.level > Sparkql::ParserCompatibility::MAXIMUM_LEVEL_DEPTH
       compile_error(:token => "(", :expression => expression,
             :message => "You have exceeded the maximum nesting level.  Please nest no more than #{Sparkql::ParserCompatibility::MAXIMUM_LEVEL_DEPTH} level deep.",
@@ -62,6 +63,24 @@ module Sparkql::ParserTools
     }
   end
   
+  def tokenize_function(name, f_args)
+    args = f_args.instance_of?(Array) ? f_args : [f_args]
+    args.each do |arg|
+      arg[:value] = escape_value(arg)
+    end
+    resolver = Sparkql::FunctionResolver.new(name, args)
+    
+    resolver.validate
+    if(resolver.errors?)
+      puts "ERRORS #{resolver.errors.inspect}"
+      errors + resolver.errors
+      return nil
+    else
+      puts "FUNCTION #{name} #{args.inspect}"
+      return resolver.call()
+    end
+  end
+  
   def on_error(error_token_id, error_value, value_stack)
     token_name = token_to_str(error_token_id)
     token_name.downcase!
@@ -70,11 +89,6 @@ module Sparkql::ParserTools
                     :message => "Error parsing token #{token_name}",
                     :status => :fatal, 
                     :syntax => true)    
-    
-    str = 'parse error on '
-    str << token_name << ' ' unless token_name == token
-    str << token
-    @lexer.error(str)
   end  
 
 end

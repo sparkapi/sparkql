@@ -51,6 +51,8 @@ class Sparkql::Lexer < StringScanner
       when value = scan(BOOLEAN)
 #        literal :BOOLEAN, boolean_escape(value)
         literal :BOOLEAN, value
+      when value = scan(KEYWORD)
+        [:KEYWORD,value]
       when empty?
         [false, false] # end of file, \Z don't work with StringScanner
       else
@@ -75,11 +77,6 @@ class Sparkql::Lexer < StringScanner
   
   def leveldown
     @level -= 1
-  end
-  
-  def error(msg)
-    # TODO we could log the error here...
-    #puts("Parse error: #{msg}")
   end
   
   def literal(symbol, value)
