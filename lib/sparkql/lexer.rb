@@ -4,8 +4,6 @@ class Sparkql::Lexer < StringScanner
   def initialize(str, value_escaper)
     str.freeze
     super(str, false) # DO NOT dup str
-    @value_index = -1
-    @value_prefix = "db_parser_value_"
     @level = 0
     @block_group_identifier = 0
     @escaper = value_escaper
@@ -13,6 +11,9 @@ class Sparkql::Lexer < StringScanner
   end
   
   # Lookup the next matching token
+  # 
+  # TODO the old implementation did value type detection conversion at a later date, we can perform
+  # this at parse time if we want!!!!
   def shift
     token = case
       when value = scan(SPACE)
@@ -21,7 +22,7 @@ class Sparkql::Lexer < StringScanner
         levelup
         [:LPAREN, value]
       when value = scan(RPAREN)
-        leveldown
+        # leveldown do this after parsing group
         [:RPAREN, value]
       when value = scan(/\,/)
         [:COMMA,value]
@@ -33,24 +34,29 @@ class Sparkql::Lexer < StringScanner
         @last_field = value
         [:STANDARD_FIELD,value]
       when value = scan(DATETIME)
-        literal :DATETIME, datetime_escape(value)
+      #  literal :DATETIME, datetime_escape(value)
+      literal :DATETIME, value
       when value = scan(DATE)
-        literal :DATE, date_escape(value)
+      #  literal :DATE, date_escape(value)
+      literal :DATE, value
       when value = scan(DECIMAL)
-        literal :DECIMAL, decimal_escape(value)
+      #  literal :DECIMAL, decimal_escape(value)
+      literal :DECIMAL, value
       when value = scan(INTEGER)
-        literal :INTEGER, integer_escape(value)
+      #  literal :INTEGER, integer_escape(value)
+      literal :INTEGER, value
       when value = scan(CHARACTER)
-        literal :CHARACTER, character_escape("'#{value}'")
+       # literal :CHARACTER, character_escape(value)
+       literal :CHARACTER, value
       when value = scan(BOOLEAN)
-        literal :BOOLEAN, boolean_escape(value)
+#        literal :BOOLEAN, boolean_escape(value)
+        literal :BOOLEAN, value
       when empty?
         [false, false] # end of file, \Z don't work with StringScanner
       else
         [:UNKNOWN, "ERROR: '#{self.string}'"]
     end
-#    puts "TOKEN: #{token.inspect}"
-    value.freeze
+    #value.freeze
     token.freeze
   end
   
@@ -72,7 +78,8 @@ class Sparkql::Lexer < StringScanner
   end
   
   def error(msg)
-    puts("Parse error: #{msg}")
+    # TODO we could log the error here...
+    #puts("Parse error: #{msg}")
   end
   
   def literal(symbol, value)
@@ -107,11 +114,6 @@ class Sparkql::Lexer < StringScanner
   
   def boolean_escape(string)
     @escaper.boolean_escape( string )
-  end
-  
-  def next_field_key
-    @value_index += 1
-    @value_prefix + @value_index.to_s
   end
   
   def last_field

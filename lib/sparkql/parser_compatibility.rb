@@ -5,8 +5,6 @@ module Sparkql::ParserCompatibility
   MAXIMUM_EXPRESSIONS = 50
   MAXIMUM_LEVEL_DEPTH = 1
   
-  
-  
   # TODO I Really don't think this is required anymore
   # Ordered by precidence.
   FILTER_VALUES = [
@@ -100,6 +98,25 @@ module Sparkql::ParserCompatibility
     end
     expression[:value] = final_list
   end
+  
+  def escape_value( expression )
+    if expression[:value].is_a? Array
+      return escape_value_list( expression )
+    end
+    case expression[:type]
+    when :character
+      return character_escape(expression[:value])
+    when :integer
+      return integer_escape(expression[:value])
+    when :decimal
+      return decimal_escape(expression[:value])
+    when :date
+      return date_escape(expression[:value])
+    when :datetime
+      return datetime_escape(expression[:value])
+    end
+    expression[:value]
+  end
 
   # processes escape characters for a given string.  May be overridden by
   # child classes.
@@ -140,19 +157,21 @@ module Sparkql::ParserCompatibility
     rules_for_type(type).include?( :multiple )
   end
   
-  def value_prefix()
-    @lexer.value_prefix()
-  end
-  def value_prefix=(val)
-    @lexer.value_prefix = val
-  end
-  
   private
   
   def tokenizer_error( error_hash )
     self.errors << Sparkql::ParserError.new( error_hash )
   end
   alias :compile_error :tokenizer_error
+  
+  # Checks the type of an expression with what is expected.
+  def check_type!(expression, expected)
+    if expected == expression[:type]
+      return true
+    end
+    type_error(expression, expected)
+    false
+  end
   
   def type_error( expression, expected )
       compile_error(:token => expression[:field], :expression => expression,
@@ -164,11 +183,7 @@ module Sparkql::ParserCompatibility
   # default should be the operator provided in the actual filter string
   def get_operator(expression, default )
     f = rules_for_type(expression[:type])
-    if f == nil 
-      puts "WTF DERP #{expression.inspect}"
-    end
     if f[:multiple] && multiple_values?( expression[:value])
-      puts "OP #{default}"
       return nil unless operator_supports_multiples?(default)
       return default == "Ne" ? "Not In" : "In"
     elsif default == "Ne"
@@ -178,12 +193,11 @@ module Sparkql::ParserCompatibility
   end
   
   def multiple_values?(value)
-    value.to_a.size > 1
+    Array(value).size > 1
   end
   
   def operator_supports_multiples?(operator)
     OPERATORS_SUPPORTING_MULTIPLES.include?(operator)
   end
-
   
 end

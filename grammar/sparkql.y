@@ -66,8 +66,6 @@ end
   include Sparkql::ParserTools
   include Sparkql::ParserCompatibility
   
-  attr_accessor :configuration
-  
 ---- footer
 
 # END PARSER

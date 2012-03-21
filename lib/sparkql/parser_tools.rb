@@ -4,8 +4,6 @@ module Sparkql::ParserTools
   def parse(str)
     @lexer = Sparkql::Lexer.new(str,self)
     results = do_parse
-    
-    puts "Result #{results.inspect}"
     max = Sparkql::ParserCompatibility::MAXIMUM_EXPRESSIONS
     return if results.nil?
     results.size > max ? results[0,max] : results
@@ -20,46 +18,58 @@ module Sparkql::ParserTools
   end
   
   def tokenize_expression(field, op, val)
-    expression = val.merge({:field => field, :operator => get_operator(val,op), :conjunction => 'And', 
-      :level => @lexer.level, :block_group => @lexer.block_group_identifier})
-      
-    #puts "TOKEN: #{expression.inspect}"
+    operator = get_operator(val,op)
+    block_group = (@lexer.level == 0) ? 0 : @lexer.block_group_identifier
+    expression = val.merge({:field => field, :operator => operator, :conjunction => 'And', 
+      :level => @lexer.level, :block_group => block_group})
+    if @lexer.level > Sparkql::ParserCompatibility::MAXIMUM_LEVEL_DEPTH
+      compile_error(:token => "(", :expression => expression,
+            :message => "You have exceeded the maximum nesting level.  Please nest no more than #{Sparkql::ParserCompatibility::MAXIMUM_LEVEL_DEPTH} level deep.",
+            :status => :fatal, :syntax => false )
+    end
+    if operator.nil?
+      tokenizer_error(:token => op, :expression => expression,
+        :message => "Operator not supported for this type and value string", :status => :fatal )
+    end
     [expression]
   end
 
   def tokenize_conjunction(exp1, conj, exp2)
     exp2.first[:conjunction] = conj
-    puts "tokenize_conjunction: #{conj.inspect}"
     exp1 + exp2
   end
   
   def tokenize_group(expressions)
-    puts "tokenize_group: #{expressions.inspect}"
+    @lexer.leveldown
     expressions
   end
 
   def tokenize_multiple(lit1, lit2)
     if lit1[:type] != lit2[:type]
-      tokenizer_error(:token => @lexer.last_field, :message => "Type mismatch in field list.") 
+      tokenizer_error(:token => @lexer.last_field, 
+                      :message => "Type mismatch in field list.",
+                      :status => :fatal, 
+                      :syntax => true)    
     end
     array = Array(lit1[:value])
-    unless array.size > Sparkql::ParserCompatibility::MAXIMUM_MULTIPLE_VALUES
+    unless array.size >= Sparkql::ParserCompatibility::MAXIMUM_MULTIPLE_VALUES
       array << lit2[:value]
     end
-    puts "tokenize_multiple: #{array.inspect}"
     {
       :type => lit1[:type],
       :value => array,
-      :multiple => "true" # TODO 
+      :multiple => "true" # TODO ?
     }
   end
   
   def on_error(error_token_id, error_value, value_stack)
-    puts "ERROR #{error_token_id} - #{error_value} - #{value_stack}"
     token_name = token_to_str(error_token_id)
     token_name.downcase!
     token = error_value.to_s.inspect
-    tokenizer_error(:token => @lexer.last_field, :message => "Error parsing token #{token_name}")    
+    tokenizer_error(:token => @lexer.last_field, 
+                    :message => "Error parsing token #{token_name}",
+                    :status => :fatal, 
+                    :syntax => true)    
     
     str = 'parse error on '
     str << token_name << ' ' unless token_name == token

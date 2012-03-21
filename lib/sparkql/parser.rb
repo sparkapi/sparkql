@@ -14,8 +14,6 @@ module_eval(<<'...end sparkql.y/module_eval...', 'sparkql.y', 66)
   include Sparkql::ParserTools
   include Sparkql::ParserCompatibility
   
-  attr_accessor :configuration
-  
 ...end sparkql.y/module_eval...
 ##### State transition tables begin ###
 
