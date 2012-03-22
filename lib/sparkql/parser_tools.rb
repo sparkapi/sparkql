@@ -72,11 +72,9 @@ module Sparkql::ParserTools
     
     resolver.validate
     if(resolver.errors?)
-      puts "ERRORS #{resolver.errors.inspect}"
-      errors + resolver.errors
+      errors += resolver.errors
       return nil
     else
-      puts "FUNCTION #{name} #{args.inspect}"
       return resolver.call()
     end
   end

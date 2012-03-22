@@ -21,7 +21,6 @@ class ParserTest < Test::Unit::TestCase
     assert_equal 10.to_s, expression.first[:value]
     assert_equal 11.to_s, expression.last[:value]
     assert_equal 'Or', expression.last[:conjunction]
-      
   end
   
   def test_tough_conjunction
@@ -29,7 +28,6 @@ class ParserTest < Test::Unit::TestCase
     expression = @parser.parse('Test Eq 10 Or Test Ne 11 And Test Ne 9')
     assert_equal 9.to_s, expression.last[:value]
     assert_equal 'And', expression.last[:conjunction]
-
   end
 
   def test_grouping
@@ -86,17 +84,26 @@ class ParserTest < Test::Unit::TestCase
     assert @parser.fatal_errors?, "Should be nil: #{@parser.errors.inspect}"
   end
 
-  def test_functions
+  def test_function_now
+    start = Time.now
     filter = "City Eq days(7)"
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-    assert_equal "function date", expressions.first[:value], "Expression #{expressions.inspect}"
+    test_time = Time.parse(expressions.first[:value])
+    assert 605000 > test_time - start, "Time range off by more than five seconds #{test_time - start}"
+    assert 604000 < test_time - start, "Time range off by more than five seconds #{test_time - start}"
+  end
+
+  def test_function_days
+    start = Time.now
     filter = "City Eq now()"
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-    assert_equal "function now", expressions.first[:value], "Expression #{expressions.inspect}"
+    test_time = Time.parse(expressions.first[:value])
+    assert 5 > test_time - start, "Time range off by more than five seconds #{test_time - start}"
+    assert -5 < test_time - start, "Time range off by more than five seconds #{test_time - start}"
   end
     
 end

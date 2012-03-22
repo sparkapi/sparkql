@@ -1,4 +1,11 @@
 require 'time'
+
+# Binding class to all supported function calls in the parser. Current support requires that the 
+# resolution of function calls to happen on the fly at parsing time at which point a value and 
+# value type is required, just as literals would be returned to the expression tokenization level.
+#
+# Name and argument requirements for the function should match the function declaration in 
+# SUPPORTED_FUNCTIONS which will run validation on the function syntax prior to execution.
 class Sparkql::FunctionResolver
   SECONDS_IN_DAY = 60 * 60 * 24
   
@@ -12,11 +19,19 @@ class Sparkql::FunctionResolver
       :return_type => :datetime
     }
   }
+  
+  # Construct a resolver instance for a function
+  # name: function name (String)
+  # args: array of literal hashes of the format {:type=><literal_type>, :value=><escaped_literal_value>}.
+  #       Empty arry for functions that have no arguments.
   def initialize(name, args)
     @name = name
     @args = args
     @errors = []
   end
+  
+  # Validate the function instance prior to calling it. All validation failures will show up in the
+  # errors array. 
   def validate()
     name = @name.to_sym
     unless support.has_key?(name)
@@ -51,6 +66,7 @@ class Sparkql::FunctionResolver
   def errors
     @errors
   end
+  
   def errors?
     @errors.size > 0
   end
@@ -59,11 +75,17 @@ class Sparkql::FunctionResolver
     SUPPORTED_FUNCTIONS
   end
   
+  # Execute the function
   def call()
     real_vals = @args.map { |i| i[:value]}
     self.send(@name.to_sym, *real_vals)
   end
   
+  protected 
+  
+  # Supported function calls
+  
+  # Offset the current timestamp by a number of days
   def days(num)
     time = Time.now + (num * SECONDS_IN_DAY) 
     {
@@ -72,6 +94,7 @@ class Sparkql::FunctionResolver
     }
   end
   
+  # The current timestamp
   def now()
     {
       :type => :datetime,
