@@ -1,8 +1,6 @@
 module Sparkql::Token
   SPACE = /[\t ]+/
   NEWLINE = /\r\n|\n\r|\r|\n/
-  OPERATOR = /Eq|Ne|Gt|Ge|Lt|Le/
-  CONJUNCTION = /And|Or/
   LPAREN = /\(/
   RPAREN = /\)/
   KEYWORD = /[A-Za-z]+/
@@ -13,5 +11,7 @@ module Sparkql::Token
   DATE = /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}/
   DATETIME = /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}T[0-9]{2}\:[0-9]{2}\:[0-9]{2}\.[0-9]{6}/
   BOOLEAN = /^true|false/
+  OPERATORS = ['Eq','Ne','Gt','Ge','Lt','Le']
+  CONJUNCTIONS = ['And','Or']
 
 end

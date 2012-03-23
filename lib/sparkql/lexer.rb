@@ -1,12 +1,11 @@
 class Sparkql::Lexer < StringScanner
   include Sparkql::Token
 
-  def initialize(str, value_escaper)
+  def initialize(str)
     str.freeze
     super(str, false) # DO NOT dup str
     @level = 0
     @block_group_identifier = 0
-    @escaper = value_escaper
     @expression_count = 0
   end
   
@@ -26,30 +25,19 @@ class Sparkql::Lexer < StringScanner
         [:RPAREN, value]
       when value = scan(/\,/)
         [:COMMA,value]
-      when value = scan(OPERATOR)
-        [:OPERATOR,value]
-      when value = scan(CONJUNCTION)
-        [:CONJUNCTION,value]
       when value = scan(STANDARD_FIELD)
-        @last_field = value
-        [:STANDARD_FIELD,value]
+        check_reserved_words(value)
       when value = scan(DATETIME)
-      #  literal :DATETIME, datetime_escape(value)
-      literal :DATETIME, value
+        literal :DATETIME, value
       when value = scan(DATE)
-      #  literal :DATE, date_escape(value)
-      literal :DATE, value
+        literal :DATE, value
       when value = scan(DECIMAL)
-      #  literal :DECIMAL, decimal_escape(value)
-      literal :DECIMAL, value
+        literal :DECIMAL, value
       when value = scan(INTEGER)
-      #  literal :INTEGER, integer_escape(value)
-      literal :INTEGER, value
+        literal :INTEGER, value
       when value = scan(CHARACTER)
-       # literal :CHARACTER, character_escape(value)
-       literal :CHARACTER, value
+        literal :CHARACTER, value
       when value = scan(BOOLEAN)
-#        literal :BOOLEAN, boolean_escape(value)
         literal :BOOLEAN, value
       when value = scan(KEYWORD)
         [:KEYWORD,value]
@@ -60,6 +48,17 @@ class Sparkql::Lexer < StringScanner
     end
     #value.freeze
     token.freeze
+  end
+  
+  def check_reserved_words(value)
+    if OPERATORS.include?(value)
+      [:OPERATOR,value]
+    elsif CONJUNCTIONS.include?(value)
+      [:CONJUNCTION,value]
+    else
+      @last_field = value
+      [:STANDARD_FIELD,value]
+    end
   end
   
   def level
@@ -85,32 +84,6 @@ class Sparkql::Lexer < StringScanner
       :value => value
     }
     [symbol, node]
-  end
-  
-  # processes escape characters for a given string.  May be overridden by
-  # child classes.
-  def character_escape( string )
-    @escaper.character_escape( string )
-  end
-  
-  def integer_escape( string )
-    @escaper.integer_escape( string )
-  end
-  
-  def decimal_escape( string )
-    @escaper.decimal_escape( string )
-  end
-  
-  def date_escape(string)
-    @escaper.date_escape( string )
-  end
-  
-  def datetime_escape(string)
-    @escaper.datetime_escape( string )
-  end
-  
-  def boolean_escape(string)
-    @escaper.boolean_escape( string )
   end
   
   def last_field

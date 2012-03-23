@@ -84,18 +84,18 @@ class ParserTest < Test::Unit::TestCase
     assert @parser.fatal_errors?, "Should be nil: #{@parser.errors.inspect}"
   end
 
-  def test_function_now
+  def test_function_days
     start = Time.now
-    filter = "City Eq days(7)"
+    filter = "OriginalEntryTimestamp Ge days(-7)"
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
     test_time = Time.parse(expressions.first[:value])
-    assert 605000 > test_time - start, "Time range off by more than five seconds #{test_time - start}"
-    assert 604000 < test_time - start, "Time range off by more than five seconds #{test_time - start}"
+    assert -605000 < test_time - start, "Time range off by more than five seconds #{test_time - start}"
+    assert -604000 > test_time - start, "Time range off by more than five seconds #{test_time - start}"
   end
 
-  def test_function_days
+  def test_function_now
     start = Time.now
     filter = "City Eq now()"
     @parser = Parser.new
@@ -104,6 +104,14 @@ class ParserTest < Test::Unit::TestCase
     test_time = Time.parse(expressions.first[:value])
     assert 5 > test_time - start, "Time range off by more than five seconds #{test_time - start}"
     assert -5 < test_time - start, "Time range off by more than five seconds #{test_time - start}"
+  end
+  
+  def test_for_reserved_words_first_literals_second
+    ["OrOrOr Eq true", "Equador Eq true", "Oregon Ge 10"].each do |filter|
+      @parser = Parser.new
+      expressions = @parser.parse(filter)
+      assert !@parser.errors?, "Filter '#{filter}' errors: #{@parser.errors.inspect}"
+    end
   end
     
 end

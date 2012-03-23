@@ -2,7 +2,7 @@
 module Sparkql::ParserTools
   
   def parse(str)
-    @lexer = Sparkql::Lexer.new(str,self)
+    @lexer = Sparkql::Lexer.new(str)
     results = do_parse
     max = Sparkql::ParserCompatibility::MAXIMUM_EXPRESSIONS
     return if results.nil?
