@@ -16,78 +16,85 @@ module Sparkql
 ##### State transition tables begin ###
 
 racc_action_table = [
-    34,     2,    29,     4,    28,    16,    18,    19,    21,    23,
-    27,    11,    28,    16,    18,    19,    21,    23,    28,    16,
-    18,    19,    21,    23,    37,    12,    11,    38,    13,     2,
-    10,     4,    28,    16,    18,     2,    14,     4,    30 ]
+    34,     3,    30,     4,     6,    14,    15,    17,    18,    20,
+    22,    26,    31,    14,    15,    17,    18,    20,    22,    14,
+    15,    17,    18,    20,    22,    38,    13,    12,     3,    39,
+     4,     6,     3,    10,     4,     6,    13,    28,    27,    14,
+    15,    17 ]
 
 racc_action_check = [
-    30,    11,    22,    11,    30,    30,    30,    30,    30,    30,
-    12,     5,    12,    12,    12,    12,    12,    12,    38,    38,
-    38,    38,    38,    38,    33,     8,     9,    33,     9,     2,
-     3,     2,    29,    29,    29,     0,    10,     0,    25 ]
+    31,    13,    21,    13,    13,    31,    31,    31,    31,    31,
+    31,    10,    24,    10,    10,    10,    10,    10,    10,    39,
+    39,    39,    39,    39,    39,    35,     7,     5,     3,    35,
+     3,     3,     0,     1,     0,     0,    11,    12,    11,    30,
+    30,    30 ]
 
 racc_action_pointer = [
-    30,   nil,    24,    30,   nil,     7,   nil,   nil,    22,    22,
-    36,    -4,     2,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
-   nil,   nil,    -7,   nil,   nil,    33,   nil,   nil,   nil,    22,
-    -6,   nil,   nil,    18,   nil,   nil,   nil,   nil,     8,   nil ]
+    27,    30,   nil,    23,   nil,    27,   nil,    22,   nil,   nil,
+     2,    32,    37,    -4,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,    -8,   nil,   nil,     7,   nil,   nil,   nil,   nil,   nil,
+    28,    -6,   nil,   nil,   nil,    19,   nil,   nil,   nil,     8,
+   nil ]
 
 racc_action_default = [
-    -2,    -6,   -28,   -28,    -9,    -1,    -3,    -4,   -28,   -28,
-   -28,   -28,   -28,    -8,    40,    -7,   -23,    -5,   -24,   -25,
-   -10,   -26,   -11,   -27,   -12,   -28,   -20,   -15,   -22,   -28,
-   -28,   -21,   -18,   -28,   -13,   -16,   -19,   -14,   -28,   -17 ]
+    -2,   -29,    -6,   -29,    -9,   -29,   -10,    -1,    -3,    -4,
+   -29,   -29,   -29,   -29,   -23,   -24,    -5,   -25,   -26,   -11,
+   -27,   -12,   -28,   -13,   -29,   -21,   -16,    -8,    41,    -7,
+   -29,   -29,   -22,   -19,   -14,   -29,   -17,   -20,   -15,   -29,
+   -18 ]
 
 racc_goto_table = [
-    26,    35,     5,    22,     9,    20,    17,    24,    25,    39,
-    33,    15,     3,   nil,   nil,   nil,   nil,    31 ]
+    25,    36,     7,    21,    19,    11,    16,    23,    24,    40,
+    35,    29,     5,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+    32 ]
 
 racc_goto_check = [
-    14,    13,     2,     9,     2,     8,     6,    10,    11,    13,
-    12,     3,     1,   nil,   nil,   nil,   nil,    14 ]
+    14,    13,     2,     9,     8,     2,     6,    10,    11,    13,
+    12,     3,     1,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+    14 ]
 
 racc_goto_pointer = [
-   nil,    12,     2,     0,   nil,   nil,    -6,   nil,    -7,    -9,
-    -5,    -4,   -20,   -29,   -12 ]
+   nil,    12,     2,    -2,   nil,   nil,    -4,   nil,    -6,    -7,
+    -3,    -2,   -21,   -30,   -10 ]
 
 racc_goto_default = [
-   nil,   nil,   nil,     6,     7,     8,   nil,     1,    32,   nil,
-   nil,   nil,   nil,   nil,    36 ]
+   nil,   nil,   nil,     8,     9,     1,   nil,     2,    33,   nil,
+   nil,   nil,   nil,   nil,    37 ]
 
 racc_reduce_table = [
   0, 0, :racc_error,
-  1, 17, :_reduce_none,
-  0, 17, :_reduce_2,
   1, 18, :_reduce_none,
-  1, 18, :_reduce_none,
-  3, 19, :_reduce_5,
+  0, 18, :_reduce_2,
   1, 19, :_reduce_none,
-  3, 20, :_reduce_7,
-  3, 23, :_reduce_8,
-  1, 21, :_reduce_none,
+  1, 19, :_reduce_none,
+  3, 20, :_reduce_5,
+  1, 20, :_reduce_none,
+  3, 21, :_reduce_7,
+  3, 24, :_reduce_8,
   1, 22, :_reduce_none,
   1, 22, :_reduce_none,
-  1, 22, :_reduce_none,
-  3, 26, :_reduce_13,
-  4, 26, :_reduce_14,
-  1, 27, :_reduce_none,
+  1, 23, :_reduce_none,
+  1, 23, :_reduce_none,
+  1, 23, :_reduce_none,
+  3, 27, :_reduce_14,
+  4, 27, :_reduce_15,
   1, 28, :_reduce_none,
-  3, 28, :_reduce_none,
   1, 29, :_reduce_none,
-  1, 29, :_reduce_none,
+  3, 29, :_reduce_none,
+  1, 30, :_reduce_none,
+  1, 30, :_reduce_none,
+  1, 26, :_reduce_none,
+  3, 26, :_reduce_22,
+  1, 31, :_reduce_none,
+  1, 31, :_reduce_none,
+  1, 31, :_reduce_none,
   1, 25, :_reduce_none,
-  3, 25, :_reduce_21,
-  1, 30, :_reduce_none,
-  1, 30, :_reduce_none,
-  1, 30, :_reduce_none,
-  1, 24, :_reduce_none,
-  1, 24, :_reduce_none,
-  1, 24, :_reduce_none ]
+  1, 25, :_reduce_none,
+  1, 25, :_reduce_none ]
 
-racc_reduce_n = 28
+racc_reduce_n = 29
 
-racc_shift_n = 40
+racc_shift_n = 41
 
 racc_token_table = {
   false => 0,
@@ -98,16 +105,17 @@ racc_token_table = {
   :LPAREN => 5,
   :RPAREN => 6,
   :STANDARD_FIELD => 7,
-  :KEYWORD => 8,
-  :COMMA => 9,
-  :INTEGER => 10,
-  :DECIMAL => 11,
-  :CHARACTER => 12,
-  :DATE => 13,
-  :DATETIME => 14,
-  :BOOLEAN => 15 }
+  :CUSTOM_FIELD => 8,
+  :KEYWORD => 9,
+  :COMMA => 10,
+  :INTEGER => 11,
+  :DECIMAL => 12,
+  :CHARACTER => 13,
+  :DATE => 14,
+  :DATETIME => 15,
+  :BOOLEAN => 16 }
 
-racc_nt_base = 16
+racc_nt_base = 17
 
 racc_use_result_var = true
 
@@ -136,6 +144,7 @@ Racc_token_to_s_table = [
   "LPAREN",
   "RPAREN",
   "STANDARD_FIELD",
+  "CUSTOM_FIELD",
   "KEYWORD",
   "COMMA",
   "INTEGER",
@@ -202,17 +211,17 @@ end
 
 # reduce 12 omitted
 
-def _reduce_13(val, _values, result)
+# reduce 13 omitted
+
+def _reduce_14(val, _values, result)
  result = tokenize_function(val[0], []) 
     result
 end
 
-def _reduce_14(val, _values, result)
+def _reduce_15(val, _values, result)
  result = tokenize_function(val[0], val[2]) 
     result
 end
-
-# reduce 15 omitted
 
 # reduce 16 omitted
 
@@ -224,12 +233,12 @@ end
 
 # reduce 20 omitted
 
-def _reduce_21(val, _values, result)
+# reduce 21 omitted
+
+def _reduce_22(val, _values, result)
  result = tokenize_multiple(val[0], val[2]) 
     result
 end
-
-# reduce 22 omitted
 
 # reduce 23 omitted
 
@@ -240,6 +249,8 @@ end
 # reduce 26 omitted
 
 # reduce 27 omitted
+
+# reduce 28 omitted
 
 def _reduce_none(val, _values, result)
   val[0]

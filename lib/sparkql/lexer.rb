@@ -41,6 +41,8 @@ class Sparkql::Lexer < StringScanner
         literal :BOOLEAN, value
       when value = scan(KEYWORD)
         [:KEYWORD,value]
+      when value = scan(CUSTOM_FIELD)
+        [:CUSTOM_FIELD,value]
       when empty?
         [false, false] # end of file, \Z don't work with StringScanner
       else

@@ -54,6 +54,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse(q)
     assert !@parser.errors?, "Unexpected error parsing #{q}"
     assert_equal v, expressions.first[:value], "Expression #{expressions.inspect}"
+    assert !expressions.first[:custom_field], "Unexepected custom field #{expressions.inspect}"
   end
 
   def test_invalid_syntax
@@ -112,6 +113,16 @@ class ParserTest < Test::Unit::TestCase
       expressions = @parser.parse(filter)
       assert !@parser.errors?, "Filter '#{filter}' errors: #{@parser.errors.inspect}"
     end
+  end
+  
+  def test_custom_fields
+    filter = '"General Property Description"."Taxes" Lt 500.0'
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal '"General Property Description"."Taxes"', expressions.first[:field], "Custom field expression #{expressions.inspect}"
+    assert expressions.first[:custom_field], "Custom field expression #{expressions.inspect}"
+    assert_equal '500.0', expressions.first[:value], "Custom field expression #{expressions.inspect}"
   end
     
 end

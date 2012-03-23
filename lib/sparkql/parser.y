@@ -32,6 +32,7 @@ rule
 
   field
   	: STANDARD_FIELD
+  	| CUSTOM_FIELD
   	;
   
   condition

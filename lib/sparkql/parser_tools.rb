@@ -19,9 +19,10 @@ module Sparkql::ParserTools
   
   def tokenize_expression(field, op, val)
     operator = get_operator(val,op) unless val.nil?
+    custom_field = field.start_with?('"')
     block_group = (@lexer.level == 0) ? 0 : @lexer.block_group_identifier
     expression = {:field => field, :operator => operator, :conjunction => 'And', 
-      :level => @lexer.level, :block_group => block_group}
+      :level => @lexer.level, :block_group => block_group, :custom_field => custom_field}
     expression = val.merge(expression) unless val.nil?
     if @lexer.level > Sparkql::ParserCompatibility::MAXIMUM_LEVEL_DEPTH
       compile_error(:token => "(", :expression => expression,
