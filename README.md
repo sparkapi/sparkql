@@ -1,6 +1,10 @@
 SparkQL query language parser
 =====================
-This gem contains the syntax parser for processing queries into manageable expressions.
+This gem contains the syntax parser for processing spark api filter queries into manageable 
+expressions. To get an overview of the language syntax-wise, refer to the following files:
+
+* lib/sparkql/parser.y   # BNF Grammar
+* lib/sparkql/token.rb   # Token matching rules
 
 Installation
 -------------

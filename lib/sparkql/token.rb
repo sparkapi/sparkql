@@ -12,6 +12,8 @@ module Sparkql::Token
   DATE = /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}/
   DATETIME = /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}T[0-9]{2}\:[0-9]{2}\:[0-9]{2}\.[0-9]{6}/
   BOOLEAN = /^true|false/
+  
+  # Reserved words
   OPERATORS = ['Eq','Ne','Gt','Ge','Lt','Le']
   CONJUNCTIONS = ['And','Or']
 
