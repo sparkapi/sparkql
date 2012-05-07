@@ -101,7 +101,18 @@ class ParserCompatabilityTest < Test::Unit::TestCase
         :string => "TimestampField Le 2010-10-10T10:10:30.000000",
         :type => :datetime,
         :operator => "Le"
+      },
+      {
+        :string => "BooleanField Eq true",
+        :type => :boolean,
+        :operator => "Eq"
+      },
+      {
+        :string => "BooleanField Eq false",
+        :type => :boolean,
+        :operator => "Eq"
       }]
+      
   end
 
   def compare_expression_to_tokens( expression, tokens )
@@ -119,7 +130,7 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     nil
   end
 
-  def test_simple_tokenize
+  test "simple tokenize" do
     filter = "City Eq 'Fargo'"
     filter_tokens = filter.split(" ")
     parser = Parser.new
@@ -130,7 +141,7 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     compare_expression_to_tokens(expressions.first, filter_tokens)
   end
  
-  def test_types
+  test "types" do
     @test_filters.each do |elem|
       parser = Parser.new
       expressions = parser.tokenize( elem[:string] )
@@ -140,7 +151,7 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     end
   end
 
-  def test_operators
+  test "operators" do
     @test_filters.each do |elem|
       parser = Parser.new
       expressions = parser.tokenize( elem[:string] )
@@ -149,7 +160,7 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     end
   end
 
-  def test_tokenize_with_and
+  test "tokenize with and" do
     filter = "City Eq 'Fargo' And PropertyType Eq 'A'"
     filter_a = filter.split(" And ")
     filter_tokens = []
@@ -169,7 +180,7 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     end
   end
 
-  def test_tokenize_with_or
+  test "tokenize with or" do
     filter = "City Eq 'Fargo' Or PropertyType Eq 'A'"
     filter_a = filter.split(" Or ")
     filter_tokens = []
@@ -257,7 +268,7 @@ class ParserCompatabilityTest < Test::Unit::TestCase
       end
     end
   end
-
+  
   test "get multiple values" do
     @test_filters.each do |f|
       op = find_operator f[:string] 
@@ -386,4 +397,47 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     assert_equal "You have exceeded the maximum nesting level.  Please nest no more than 1 level deep.", parser.errors.first.message
   end
 
+  test "tokenize custom field" do
+    filter = '"General Property Description"."Zoning" Eq \'Commercial\''
+    filter_tokens = ['"General Property Description"."Zoning"', 'Eq', "'Commercial'"]
+    parser = Parser.new
+    expressions = parser.tokenize( filter )
+    
+    assert !parser.errors?, "Parser errrors [#{filter}]: #{parser.errors.inspect}"
+    assert_equal 1, expressions.size, "Expression #{expressions.inspect}"
+    compare_expression_to_tokens(expressions.first, filter_tokens)
+    assert expressions.first[:custom_field], "Expression #{expressions.first.inspect}"
+  end
+  
+  test "tokenize custom field with special characters" do
+    filter = '"Security"."@R080T$\' ` ` `#" Eq \'R2D2\''
+    filter_tokens = ['"Security"."@R080T$\' ` ` `#"', 'Eq', "'R2D2'"]
+    parser = Parser.new
+    expressions = parser.tokenize( filter )
+    assert !parser.errors?, "Parser errrors [#{filter}]: #{parser.errors.inspect}"
+    assert_equal 1, expressions.size, "Expression #{expressions.inspect}"
+    compare_expression_to_tokens(expressions.first, filter_tokens)
+    assert expressions.first[:custom_field], "Expression #{expressions.first.inspect}"
+  end
+  
+  test "custom field supports all types" do
+    types = {
+      :character => "'character'",
+      :integer => 1234,
+      :decimal => 12.34,
+      :boolean => true
+    }
+    types.each_pair do |key, value|
+      filter = '"Details"."Random" Eq ' + "#{value}"
+      filter_tokens = ['"Details"."Random"', 'Eq', "#{value}"]
+      parser = Parser.new
+      expressions = parser.tokenize( filter )
+      
+      assert !parser.errors?, "Parser errrors [#{filter}]: #{parser.errors.inspect}"
+      assert_equal 1, expressions.size, "Expression #{expressions.inspect}"
+      compare_expression_to_tokens(expressions.first, filter_tokens)
+      assert expressions.first[:custom_field], "Expression #{expressions.first.inspect}"
+    end
+  end
+  
 end
