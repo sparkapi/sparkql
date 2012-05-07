@@ -124,5 +124,35 @@ class ParserTest < Test::Unit::TestCase
     assert expressions.first[:custom_field], "Custom field expression #{expressions.inspect}"
     assert_equal '500.0', expressions.first[:value], "Custom field expression #{expressions.inspect}"
   end
-    
+  
+  def test_valid_custom_field_filters
+    ['"General Property Description"."Taxes$" Lt 500.0',
+      '"General Property Desc\'"."Taxes" Lt 500.0',
+      '"General Property Description"."Taxes" Lt 500.0',
+      '"General \'Property\' Description"."Taxes" Lt 500.0',
+      '"General Property Description"."Taxes #" Lt 500.0',
+      '"General$Description"."Taxes" Lt 500.0',
+      '" a "." b " Lt 500.0'
+    ].each do |filter|
+      @parser = Parser.new
+      expressions = @parser.parse(filter)
+      assert !@parser.errors?, "errors '#{filter}'\n#{@parser.errors.inspect}"
+    end
+  end
+  
+  def test_invalid_custom_field_filters
+    ['"$General Property Description"."Taxes" Lt 500.0',
+      '"General Property Description"."$Taxes" Lt 500.0',
+      '"General Property Description"."Tax.es" Lt 500.0',
+      '"General Property Description".".Taxes" Lt 500.0',
+      '"General Property Description".".Taxes"."SUB" Lt 500.0',
+      '"General.Description"."Taxes" Lt 500.0',
+      '""."" Lt 500.0'
+    ].each do |filter|
+      @parser = Parser.new
+      expressions = @parser.parse(filter)
+      assert @parser.errors?, "No errors? '#{filter}'\n#{@parser.inspect}"
+    end
+  end
+
 end
