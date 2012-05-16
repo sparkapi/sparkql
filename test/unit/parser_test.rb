@@ -76,7 +76,21 @@ class ParserTest < Test::Unit::TestCase
       count +=1
     end
   end
-  
+
+  def test_multilevel_nesting
+    filter = "(City Eq 'Fargo' And (BathsFull Eq 1 Or BathsFull Eq 2)) Or City Eq 'Moorhead' Or City Eq 'Dilworth'"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, "Unexpected error parsing #{filter}: #{@parser.errors.inspect}"
+    levels = [1,2,2,0,0]
+    count = 0
+    expressions.each do |ex|
+      assert_equal levels[count],  ex[:level], "Nesting level wrong for #{ex.inspect}"
+      assert_equal levels[count],  ex[:block_group], "Nesting block group wrong for #{ex.inspect}"
+      count +=1
+    end
+  end
+   
   def test_bad_queries
     filter = "City IsLikeA 'Town'"
     @parser = Parser.new

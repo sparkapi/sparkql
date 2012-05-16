@@ -24,9 +24,9 @@ module Sparkql::ParserTools
     expression = {:field => field, :operator => operator, :conjunction => 'And', 
       :level => @lexer.level, :block_group => block_group, :custom_field => custom_field}
     expression = val.merge(expression) unless val.nil?
-    if @lexer.level > Sparkql::ParserCompatibility::MAXIMUM_LEVEL_DEPTH
+    if @lexer.level > max_level_depth
       compile_error(:token => "(", :expression => expression,
-            :message => "You have exceeded the maximum nesting level.  Please nest no more than #{Sparkql::ParserCompatibility::MAXIMUM_LEVEL_DEPTH} level deep.",
+            :message => "You have exceeded the maximum nesting level.  Please nest no more than #{max_level_depth} levels deep.",
             :status => :fatal, :syntax => false )
     end
     if operator.nil?

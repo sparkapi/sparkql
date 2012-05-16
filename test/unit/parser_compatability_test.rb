@@ -390,11 +390,11 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     end
   end
 
-  test "maximum nesting of 1" do
+  test "maximum nesting of 2" do
     parser = Parser.new
-    p = parser.tokenize("(City Eq 'Fargo' Or (TotalBr Eq 2 And City Eq 'Moorhead')) And PropertyType Eq 'A'")
+    p = parser.tokenize("(City Eq 'Fargo' Or (TotalBr Eq 2 And (City Eq 'Moorhead'))) And PropertyType Eq 'A'")
     assert parser.errors?
-    assert_equal "You have exceeded the maximum nesting level.  Please nest no more than 1 level deep.", parser.errors.first.message
+    assert_equal "You have exceeded the maximum nesting level.  Please nest no more than 2 levels deep.", parser.errors.first.message
   end
 
   test "tokenize custom field" do

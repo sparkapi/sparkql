@@ -3,10 +3,10 @@ module Sparkql::ParserCompatibility
   
   MAXIMUM_MULTIPLE_VALUES = 25
   MAXIMUM_EXPRESSIONS = 50
-  MAXIMUM_LEVEL_DEPTH = 1
+  MAXIMUM_LEVEL_DEPTH = 2
   
   # TODO I Really don't think this is required anymore
-  # Ordered by precidence.
+  # Ordered by precedence.
   FILTER_VALUES = [
     {
       :type => :datetime,
@@ -155,6 +155,11 @@ module Sparkql::ParserCompatibility
   # true if a given type supports multiple values
   def supports_multiple?( type )
     rules_for_type(type).include?( :multiple )
+  end
+  
+  # Maximum supported nesting level for the parser filters
+  def max_level_depth
+    MAXIMUM_LEVEL_DEPTH
   end
   
   private
