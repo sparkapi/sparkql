@@ -64,33 +64,45 @@ class ParserTest < Test::Unit::TestCase
   end
   
   def test_nesting
-    filter = "City Eq 'Fargo' Or (BathsFull Eq 1 Or BathsFull Eq 2) Or City Eq 'Moorhead' Or City Eq 'Dilworth'"
-    @parser = Parser.new
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "Unexpected error parsing #{filter}"
-    levels = [0,1,1,0,0]
-    count = 0
-    expressions.each do |ex|
-      assert_equal levels[count],  ex[:level], "Nesting level wrong for #{ex.inspect}"
-      assert_equal levels[count],  ex[:block_group], "Nesting block group wrong for #{ex.inspect}"
-      count +=1
-    end
+    assert_nesting(
+      "City Eq 'Fargo' Or (BathsFull Eq 1 Or BathsFull Eq 2) Or City Eq 'Moorhead' Or City Eq 'Dilworth'",
+      [0,1,1,0,0]
+    )
   end
 
   def test_multilevel_nesting
-    filter = "(City Eq 'Fargo' And (BathsFull Eq 1 Or BathsFull Eq 2)) Or City Eq 'Moorhead' Or City Eq 'Dilworth'"
-    @parser = Parser.new
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "Unexpected error parsing #{filter}: #{@parser.errors.inspect}"
-    levels = [1,2,2,0,0]
+    assert_nesting(
+      "(City Eq 'Fargo' And (BathsFull Eq 1 Or BathsFull Eq 2)) Or City Eq 'Moorhead' Or City Eq 'Dilworth'",
+      [1,2,2,0,0]
+    )
+    
+    # API-629
+    assert_nesting(
+      "((MlsStatus Eq 'A') Or (MlsStatus Eq 'D' And CloseDate Ge 2011-05-17)) And ListPrice Ge 150000.0 And PropertyType Eq 'A'",
+      [2,2,2,0,0],
+      [2,3,3,0,0]
+    )
+    assert_nesting(
+      "ListPrice Ge 150000.0 And PropertyType Eq 'A' And ((MlsStatus Eq 'A') Or (MlsStatus Eq 'D' And CloseDate Ge 2011-05-17))",
+      [0,0,2,2,2],
+      [0,0,2,3,3]
+    )
+  end
+  
+  # verify each expression in the query is at the right nesting level and group
+  def assert_nesting(sparkql, levels=[], block_groups=nil)
+    block_groups = levels.clone if block_groups.nil?
+    parser = Parser.new
+    expressions = parser.parse(sparkql)
+    assert !parser.errors?, "Unexpected error parsing #{sparkql}: #{parser.errors.inspect}"
     count = 0
     expressions.each do |ex|
       assert_equal levels[count],  ex[:level], "Nesting level wrong for #{ex.inspect}"
-      assert_equal levels[count],  ex[:block_group], "Nesting block group wrong for #{ex.inspect}"
+      assert_equal(block_groups[count],  ex[:block_group], "Nesting block group wrong for #{ex.inspect}")
       count +=1
     end
-  end
-   
+  end    
+
   def test_bad_queries
     filter = "City IsLikeA 'Town'"
     @parser = Parser.new
