@@ -230,23 +230,11 @@ class ParserCompatabilityTest < Test::Unit::TestCase
 
   test "tokenize fail on invalid operator or field" do
     filters = ["Eq Eq 'Fargo'","City City 'Fargo'", "And Eq 'Fargo'",
-      "City And 'Fargo'", "City eq 'Fargo'"]
+      "City And 'Fargo'", "city eq 'Fargo'"]
     filters.each do |f|
       parser = Parser.new
       expressions = parser.tokenize( f )
-      assert_nil expressions
-      assert parser.errors?
-    end
-  end
-
-  test "tokenize fail on invalid conjunction" do
-    filters = ["City Eq 'Fargo' AND TotalBr Eq 1",
-               "PropertyType Eq 'A' And ListPrice Gt 100000.00 AND ListPrice Lt 250000.00", 
-               "City Eq 'Fargo' OR City Eq 'Moorhead'"]
-    filters.each do |f|
-      parser = Parser.new
-      expressions = parser.tokenize( f )
-      assert_nil expressions
+      assert_nil expressions, "filter: #{f}"
       assert parser.errors?
     end
   end

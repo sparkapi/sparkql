@@ -181,4 +181,13 @@ class ParserTest < Test::Unit::TestCase
     end
   end
 
+  def test_case_insensitve_ops_and_conjunctions
+    @parser = Parser.new
+    parse 'Test EQ 10',10.to_s
+    parse 'Test eq 10.0',10.0.to_s
+    parse 'Test eQ true',true.to_s
+    parse 'Test EQ 10 AND Test NE 11', 10.to_s
+    parse 'Test eq 10 or Test ne 11', 10.to_s
+  end
+  
 end

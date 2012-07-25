@@ -9,5 +9,5 @@ require "sparkql/parser_compatibility"
 require "sparkql/parser"
 
 module Sparkql
-  # Your code goes here...
+  # I AM A SPARKQLING MODULE!!!
 end

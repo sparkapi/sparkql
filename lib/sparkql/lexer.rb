@@ -26,7 +26,7 @@ class Sparkql::Lexer < StringScanner
       when value = scan(/\,/)
         [:COMMA,value]
       when value = scan(STANDARD_FIELD)
-        check_reserved_words(value)
+        check_standard_fields(value)
       when value = scan(DATETIME)
         literal :DATETIME, value
       when value = scan(DATE)
@@ -40,7 +40,7 @@ class Sparkql::Lexer < StringScanner
       when value = scan(BOOLEAN)
         literal :BOOLEAN, value
       when value = scan(KEYWORD)
-        [:KEYWORD,value]
+        check_keywords(value)
       when value = scan(CUSTOM_FIELD)
         [:CUSTOM_FIELD,value]
       when empty?
@@ -53,14 +53,31 @@ class Sparkql::Lexer < StringScanner
   end
   
   def check_reserved_words(value)
-    if OPERATORS.include?(value)
-      [:OPERATOR,value]
-    elsif CONJUNCTIONS.include?(value)
-      [:CONJUNCTION,value]
+    u_value = value.capitalize
+    if OPERATORS.include?(u_value)
+      [:OPERATOR,u_value]
+    elsif CONJUNCTIONS.include?(u_value)
+      [:CONJUNCTION,u_value]
     else
-      @last_field = value
-      [:STANDARD_FIELD,value]
+      [:UNKNOWN, "ERROR: '#{self.string}'"]
     end
+  end
+  
+  def check_standard_fields(value)
+    result = check_reserved_words(value)
+    if result.first == :UNKNOWN
+      @last_field = value
+      result = [:STANDARD_FIELD,value]
+    end
+    result
+  end
+
+  def check_keywords(value)
+    result = check_reserved_words(value)
+    if result.first == :UNKNOWN
+      result = [:KEYWORD,value]
+    end
+    result
   end
   
   def level
