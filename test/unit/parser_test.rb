@@ -195,5 +195,19 @@ class ParserTest < Test::Unit::TestCase
     parse 'Test Eq NULL', "NULL"
     parse 'Test Eq NULL Or Test Ne 11', "NULL"
   end
-  
+
+  def test_invalid_operators
+    (Sparkql::Token::OPERATORS - Sparkql::Token::EQUALITY_OPERATORS).each do |o|
+      ["NULL", "true", "'My String'"].each do |v|
+        parser_errors("Test #{o} #{v}")
+      end
+    end
+  end
+
+  def parser_errors(filter)  
+    @parser = Parser.new
+    expression = @parser.parse(filter)
+    assert @parser.errors?, "Should find errors for '#{filter}': #{expression}"
+  end
+    
 end

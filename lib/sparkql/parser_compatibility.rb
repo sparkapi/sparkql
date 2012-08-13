@@ -10,34 +10,41 @@ module Sparkql::ParserCompatibility
   FILTER_VALUES = [
     {
       :type => :datetime,
-      :regex => /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}T[0-9]{2}\:[0-9]{2}\:[0-9]{2}\.[0-9]{6}$/
+      :regex => /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}T[0-9]{2}\:[0-9]{2}\:[0-9]{2}\.[0-9]{6}$/,
+      :operators => Sparkql::Token::OPERATORS
     },
     {
       :type => :date,
-      :regex => /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/
+      :regex => /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/,
+      :operators => Sparkql::Token::OPERATORS
     },
     {
       :type => :character,
       :regex => /^'([^'\\]*(\\.[^'\\]*)*)'$/, # Strings must be single quoted.  Any inside single quotes must be escaped.
-      :multiple => /^'([^'\\]*(\\.[^'\\]*)*)'/
+      :multiple => /^'([^'\\]*(\\.[^'\\]*)*)'/,
+      :operators => Sparkql::Token::EQUALITY_OPERATORS
     },
     {
       :type => :integer,
       :regex => /^\-?[0-9]+$/,
-      :multiple => /^\-?[0-9]+/
+      :multiple => /^\-?[0-9]+/,
+      :operators => Sparkql::Token::OPERATORS
     },
     {
       :type => :decimal,
       :regex => /^\-?[0-9]+\.[0-9]+$/,
-      :multiple => /^\-?[0-9]+\.[0-9]+/
+      :multiple => /^\-?[0-9]+\.[0-9]+/,
+      :operators => Sparkql::Token::OPERATORS
     },
     {
       :type => :boolean,
-      :regex => /^true|false$/
+      :regex => /^true|false$/,
+      :operators => Sparkql::Token::EQUALITY_OPERATORS
     },
     {
       :type => :null,
-      :regex => /^NULL|Null|null$/
+      :regex => /^NULL|Null|null$/,
+      :operators => Sparkql::Token::EQUALITY_OPERATORS
     }
   ]
   
@@ -194,13 +201,17 @@ module Sparkql::ParserCompatibility
   # default should be the operator provided in the actual filter string
   def get_operator(expression, default )
     f = rules_for_type(expression[:type])
-    if f[:multiple] && multiple_values?( expression[:value])
-      return nil unless operator_supports_multiples?(default)
-      return default == "Ne" ? "Not In" : "In"
-    elsif default == "Ne"
-      return "Not Eq"
+    if f[:operators].include?(default)
+      if f[:multiple] && multiple_values?( expression[:value])
+        return nil unless operator_supports_multiples?(default)
+        return default == "Ne" ? "Not In" : "In"
+      elsif default == "Ne"
+        return "Not Eq"
+      end
+      return default
+    else
+      return nil
     end
-    default
   end
   
   def multiple_values?(value)
