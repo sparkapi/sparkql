@@ -183,8 +183,8 @@ module Sparkql::ParserCompatibility
   alias :compile_error :tokenizer_error
   
   # Checks the type of an expression with what is expected.
-  def check_type!(expression, expected)
-    if expected == expression[:type]
+  def check_type!(expression, expected, supports_nulls = true)
+    if expected == expression[:type] || (supports_nulls && expression[:type] == :null)
       return true
     end
     type_error(expression, expected)
