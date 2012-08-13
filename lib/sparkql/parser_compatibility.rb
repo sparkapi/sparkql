@@ -34,6 +34,10 @@ module Sparkql::ParserCompatibility
     {
       :type => :boolean,
       :regex => /^true|false$/
+    },
+    {
+      :type => :null,
+      :regex => /^NULL|Null|null$/
     }
   ]
   
@@ -114,6 +118,8 @@ module Sparkql::ParserCompatibility
       return date_escape(expression[:value])
     when :datetime
       return datetime_escape(expression[:value])
+    when :null
+      return nil
     end
     expression[:value]
   end

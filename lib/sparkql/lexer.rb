@@ -25,6 +25,8 @@ class Sparkql::Lexer < StringScanner
         [:RPAREN, value]
       when value = scan(/\,/)
         [:COMMA,value]
+      when value = scan(NULL)
+        literal :NULL, "NULL"
       when value = scan(STANDARD_FIELD)
         check_standard_fields(value)
       when value = scan(DATETIME)

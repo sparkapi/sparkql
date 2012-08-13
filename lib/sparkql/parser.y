@@ -77,6 +77,7 @@ rule
     : DATE
     | DATETIME
     | BOOLEAN
+    | NULL
     ;
     
 end

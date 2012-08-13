@@ -52,7 +52,7 @@ class ParserTest < Test::Unit::TestCase
     
   def parse(q,v)
     expressions = @parser.parse(q)
-    assert !@parser.errors?, "Unexpected error parsing #{q}"
+    assert !@parser.errors?, "Unexpected error parsing #{q} #{@parser.errors.inspect}"
     assert_equal v, expressions.first[:value], "Expression #{expressions.inspect}"
     assert !expressions.first[:custom_field], "Unexepected custom field #{expressions.inspect}"
   end
@@ -188,6 +188,12 @@ class ParserTest < Test::Unit::TestCase
     parse 'Test eQ true',true.to_s
     parse 'Test EQ 10 AND Test NE 11', 10.to_s
     parse 'Test eq 10 or Test ne 11', 10.to_s
+  end
+  
+  def test_null
+    @parser = Parser.new
+    parse 'Test Eq NULL', "NULL"
+    parse 'Test Eq NULL Or Test Ne 11', "NULL"
   end
   
 end
