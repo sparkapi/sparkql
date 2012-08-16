@@ -87,10 +87,13 @@ class Sparkql::FunctionResolver
   
   # Offset the current timestamp by a number of days
   def days(num)
-    time = Time.now + (num * SECONDS_IN_DAY) 
+    # date calculated as the offset from midnight tommorrow. Zero will provide values for all times 
+    # today.
+    d = Date.today + 1 + num
+    dt = DateTime.new(d.year, d.month,d.day, 0,0,0, DateTime.now.offset)
     {
       :type => :datetime,
-      :value => time.iso8601
+      :value => dt.to_s
     }
   end
   

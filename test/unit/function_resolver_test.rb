@@ -11,20 +11,20 @@ class ParserTest < Test::Unit::TestCase
     value = f.call
     assert_equal :datetime, value[:type]
     test_time = Time.parse(value[:value])
-    assert 5 > test_time - start, "Time range off by more than five seconds #{test_time - start}"
-    assert -5 < test_time - start, "Time range off by more than five seconds #{test_time - start}"
+    assert (-5 < test_time - start && 5 > test_time - start), "Time range off by more than five seconds #{test_time - start} '#{test_time} - #{start}'"
   end
   
   def test_day
-    start = Time.now
+    d = Date.today + 1
+    dt = DateTime.new(d.year, d.month,d.day, 0,0,0, DateTime.now.offset)
+    start = Time.parse(dt.to_s)
     f = FunctionResolver.new('days', [{:type=>:integer, :value =>7}])
     f.validate
     assert !f.errors?, "Errors #{f.errors.inspect}"
     value = f.call
     assert_equal :datetime, value[:type]
     test_time = Time.parse(value[:value])
-    assert 605000 > test_time - start, "Time range off by more than five seconds #{test_time - start}"
-    assert 604000 < test_time - start, "Time range off by more than five seconds #{test_time - start}"
+    assert (605000 > test_time - start && 604000 < test_time - start), "Time range off by more than five seconds #{test_time - start} '#{test_time} - #{start}'"
   end
   
   def test_invalid_param
