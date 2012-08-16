@@ -112,7 +112,7 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_function_days
-    d = Date.today + 1
+    d = Date.today
     dt = DateTime.new(d.year, d.month,d.day, 0,0,0, DateTime.now.offset)
     start = Time.parse(dt.to_s)
     filter = "OriginalEntryTimestamp Ge days(-7)"

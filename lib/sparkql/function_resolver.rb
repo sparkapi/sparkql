@@ -89,11 +89,10 @@ class Sparkql::FunctionResolver
   def days(num)
     # date calculated as the offset from midnight tommorrow. Zero will provide values for all times 
     # today.
-    d = Date.today + 1 + num
-    dt = DateTime.new(d.year, d.month,d.day, 0,0,0, DateTime.now.offset)
+    d = Date.today + num
     {
-      :type => :datetime,
-      :value => dt.to_s
+      :type => :date,
+      :value => d.to_s
     }
   end
   
