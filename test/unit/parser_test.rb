@@ -10,7 +10,7 @@ class ParserTest < Test::Unit::TestCase
     parse 'Test Eq true',true.to_s
     parse "Test Eq 'false'","'false'"
   end
-  
+
   def test_conjunction
     @parser = Parser.new
     expression = @parser.parse('Test Eq 10 And Test Ne 11')

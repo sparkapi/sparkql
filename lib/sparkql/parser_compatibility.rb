@@ -125,6 +125,8 @@ module Sparkql::ParserCompatibility
       return date_escape(expression[:value])
     when :datetime
       return datetime_escape(expression[:value])
+    when :boolean
+      return boolean_escape(expression[:value])
     when :null
       return nil
     end

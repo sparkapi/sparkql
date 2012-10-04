@@ -427,5 +427,11 @@ class ParserCompatabilityTest < Test::Unit::TestCase
       assert expressions.first[:custom_field], "Expression #{expressions.first.inspect}"
     end
   end
+
+  test "escape boolean value" do
+    parser = Parser.new
+    expressions = parser.tokenize( "BooleanField Eq true" )
+    assert_equal true, parser.escape_value(expressions.first)
+  end
   
 end
