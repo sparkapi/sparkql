@@ -15,7 +15,8 @@ class ParserTest < Test::Unit::TestCase
   end
   
   def test_day
-    d = Date.today
+    d = Date.new(2012,10,20)
+    Date.expects(:today).returns(d)
     dt = DateTime.new(d.year, d.month,d.day, 0,0,0, DateTime.now.offset)
     start = Time.parse(dt.to_s)
     f = FunctionResolver.new('days', [{:type=>:integer, :value =>7}])
