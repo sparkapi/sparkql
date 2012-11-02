@@ -25,7 +25,7 @@ API.
 
 Here is a basic example:
 
-	expressions = Parser.new.parse("Hello Eq 'World')
+	expressions = Parser.new.parse("Hello Eq 'World'")
 
 The return value will be an array with one expression element containing the query information:
 
