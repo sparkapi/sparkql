@@ -50,5 +50,5 @@ parser states (and conflicts) can be generated via
 
 	racc -o lib/sparkql/parser.rb lib/sparkql/parser.y -v  # see lib/sparkql/parser.output
 
-The rails/journey project was an inspiration for this gem. Look it up on github for reference.
+The [rails/journey](https://github.com/rails/journey) project was an inspiration for this gem. Look it up on github for reference.
 
