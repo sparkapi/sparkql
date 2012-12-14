@@ -135,6 +135,34 @@ class ParserTest < Test::Unit::TestCase
     assert -5 < test_time - start, "Time range off by more than five seconds #{test_time - start}"
   end
   
+  test "Location Eq polygon()" do
+    filter = "Location Eq polygon('35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32')"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal :shape, expressions.first[:type]
+    assert_equal [[35.12, -68.33], [35.13, -68.33], [35.13, -68.32], [35.12, -68.32]], expressions.first[:value].to_coordinates.first, "#{expressions.first[:value].inspect} "
+  end
+
+  test "Location Eq rectangle()" do
+    filter = "Location Eq rectangle('35.12 -68.33, 35.13 -68.32')"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal :shape, expressions.first[:type]
+    assert_equal [[35.12, -68.33], [35.13, -68.33], [35.13, -68.32], [35.12, -68.32]], expressions.first[:value].to_coordinates.first, "#{expressions.first[:value].inspect} "
+  end
+
+  test "Location Eq radius()" do
+    filter = "Location Eq radius('35.12 -68.33',1.0)"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal :shape, expressions.first[:type]
+    assert_equal [35.12, -68.33], expressions.first[:value].center.to_coordinates, "#{expressions.first[:value].inspect} "
+    assert_equal 1.0, expressions.first[:value].radius, "#{expressions.first[:value].inspect} "
+  end
+  
   def test_for_reserved_words_first_literals_second
     ["OrOrOr Eq true", "Equador Eq true", "Oregon Ge 10"].each do |filter|
       @parser = Parser.new

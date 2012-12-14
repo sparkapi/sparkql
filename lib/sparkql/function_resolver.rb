@@ -10,6 +10,18 @@ class Sparkql::FunctionResolver
   SECONDS_IN_DAY = 60 * 60 * 24
   
   SUPPORTED_FUNCTIONS = {
+    :polygon => {
+      :args => [:character],
+      :return_type => :shape
+    }, 
+    :rectangle => {
+      :args => [:character],
+      :return_type => :shape
+    }, 
+    :radius => {
+      :args => [:character, :decimal],
+      :return_type => :shape
+    }, 
     :days => {
       :args => [:integer],
       :return_type => :datetime
@@ -103,4 +115,79 @@ class Sparkql::FunctionResolver
       :value => Time.now.iso8601
     }
   end
+  
+  # TODO Donuts: to extend, we'd just replace (coords) param with (linear_ring1,linear_ring2, ...)
+  def polygon(coords)
+    new_coords = parse_coordinates(coords)
+    unless new_coords.size > 2
+      @errors << Sparkql::ParserError.new(:token => coords, 
+        :message => "Function call 'polygon' requires at least three coordinates",
+        :status => :fatal )
+      return
+    end
+
+    shape = GeoRuby::SimpleFeatures::Polygon.from_coordinates([new_coords])
+    {
+      :type => :shape,
+      :value => shape
+    }
+  end
+    
+  def rectangle(coords)
+    bounding_box = parse_coordinates(coords)
+    unless bounding_box.size == 2
+      @errors << Sparkql::ParserError.new(:token => coords, 
+        :message => "Function call 'rectangle' requires two coordinates for the bounding box",
+        :status => :fatal )
+      return
+    end
+    poly_coords = [
+                    bounding_box.first, 
+                    [bounding_box.last.first, bounding_box.first.last],
+                    bounding_box.last,
+                    [bounding_box.first.first, bounding_box.last.last],
+                  ]
+    shape = GeoRuby::SimpleFeatures::Polygon.from_coordinates([poly_coords])
+    {
+      :type => :shape,
+      :value => shape
+    }
+  end
+  
+  def radius(coords, length)
+   new_coords = parse_coordinates(coords)
+    unless new_coords.size == 1
+      @errors << Sparkql::ParserError.new(:token => coords, 
+        :message => "Function call 'radius' requires one coordinate for the center",
+        :status => :fatal )
+      return
+    end
+    unless length > 0
+      @errors << Sparkql::ParserError.new(:token => length, 
+        :message => "Function call 'radius' length must be positive",
+        :status => :fatal )
+      return
+    end
+    
+    shape = GeoRuby::SimpleFeatures::Circle.from_coordinates(new_coords.first, length);
+    {
+      :type => :shape,
+      :value => shape 
+    }
+  end
+  
+  private
+  
+  def parse_coordinates coord_string
+    terms = coord_string.strip.split(',')
+    coords = terms.map do |term|
+      term.strip.split(/\s+/).map { |i| i.to_f }
+    end
+    coords
+  rescue => e
+    @errors << Sparkql::ParserError.new(:token => coord_string, 
+      :message => "Unable to parse coordinate string.",
+      :status => :fatal )
+  end
+  
 end

@@ -37,6 +37,11 @@ module Sparkql::ParserCompatibility
       :operators => Sparkql::Token::OPERATORS
     },
     {
+      :type => :shape,
+      # This type is not parseable, so no regex
+      :operators => Sparkql::Token::EQUALITY_OPERATORS
+    },
+    {
       :type => :boolean,
       :regex => /^true|false$/,
       :operators => Sparkql::Token::EQUALITY_OPERATORS

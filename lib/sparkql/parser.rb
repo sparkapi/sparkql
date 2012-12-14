@@ -80,7 +80,7 @@ racc_reduce_table = [
   4, 28, :_reduce_15,
   1, 29, :_reduce_none,
   1, 30, :_reduce_none,
-  3, 30, :_reduce_none,
+  3, 30, :_reduce_18,
   1, 31, :_reduce_none,
   1, 31, :_reduce_none,
   1, 27, :_reduce_none,
@@ -230,7 +230,10 @@ end
 
 # reduce 17 omitted
 
-# reduce 18 omitted
+def _reduce_18(val, _values, result)
+ result = tokenize_function_args(val[0], val[2]) 
+    result
+end
 
 # reduce 19 omitted
 
