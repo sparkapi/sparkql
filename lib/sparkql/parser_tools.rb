@@ -64,7 +64,18 @@ module Sparkql::ParserTools
     }
   end
   
+  def tokenize_function_args(lit1, lit2)
+    array = lit1.kind_of?(Array) ? lit1 : [lit1]
+    unless array.size >= Sparkql::ParserCompatibility::MAXIMUM_MULTIPLE_VALUES
+      array << lit2
+    end
+    array
+  end
+  
   def tokenize_function(name, f_args)
+    @lexer.leveldown
+    @lexer.block_group_identifier -= 1
+
     args = f_args.instance_of?(Array) ? f_args : [f_args]
     args.each do |arg|
       arg[:value] = escape_value(arg)
@@ -73,7 +84,10 @@ module Sparkql::ParserTools
     
     resolver.validate
     if(resolver.errors?)
-      errors += resolver.errors
+      tokenizer_error(:token => @lexer.last_field, 
+                      :message => "Error parsing function #{resolver.errors.join(',')}",
+                      :status => :fatal, 
+                      :syntax => true)    
       return nil
     else
       return resolver.call()

@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
+  s.add_dependency             'georuby', '>= 1.3'
   s.add_development_dependency 'racc', '1.4.8'
   s.add_development_dependency 'flexmls_gems', '~> 0.2.9'
   s.add_development_dependency 'rake', '~> 0.9.2'

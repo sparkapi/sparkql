@@ -52,7 +52,7 @@ rule
     
   function_args
     : function_arg
-    | function_args COMMA function_arg
+    | function_args COMMA function_arg { result = tokenize_function_args(val[0], val[2]) }
     ; 
     
   function_arg
