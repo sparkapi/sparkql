@@ -73,6 +73,9 @@ module Sparkql::ParserTools
   end
   
   def tokenize_function(name, f_args)
+    @lexer.leveldown
+    @lexer.block_group_identifier -= 1
+
     args = f_args.instance_of?(Array) ? f_args : [f_args]
     args.each do |arg|
       arg[:value] = escape_value(arg)

@@ -69,6 +69,14 @@ class ParserTest < Test::Unit::TestCase
       [0,1,1,0,0]
     )
   end
+  
+  def test_nesting_and_functions
+    # Nesting with a function thrown in. Yes, this was a problem.
+    assert_nesting(
+      "City Eq 'Fargo' Or (BathsFull Eq 1 And Location Eq rectangle('35.12 -68.33, 35.13 -68.32')) Or Location Eq radius('35.12 -68.33',10.0) Or City Eq 'Dilworth'",
+      [0,1,1,0,0]
+    )
+  end
 
   def test_multilevel_nesting
     assert_nesting(
@@ -154,6 +162,7 @@ class ParserTest < Test::Unit::TestCase
   end
 
   test "Location Eq radius()" do
+    # This exposed a funny nesting limit problem FUN!
     filter = "Location Eq radius('35.12 -68.33',1.0)"
     @parser = Parser.new
     expressions = @parser.parse(filter)
@@ -161,6 +170,14 @@ class ParserTest < Test::Unit::TestCase
     assert_equal :shape, expressions.first[:type]
     assert_equal [-68.33, 35.12], expressions.first[:value].center.to_coordinates, "#{expressions.first[:value].inspect} "
     assert_equal 1.0, expressions.first[:value].radius, "#{expressions.first[:value].inspect} "
+  end
+  
+  test "Location ALL TOGETHER NOW" do
+    filter = "Location Eq radius('35.12 -68.33',1.0) And Location Eq rectangle('35.12 -68.33, 35.13 -68.32') And Location Eq polygon('35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32')"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal [:shape,:shape,:shape], expressions.map{|e| e[:type]}
   end
   
   def test_for_reserved_words_first_literals_second

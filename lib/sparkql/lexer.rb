@@ -1,5 +1,9 @@
 class Sparkql::Lexer < StringScanner
   include Sparkql::Token
+  
+  attr_accessor :level, :block_group_identifier
+  
+  attr_reader :last_field
 
   def initialize(str)
     str.freeze
@@ -21,7 +25,7 @@ class Sparkql::Lexer < StringScanner
         levelup
         [:LPAREN, value]
       when value = scan(RPAREN)
-        # leveldown do this after parsing group
+        # leveldown: do this after parsing group
         [:RPAREN, value]
       when value = scan(/\,/)
         [:COMMA,value]
@@ -82,14 +86,6 @@ class Sparkql::Lexer < StringScanner
     result
   end
   
-  def level
-    @level
-  end
-
-  def block_group_identifier
-    @block_group_identifier
-  end
-  
   def levelup
     @level += 1
     @block_group_identifier += 1
@@ -105,10 +101,6 @@ class Sparkql::Lexer < StringScanner
       :value => value
     }
     [symbol, node]
-  end
-  
-  def last_field
-    @last_field
   end
   
 end
