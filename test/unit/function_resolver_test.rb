@@ -37,18 +37,18 @@ class ParserTest < Test::Unit::TestCase
     value = f.call
     assert_equal :shape, value[:type]
     assert_equal GeoRuby::SimpleFeatures::Circle, value[:value].class
-    assert_equal [35.12,-68.33], value[:value].center.to_coordinates, "#{value[:value].inspect} "
+    assert_equal [-68.33, 35.12], value[:value].center.to_coordinates, "#{value[:value].inspect} "
     assert_equal 1.0, value[:value].radius, "#{value[:value].inspect} "
   end
 
   test "polygon()" do
-    f = FunctionResolver.new('polygon', [{:type => :character, :value => "35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32"}])
+    f = FunctionResolver.new('polygon', [{:type => :character, :value => "35.12 -68.33,35.12 -68.32, 35.13 -68.32,35.13 -68.33"}])
     f.validate
     assert !f.errors?, "Errors #{f.errors.inspect}"
     value = f.call
     assert_equal :shape, value[:type]
     assert_equal GeoRuby::SimpleFeatures::Polygon, value[:value].class
-    assert_equal [[35.12, -68.33], [35.13, -68.33], [35.13, -68.32], [35.12, -68.32]], value[:value].to_coordinates.first, "#{value[:value].inspect} "
+    assert_equal [[-68.33, 35.12], [-68.32, 35.12], [-68.32, 35.13], [-68.33, 35.13], [-68.33, 35.12]], value[:value].to_coordinates.first, "#{value[:value].inspect} "
   end
   
   test "rectangle()" do
@@ -58,7 +58,7 @@ class ParserTest < Test::Unit::TestCase
     value = f.call
     assert_equal :shape, value[:type]
     assert_equal GeoRuby::SimpleFeatures::Polygon, value[:value].class
-    assert_equal [[35.12, -68.33], [35.13, -68.33], [35.13, -68.32], [35.12, -68.32]], value[:value].to_coordinates.first, "#{value[:value].inspect} "
+    assert_equal [[-68.33,35.12], [-68.32,35.12], [-68.32,35.13], [-68.33,35.13], [-68.33,35.12]], value[:value].to_coordinates.first, "#{value[:value].inspect} "
   end
   
   test "invalid params" do

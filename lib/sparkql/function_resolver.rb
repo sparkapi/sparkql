@@ -126,6 +126,11 @@ class Sparkql::FunctionResolver
       return
     end
 
+    # auto close the polygon if it's open
+    unless new_coords.first == new_coords.last
+      new_coords << new_coords.first.clone
+    end
+    
     shape = GeoRuby::SimpleFeatures::Polygon.from_coordinates([new_coords])
     {
       :type => :shape,
@@ -146,6 +151,7 @@ class Sparkql::FunctionResolver
                     [bounding_box.last.first, bounding_box.first.last],
                     bounding_box.last,
                     [bounding_box.first.first, bounding_box.last.last],
+                    bounding_box.first.clone, 
                   ]
     shape = GeoRuby::SimpleFeatures::Polygon.from_coordinates([poly_coords])
     {
@@ -181,7 +187,7 @@ class Sparkql::FunctionResolver
   def parse_coordinates coord_string
     terms = coord_string.strip.split(',')
     coords = terms.map do |term|
-      term.strip.split(/\s+/).map { |i| i.to_f }
+      term.strip.split(/\s+/).reverse.map { |i| i.to_f }
     end
     coords
   rescue => e
