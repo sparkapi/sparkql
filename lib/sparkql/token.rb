@@ -14,8 +14,9 @@ module Sparkql::Token
   BOOLEAN = /^true|false/
   NULL = /NULL|null|Null/
   # Reserved words
+  RANGE_OPERATOR = 'Bt'
   EQUALITY_OPERATORS = ['Eq','Ne']
-  OPERATORS = ['Eq','Ne','Gt','Ge','Lt','Le'] + EQUALITY_OPERATORS
+  OPERATORS = ['Gt','Ge','Lt','Le'] + EQUALITY_OPERATORS
   CONJUNCTIONS = ['And','Or']
 
 end

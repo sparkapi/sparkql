@@ -62,6 +62,8 @@ class Sparkql::Lexer < StringScanner
     u_value = value.capitalize
     if OPERATORS.include?(u_value)
       [:OPERATOR,u_value]
+    elsif RANGE_OPERATOR == u_value
+      [:RANGE_OPERATOR,u_value]
     elsif CONJUNCTIONS.include?(u_value)
       [:CONJUNCTION,u_value]
     else

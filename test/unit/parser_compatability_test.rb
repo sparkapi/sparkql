@@ -433,5 +433,20 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     expressions = parser.tokenize( "BooleanField Eq true" )
     assert_equal true, parser.escape_value(expressions.first)
   end
-  
+
+  test "Between" do
+    ["BathsFull Bt 10,20", "DateField Bt 2012-12-31,2013-01-31"].each do |f|
+      parser = Parser.new
+      expressions = parser.tokenize f
+      assert !parser.errors?, "should successfully parse proper between values, but #{parser.errors.first}"
+    end
+
+    # truckload of fail
+    ["BathsFull Bt 10,12.5", "DateField Bt 10,2012-12-31"].each do |f|
+      parser = Parser.new
+      expressions = parser.tokenize f
+      assert parser.errors?, "should have a type mismatch: #{parser.errors.first}"
+      assert_match /Type mismatch/, parser.errors.first.message
+    end
+  end
 end

@@ -11,12 +11,12 @@ module Sparkql::ParserCompatibility
     {
       :type => :datetime,
       :regex => /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}T[0-9]{2}\:[0-9]{2}\:[0-9]{2}\.[0-9]{6}$/,
-      :operators => Sparkql::Token::OPERATORS
+      :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
     },
     {
       :type => :date,
       :regex => /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/,
-      :operators => Sparkql::Token::OPERATORS
+      :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
     },
     {
       :type => :character,
@@ -28,13 +28,13 @@ module Sparkql::ParserCompatibility
       :type => :integer,
       :regex => /^\-?[0-9]+$/,
       :multiple => /^\-?[0-9]+/,
-      :operators => Sparkql::Token::OPERATORS
+      :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
     },
     {
       :type => :decimal,
       :regex => /^\-?[0-9]+\.[0-9]+$/,
       :multiple => /^\-?[0-9]+\.[0-9]+/,
-      :operators => Sparkql::Token::OPERATORS
+      :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
     },
     {
       :type => :shape,
@@ -213,7 +213,9 @@ module Sparkql::ParserCompatibility
   def get_operator(expression, default )
     f = rules_for_type(expression[:type])
     if f[:operators].include?(default)
-      if f[:multiple] && multiple_values?( expression[:value])
+      if f[:multiple] && range?(expression[:value]) && default == 'Bt'
+        return "Bt"
+      elsif f[:multiple] && multiple_values?(expression[:value])
         return nil unless operator_supports_multiples?(default)
         return default == "Ne" ? "Not In" : "In"
       elsif default == "Ne"
@@ -227,6 +229,10 @@ module Sparkql::ParserCompatibility
   
   def multiple_values?(value)
     Array(value).size > 1
+  end
+
+  def range?(value)
+    Array(value).size == 2
   end
   
   def operator_supports_multiples?(operator)

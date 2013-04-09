@@ -19,6 +19,7 @@ rule
     
   expression
     : field OPERATOR condition { result = tokenize_expression(val[0], val[1],val[2]) }
+    | field RANGE_OPERATOR range { result = tokenize_expression(val[0], val[1], val[2]) }
     | group
     ;
   
@@ -65,6 +66,10 @@ rule
     | literal_list COMMA literals { result = tokenize_multiple(val[0], val[2]) }
     ;
     
+  range                                                                             
+    : rangeable COMMA rangeable { result = tokenize_multiple(val[0], val[2]) }
+    ;
+
   # Literals that support multiple
   literals
     : INTEGER
@@ -78,6 +83,14 @@ rule
     | DATETIME
     | BOOLEAN
     | NULL
+    ;
+
+  # can be used in a range                                                       
+  rangeable
+    : INTEGER
+    | DECIMAL
+    | DATE
+    | DATETIME
     ;
     
 end

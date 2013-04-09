@@ -24,6 +24,12 @@ class LexerTest < Test::Unit::TestCase
       token = @lexer.shift
       assert_equal :OPERATOR, token.first, op
     end
+
+    ['Bt 1234','Bt 1234,12345'].each do |op|
+      @lexer = Lexer.new(op)
+      token = @lexer.shift
+      assert_equal :RANGE_OPERATOR, token.first, op
+    end
   end
       
 end
