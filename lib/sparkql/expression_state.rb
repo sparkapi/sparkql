@@ -14,7 +14,7 @@ class Sparkql::ExpressionState
   end
   
   def needs_join?
-    return @expressions.size == 1 || "And" == @last_conjunction
+    return @expressions.size == 1 || ["Not", "And"].include?(@last_conjunction)
   end
   
 end

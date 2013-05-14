@@ -21,6 +21,10 @@ class ParserTest < Test::Unit::TestCase
     assert_equal 10.to_s, expression.first[:value]
     assert_equal 11.to_s, expression.last[:value]
     assert_equal 'Or', expression.last[:conjunction]
+    expression = @parser.parse('Test Eq 10 Not Test Ne 11')
+    assert_equal 10.to_s, expression.first[:value]
+    assert_equal 11.to_s, expression.last[:value]
+    assert_equal 'Not', expression.last[:conjunction]
   end
   
   def test_tough_conjunction
@@ -235,6 +239,7 @@ class ParserTest < Test::Unit::TestCase
     parse 'Test eQ true',true.to_s
     parse 'Test EQ 10 AND Test NE 11', 10.to_s
     parse 'Test eq 10 or Test ne 11', 10.to_s
+    parse 'Test eq 10 NOT Test ne 11', 10.to_s
   end
   
   def test_null

@@ -310,7 +310,7 @@ class ParserCompatabilityTest < Test::Unit::TestCase
 
   test "API-107 And/Or in string spiel" do
       search_strings = ['Tom And Jerry', 'Tom Or Jerry', 'And Or Eq', 'City Eq \\\'Fargo\\\'',
-        ' And Eq Or ', 'Or And Or']
+        ' And Eq Or ', 'Or And Not']
       search_strings.each do |s|
         parser = Parser.new
         parser.tokenize("City Eq '#{s}' And PropertyType Eq 'A'")

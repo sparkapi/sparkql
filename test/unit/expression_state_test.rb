@@ -20,6 +20,12 @@ class ExpressionStateTest < Test::Unit::TestCase
     assert !@subject.needs_join?, "#{@subject.inspect} Expressions:#{ @expressions.inspect}"
   end
 
+  def test_not
+    filter = '"General Property Description"."Taxes" Lt 500.0 Not "General Property Description"."Taxes2" Eq 1.0'
+    process(filter)
+    assert @subject.needs_join?
+  end
+
   def test_and
     filter = '"General Property Description"."Taxes" Lt 500.0 And "General Property Description"."Taxes2" Eq 1.0'
     process(filter)
