@@ -52,6 +52,38 @@ class ExpressionStateTest < Test::Unit::TestCase
     assert @subject.needs_join?
   end
   
+  # Nesting
+  def test_nested_or
+    parse '"General Property Description"."Taxes" Lt 5.0 Or ("General Property Description"."Taxes" Gt 4.0)'
+    @expressions.each do |ex|
+      @subject.push(ex)
+      assert @subject.needs_join?, "#{@subject.inspect} Expression:#{ ex.inspect}"
+    end
+  end
+
+  def test_nested_ors
+    parse '"Tax"."Taxes" Lt 5.0 Or ("Tax"."Taxes" Gt 4.0 Or "Tax"."Taxes" Gt 2.0)'
+    @subject.push(@expressions[0])
+    assert @subject.needs_join?
+    @subject.push(@expressions[1])
+    assert @subject.needs_join?
+    @subject.push(@expressions[2])
+    assert !@subject.needs_join?
+  end
+  
+  # Nesting
+  def test_nested_and
+    parse '"Tax"."Taxes" Lt 5.0 Or ("Tax"."Taxes" Gt 4.0 And "Tax"."Taxes" Gt 2.0)'
+    @expressions.each do |ex|
+      @subject.push(ex)
+      assert @subject.needs_join?, "#{@subject.inspect} Expression:#{ ex.inspect}"
+    end
+  end
+  
+  def parse(filter)
+    @expressions = @parser.parse(filter)
+  end
+  
   def process(filter)
     @expressions = @parser.parse(filter)
     @expressions.each do |ex|
