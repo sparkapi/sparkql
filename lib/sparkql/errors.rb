@@ -3,8 +3,8 @@ module Sparkql
 class ErrorsProcessor
   attr_accessor :errors
 
-  def initialize( errors )
-    @errors = errors || []
+  def initialize( errors = [] )
+    @errors = Array(errors)
   end
 
   # true if the error stack contains at least one error
@@ -49,7 +49,7 @@ class ParserError
     @recovered_as = error_hash[:recovered_as]
     @recovered_as = error_hash[:recovered_as]
     self.syntax= error_hash[:syntax] == false ? false : true
-    self.constraint= error_hash[:constraint] == false ? false : true
+    self.constraint= error_hash[:constraint] == true
   end
   
   def syntax?

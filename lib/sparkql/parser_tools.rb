@@ -65,9 +65,7 @@ module Sparkql::ParserTools
   
   def tokenize_function_args(lit1, lit2)
     array = lit1.kind_of?(Array) ? lit1 : [lit1]
-    unless array.size >= Sparkql::ParserCompatibility::MAXIMUM_MULTIPLE_VALUES
-      array << lit2
-    end
+    array << lit2
     array
   end
   
@@ -123,6 +121,7 @@ module Sparkql::ParserTools
   end
   
   def validate_multiple_values values
+    values = Array(values)
     if values.size > max_values 
       compile_error(:token => values[max_values],
             :message => "You have exceeded the maximum value count.  Please limit to #{max_values} values in a single expression.",
@@ -132,6 +131,7 @@ module Sparkql::ParserTools
   end
   
   def validate_multiple_arguments args
+    args = Array(args)
     if args.size > max_values 
       compile_error(:token => args[max_values],
             :message => "You have exceeded the maximum parameter count.  Please limit to #{max_values} parameters to a single function.",

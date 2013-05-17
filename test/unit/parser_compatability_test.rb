@@ -286,6 +286,12 @@ class ParserCompatabilityTest < Test::Unit::TestCase
       assert_nil ex
     end
   end
+  
+  test "mulitples shouldn't restrict based on string size(OMG LOL THAT WAS FUNNYWTF)" do 
+    parser = Parser.new
+    ex = parser.tokenize("ListAgentId Eq '20110000000000000000000000'")
+    assert !parser.errors?, parser.inspect
+  end
 
   test "max out values" do
     parser = Parser.new
