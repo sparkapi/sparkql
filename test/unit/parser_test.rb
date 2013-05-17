@@ -146,6 +146,14 @@ class ParserTest < Test::Unit::TestCase
     assert 5 > test_time - start, "Time range off by more than five seconds #{test_time - start}"
     assert -5 < test_time - start, "Time range off by more than five seconds #{test_time - start}"
   end
+
+  test "function data preserved in expression" do
+    filter = "OriginalEntryTimestamp Ge days(-7)"
+    @parser = Parser.new
+    expressions = @parser.parse("OriginalEntryTimestamp Ge days(-7)")
+    assert_equal 'days', expressions.first[:function_name]
+    assert_equal([-7], expressions.first[:function_parameters])
+  end
   
   test "Location Eq polygon()" do
     filter = "Location Eq polygon('35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32')"
