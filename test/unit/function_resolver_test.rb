@@ -3,6 +3,14 @@ require 'test_helper'
 class ParserTest < Test::Unit::TestCase
   include Sparkql
 
+  test "function parameters and name preserved" do
+    f = FunctionResolver.new('radius', [{:type => :character, 
+          :value => "35.12 -68.33"},{:type => :decimal, :value => 1.0}])
+    value = f.call
+    assert_equal 'radius', value[:function_name]
+    assert_equal(["35.12 -68.33", 1.0], value[:function_parameters])
+  end
+
   test "now()" do
     start = Time.now
     f = FunctionResolver.new('now', [])
@@ -73,6 +81,13 @@ class ParserTest < Test::Unit::TestCase
     f = FunctionResolver.new('days', [{:type => :character, :value=>'bad value'}])
     f.validate
     assert f.errors?, "'days' function needs integer parameter"
+  end
+
+  test "assert nil returned when function called with errors" do
+    f = FunctionResolver.new('radius', [{:type => :character, 
+        :value => "35.12 -68.33, 35.13 -68.34"},{:type => :decimal, 
+        :value => 1.0}])
+    assert_nil f.call
   end
   
   test "invalid function" do
