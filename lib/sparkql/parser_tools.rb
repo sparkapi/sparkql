@@ -4,9 +4,9 @@ module Sparkql::ParserTools
   def parse(str)
     @lexer = Sparkql::Lexer.new(str)
     results = do_parse
-    max = Sparkql::ParserCompatibility::MAXIMUM_EXPRESSIONS
     return if results.nil?
-    results.size > max ? results[0,max] : results
+    validate_expressions results
+    results
   end
 
   def next_token
@@ -24,18 +24,14 @@ module Sparkql::ParserTools
     expression = {:field => field, :operator => operator, :conjunction => 'And', 
       :level => @lexer.level, :block_group => block_group, :custom_field => custom_field}
     expression = val.merge(expression) unless val.nil?
-    if @lexer.level > max_level_depth
-      compile_error(:token => "(", :expression => expression,
-            :message => "You have exceeded the maximum nesting level.  Please nest no more than #{max_level_depth} levels deep.",
-            :status => :fatal, :syntax => false )
-    end
+    validate_level_depth expression
     if operator.nil?
       tokenizer_error(:token => op, :expression => expression,
         :message => "Operator not supported for this type and value string", :status => :fatal )
     end
     [expression]
   end
-
+  
   def tokenize_conjunction(exp1, conj, exp2)
     exp2.first[:conjunction] = conj
     exp1 + exp2
@@ -46,6 +42,11 @@ module Sparkql::ParserTools
     expressions
   end
 
+  def tokenize_list(list)
+    validate_multiple_values list[:value]
+    list
+  end
+
   def tokenize_multiple(lit1, lit2)
     if lit1[:type] != lit2[:type]
       tokenizer_error(:token => @lexer.last_field, 
@@ -54,13 +55,11 @@ module Sparkql::ParserTools
                       :syntax => true)    
     end
     array = Array(lit1[:value])
-    unless array.size >= Sparkql::ParserCompatibility::MAXIMUM_MULTIPLE_VALUES
-      array << lit2[:value]
-    end
+    array << lit2[:value]
     {
       :type => lit1[:type],
       :value => array,
-      :multiple => "true" # TODO ?
+      :multiple => "true"
     }
   end
   
@@ -77,6 +76,8 @@ module Sparkql::ParserTools
     @lexer.block_group_identifier -= 1
 
     args = f_args.instance_of?(Array) ? f_args : [f_args]
+    validate_multiple_arguments args
+    
     args.each do |arg|
       arg[:value] = escape_value(arg)
     end
@@ -103,5 +104,40 @@ module Sparkql::ParserTools
                     :status => :fatal, 
                     :syntax => true)    
   end  
+
+  def validate_level_depth expression
+    if @lexer.level > max_level_depth
+      compile_error(:token => "(", :expression => expression,
+            :message => "You have exceeded the maximum nesting level.  Please nest no more than #{max_level_depth} levels deep.",
+            :status => :fatal, :syntax => false, :constraint => true )
+    end
+  end
+  
+  def validate_expressions results
+    if results.size > max_expressions 
+      compile_error(:token => results[max_expressions][:field], :expression => results[max_expressions],
+            :message => "You have exceeded the maximum expression count.  Please limit to no more than #{max_expressions} expressions in a filter.",
+            :status => :fatal, :syntax => false, :constraint => true )
+      results.slice!(max_expressions..-1)
+    end
+  end
+  
+  def validate_multiple_values values
+    if values.size > max_values 
+      compile_error(:token => values[max_values],
+            :message => "You have exceeded the maximum value count.  Please limit to #{max_values} values in a single expression.",
+            :status => :fatal, :syntax => false, :constraint => true )
+      values.slice!(max_values..-1)
+    end
+  end
+  
+  def validate_multiple_arguments args
+    if args.size > max_values 
+      compile_error(:token => args[max_values],
+            :message => "You have exceeded the maximum parameter count.  Please limit to #{max_values} parameters to a single function.",
+            :status => :fatal, :syntax => false, :constraint => true )
+      args.slice!(max_values..-1)
+    end
+  end
 
 end

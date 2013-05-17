@@ -38,7 +38,7 @@ rule
   
   condition
     : literal
-    | literal_list
+    | literal_list { result = tokenize_list(val[0]) }
     | function
     ;
     

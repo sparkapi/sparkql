@@ -39,23 +39,25 @@ end
 
 class ParserError
   attr_accessor :token, :expression, :message, :status, :recovered_as
+  attr_writer :syntax, :constraint
 
-  def initialize(error_hash=nil)
-    error_hash = {} if error_hash.nil?
+  def initialize(error_hash={})
     @token = error_hash[:token]
     @expression = error_hash[:expression]
     @message = error_hash[:message]
     @status = error_hash[:status]
     @recovered_as = error_hash[:recovered_as]
+    @recovered_as = error_hash[:recovered_as]
     self.syntax= error_hash[:syntax] == false ? false : true
+    self.constraint= error_hash[:constraint] == false ? false : true
   end
   
-  def syntax=(syntax_error)
-    @syntax = syntax_error
-  end
-
   def syntax?
     @syntax
+  end
+  
+  def constraint?
+    @constraint
   end
 
   def to_s

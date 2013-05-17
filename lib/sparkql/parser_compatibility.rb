@@ -182,6 +182,14 @@ module Sparkql::ParserCompatibility
     MAXIMUM_LEVEL_DEPTH
   end
   
+  def max_expressions
+    MAXIMUM_EXPRESSIONS
+  end
+
+  def max_values
+    MAXIMUM_MULTIPLE_VALUES 
+  end
+  
   private
   
   def tokenizer_error( error_hash )

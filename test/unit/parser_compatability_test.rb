@@ -288,24 +288,37 @@ class ParserCompatabilityTest < Test::Unit::TestCase
   end
 
   test "max out values" do
-      parser = Parser.new
-      to_the_max = []
-      35.times do |x|
-        to_the_max << x
-      end
-      ex = parser.tokenize("City Eq #{to_the_max.join(',')}")
-      vals = ex.first[:value]
-      assert_equal 25, vals.size
+    parser = Parser.new
+    to_the_max = []
+    35.times do |x|
+      to_the_max << x
+    end
+    ex = parser.tokenize("City Eq #{to_the_max.join(',')}")
+    vals = ex.first[:value]
+    assert_equal 25, vals.size
+    assert parser.errors?
   end
 
   test "max out expressions" do
-      parser = Parser.new
-      to_the_max = []
-      60.times do |x|
-        to_the_max << "City Eq 'Fargo'"
-      end
-      vals = parser.tokenize(to_the_max.join(" And "))
-      assert_equal 50, vals.size
+    parser = Parser.new
+    to_the_max = []
+    60.times do |x|
+      to_the_max << "City Eq 'Fargo'"
+    end
+    vals = parser.tokenize(to_the_max.join(" And "))
+    assert_equal 50, vals.size
+    assert parser.errors?
+  end
+
+  test "max out function args" do
+    parser = Parser.new
+    to_the_max = []
+    26.times do |x|
+      to_the_max << "1"
+    end
+    vals = parser.tokenize("Args Eq myfunc(#{to_the_max.join(",")})")
+    assert parser.errors?
+    assert parser.errors.first.constraint?
   end
 
   test "API-107 And/Or in string spiel" do
