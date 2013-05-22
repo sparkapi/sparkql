@@ -90,7 +90,14 @@ class Sparkql::FunctionResolver
   # Execute the function
   def call()
     real_vals = @args.map { |i| i[:value]}
-    self.send(@name.to_sym, *real_vals)
+    v = self.send(@name.to_sym, *real_vals)
+
+    unless v.nil?
+      v[:function_name] = @name
+      v[:function_parameters] = real_vals
+    end
+
+    v
   end
   
   protected 
