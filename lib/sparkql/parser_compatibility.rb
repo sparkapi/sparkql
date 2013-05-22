@@ -201,9 +201,13 @@ module Sparkql::ParserCompatibility
   def check_type!(expression, expected, supports_nulls = true)
     if expected == expression[:type] || (supports_nulls && expression[:type] == :null)
       return true
-    elsif expected == :datetime &&  expression[:type] == :date
+    elsif expected == :datetime && expression[:type] == :date
       expression[:type] = :datetime
       expression[:cast] = :date
+      return true
+    elsif expected == :decimal && expression[:type] == :integer
+      expression[:type] = :decimal
+      expression[:cast] = :integer
       return true
     end
     type_error(expression, expected)

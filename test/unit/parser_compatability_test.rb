@@ -467,5 +467,14 @@ class ParserCompatabilityTest < Test::Unit::TestCase
       assert parser.errors?, "should have a type mismatch: #{parser.errors.first}"
       assert_match /Type mismatch/, parser.errors.first.message
     end
+    
   end
+  
+  test "integer type coercion" do
+    parser = Parser.new
+    expression = parser.tokenize( "DecimalField Eq 100").first
+    assert parser.send(:check_type!, expression, :decimal)
+    assert_equal 100.0, parser.escape_value(expression)
+  end
+
 end
