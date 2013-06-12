@@ -271,7 +271,7 @@ class ParserTest < Test::Unit::TestCase
     expression = expressions.last
     assert_equal 2.to_s, expression[:value]
     assert_equal "Not", expression[:conjunction]
-    assert !expression[:unary]
+    assert_equal expression[:level], expression[:conjunction_level]
   end
 
   def test_not_unary_expression
@@ -280,8 +280,8 @@ class ParserTest < Test::Unit::TestCase
     assert !@parser.errors?, @parser.inspect
     expression = expressions.first
     assert_equal 10.to_s, expression[:value]
-    assert_equal "Not", expression[:conjunction]
-    assert expression[:unary]
+    assert_equal "Not", expression[:unary]
+    assert_equal expression[:level], expression[:unary_level]
   end
   
   def test_not_expression_group
@@ -290,8 +290,20 @@ class ParserTest < Test::Unit::TestCase
     assert !@parser.errors?, @parser.inspect
     expression = expressions.first
     assert_equal 10.to_s, expression[:value]
-    assert_equal "Not", expression[:conjunction]
-    assert expression[:unary]
+    assert_equal "Not", expression[:unary]
+    assert_equal 0, expression[:unary_level]
+  end
+
+  def test_not_unary_expression_keeps_conjunction
+    @parser = Parser.new
+    expressions = @parser.parse('Test Lt 10 Or (Not Test Eq 11)')
+    assert !@parser.errors?, @parser.inspect
+    expression = expressions.last
+    assert_equal 11.to_s, expression[:value]
+    assert_equal "Not", expression[:unary]
+    assert_equal "Or", expression[:conjunction]
+    assert_equal expression[:level], expression[:unary_level]
+    assert_equal 0, expression[:conjunction_level]
   end
 
   def parser_errors(filter)  

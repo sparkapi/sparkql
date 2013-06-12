@@ -34,12 +34,13 @@ module Sparkql::ParserTools
   
   def tokenize_conjunction(exp1, conj, exp2)
     exp2.first[:conjunction] = conj
+    exp2.first[:conjunction_level] = @lexer.level
     exp1 + exp2
   end
 
   def tokenize_unary_conjunction(conj, exp)
-    exp.first[:conjunction] = conj
-    exp.first[:unary] = true
+    exp.first[:unary] = conj
+    exp.first[:unary_level] = @lexer.level
     exp
   end
     
