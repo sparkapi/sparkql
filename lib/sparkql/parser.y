@@ -15,6 +15,7 @@ rule
   expressions
     : expression
     | conjunction
+    | unary_conjunction
     ;
     
   expression
@@ -23,8 +24,13 @@ rule
     | group
     ;
   
+  unary_conjunction
+    : UNARY_CONJUNCTION expression { result = tokenize_unary_conjunction(val[0], val[1]) }
+    ;  
+  
   conjunction
     : expressions CONJUNCTION expression { result = tokenize_conjunction(val[0], val[1],val[2]) }
+    | expressions UNARY_CONJUNCTION expression { result = tokenize_conjunction(val[0], val[1],val[2]) }
     ;
   
   group

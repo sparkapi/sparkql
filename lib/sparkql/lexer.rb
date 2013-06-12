@@ -66,6 +66,8 @@ class Sparkql::Lexer < StringScanner
       [:RANGE_OPERATOR,u_value]
     elsif CONJUNCTIONS.include?(u_value)
       [:CONJUNCTION,u_value]
+    elsif UNARY_CONJUNCTIONS.include?(u_value)
+      [:UNARY_CONJUNCTION,u_value]
     else
       [:UNKNOWN, "ERROR: '#{self.string}'"]
     end

@@ -263,6 +263,36 @@ class ParserTest < Test::Unit::TestCase
       end
     end
   end
+  
+  def test_not_expression
+    @parser = Parser.new
+    expressions = @parser.parse('Test Lt 10 Not Test Eq 2')
+    assert !@parser.errors?, @parser.inspect
+    expression = expressions.last
+    assert_equal 2.to_s, expression[:value]
+    assert_equal "Not", expression[:conjunction]
+    assert !expression[:unary]
+  end
+
+  def test_not_unary_expression
+    @parser = Parser.new
+    expressions = @parser.parse('Not Test Eq 10')
+    assert !@parser.errors?, @parser.inspect
+    expression = expressions.first
+    assert_equal 10.to_s, expression[:value]
+    assert_equal "Not", expression[:conjunction]
+    assert expression[:unary]
+  end
+  
+  def test_not_expression_group
+    @parser = Parser.new
+    expressions = @parser.parse('Not (Test Eq 10 Or Test Eq 11)')
+    assert !@parser.errors?, @parser.inspect
+    expression = expressions.first
+    assert_equal 10.to_s, expression[:value]
+    assert_equal "Not", expression[:conjunction]
+    assert expression[:unary]
+  end
 
   def parser_errors(filter)  
     @parser = Parser.new

@@ -11,10 +11,15 @@ class LexerTest < Test::Unit::TestCase
     end
   end
   def test_check_reserved_words_conjunctions
-    ['And Derp', 'Or 123', 'Not Lol'].each do |conjunction|
+    ['And Derp', 'Or 123'].each do |conjunction|
       @lexer = Lexer.new(conjunction)
       token = @lexer.shift
       assert_equal :CONJUNCTION, token.first, conjunction
+    end
+    ['Not Lol'].each do |conjunction|
+      @lexer = Lexer.new(conjunction)
+      token = @lexer.shift
+      assert_equal :UNARY_CONJUNCTION, token.first, conjunction
     end
   end
 

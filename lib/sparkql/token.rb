@@ -17,6 +17,7 @@ module Sparkql::Token
   RANGE_OPERATOR = 'Bt'
   EQUALITY_OPERATORS = ['Eq','Ne']
   OPERATORS = ['Gt','Ge','Lt','Le'] + EQUALITY_OPERATORS
-  CONJUNCTIONS = ['And','Or','Not']
+  UNARY_CONJUNCTIONS = ['Not']
+  CONJUNCTIONS = ['And','Or']
 
 end
