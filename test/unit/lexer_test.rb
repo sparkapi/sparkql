@@ -36,5 +36,13 @@ class LexerTest < Test::Unit::TestCase
       assert_equal :RANGE_OPERATOR, token.first, op
     end
   end
+
+  def test_datetimes_matches
+    ['2013-07-26T10:22:15.422804', '2013-07-26T10:22:15'].each do |op|
+      @lexer = Lexer.new(op)
+      token = @lexer.shift
+      assert_equal :DATETIME, token.first, op
+    end
+  end
       
 end
