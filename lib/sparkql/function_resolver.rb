@@ -1,4 +1,5 @@
 require 'time'
+require 'sparkql/geo'
 
 # Binding class to all supported function calls in the parser. Current support requires that the 
 # resolution of function calls to happen on the fly at parsing time at which point a value and 
@@ -161,13 +162,24 @@ class Sparkql::FunctionResolver
   end
   
   def radius(coords, length)
-   new_coords = parse_coordinates(coords)
-    unless new_coords.size == 1
-      @errors << Sparkql::ParserError.new(:token => coords, 
-        :message => "Function call 'radius' requires one coordinate for the center",
-        :status => :fatal )
-      return
-    end
+
+    # The radius() function is overloaded to allow an identifier
+    # to be specified over lat/lon.  Thsi identifier should specify a
+    # record that, in tern, references a lat/lon. Naturally, this won't be
+    # validated here.
+    shape = if is_coords?(coords)
+              new_coords = parse_coordinates(coords)
+              unless new_coords.size == 1
+                @errors << Sparkql::ParserError.new(:token => coords, 
+                  :message => "Function call 'radius' requires one coordinate for the center",
+                  :status => :fatal )
+                return
+              end
+              GeoRuby::SimpleFeatures::Circle.from_coordinates(new_coords.first, length);
+            else
+              Sparkql::Geo::RecordRadius.new(coords, length)
+            end
+
     unless length > 0
       @errors << Sparkql::ParserError.new(:token => length, 
         :message => "Function call 'radius' length must be positive",
@@ -175,7 +187,7 @@ class Sparkql::FunctionResolver
       return
     end
     
-    shape = GeoRuby::SimpleFeatures::Circle.from_coordinates(new_coords.first, length);
+
     {
       :type => :shape,
       :value => shape 
@@ -183,7 +195,11 @@ class Sparkql::FunctionResolver
   end
   
   private
-  
+
+  def is_coords?(coord_string)
+    coord_string.split(" ").size > 1
+  end
+
   def parse_coordinates coord_string
     terms = coord_string.strip.split(',')
     coords = terms.map do |term|

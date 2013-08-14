@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'sparkql/geo'
 
 class ParserTest < Test::Unit::TestCase
   include Sparkql
@@ -38,6 +39,18 @@ class ParserTest < Test::Unit::TestCase
     assert_equal :shape, value[:type]
     assert_equal GeoRuby::SimpleFeatures::Circle, value[:value].class
     assert_equal [-68.33, 35.12], value[:value].center.to_coordinates, "#{value[:value].inspect} "
+    assert_equal 1.0, value[:value].radius, "#{value[:value].inspect} "
+  end
+
+  test "radius() can be overloaded with a ListingKey" do
+    f = FunctionResolver.new('radius', [{:type => :character, :value => "20100000000000000000000000"},
+                {:type => :decimal, :value => 1.0}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :shape, value[:type]
+    assert_equal Sparkql::Geo::RecordRadius, value[:value].class
+    assert_equal "20100000000000000000000000", value[:value].record_id, "#{value[:value].inspect} "
     assert_equal 1.0, value[:value].radius, "#{value[:value].inspect} "
   end
 
