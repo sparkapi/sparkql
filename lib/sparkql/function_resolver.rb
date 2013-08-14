@@ -164,8 +164,8 @@ class Sparkql::FunctionResolver
   def radius(coords, length)
 
     # The radius() function is overloaded to allow an identifier
-    # to be specified over lat/lon.  Thsi identifier should specify a
-    # record that, in tern, references a lat/lon. Naturally, this won't be
+    # to be specified over lat/lon.  This identifier should specify a
+    # record that, in turn, references a lat/lon. Naturally, this won't be
     # validated here.
     shape = if is_coords?(coords)
               new_coords = parse_coordinates(coords)
