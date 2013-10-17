@@ -1,4 +1,5 @@
 require 'time'
+require 'geo_ruby'
 require 'sparkql/geo'
 
 # Binding class to all supported function calls in the parser. Current support requires that the 
