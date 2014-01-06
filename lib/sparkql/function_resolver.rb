@@ -10,6 +10,7 @@ require 'sparkql/geo'
 # SUPPORTED_FUNCTIONS which will run validation on the function syntax prior to execution.
 class Sparkql::FunctionResolver
   SECONDS_IN_DAY = 60 * 60 * 24
+  STRFTIME_FORMAT = '%Y-%m-%d'
   
   SUPPORTED_FUNCTIONS = {
     :polygon => {
@@ -28,6 +29,14 @@ class Sparkql::FunctionResolver
       :args => [:integer],
       :return_type => :datetime
     }, 
+    :months => {
+      :args => [:integer],
+      :return_type => :datetime
+    },
+    :years => {
+      :args => [:integer],
+      :return_type => :datetime
+    },
     :now => { 
       :args => [],
       :return_type => :datetime
@@ -122,6 +131,22 @@ class Sparkql::FunctionResolver
     {
       :type => :datetime,
       :value => Time.now.iso8601
+    }
+  end
+
+  def months num_months
+    d = DateTime.now >> num_months
+    {
+      :type => :date,
+      :value => d.strftime(STRFTIME_FORMAT)
+    }
+  end
+
+  def years num_years
+    d = DateTime.now >> (num_years * 12)
+    {
+      :type => :date,
+      :value => d.strftime(STRFTIME_FORMAT)
     }
   end
   
