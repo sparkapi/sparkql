@@ -23,7 +23,7 @@ class ParserTest < Test::Unit::TestCase
     assert (-5 < test_time - start && 5 > test_time - start), "Time range off by more than five seconds #{test_time - start} '#{test_time} - #{start}'"
   end
   
-  test "day()" do
+  test "days()" do
     d = Date.new(2012,10,20)
     Date.expects(:today).returns(d)
     dt = DateTime.new(d.year, d.month,d.day, 0,0,0, DateTime.now.offset)
@@ -36,7 +36,33 @@ class ParserTest < Test::Unit::TestCase
     test_time = Time.parse(value[:value])
     assert (615000 > test_time - start && 600000 < test_time - start), "Time range off by more than five seconds #{test_time - start} '#{test_time} - #{start}'"
   end
+
+  test "months()" do
+    dt = DateTime.new(2014, 1, 6, 0, 0, 0, 0)
+    DateTime.expects(:now).once.returns(dt)
+
+    f = FunctionResolver.new('months', [{:type=>:integer, :value =>3}])
+    f.validate
+    assert !f.errors?, "Errors resolving months(): #{f.errors.inspect}"
+    value = f.call
+    assert_equal :date, value[:type]
+
+    assert_equal "2014-04-06", value[:value]
+  end
   
+  test "years()" do
+    dt = DateTime.new(2014, 1, 6, 0, 0, 0, 0)
+    DateTime.expects(:now).once.returns(dt)
+    f = FunctionResolver.new('years', [{:type=>:integer, :value =>-4}])
+    f.validate
+    assert !f.errors?, "Errors resolving years(): #{f.errors.inspect}"
+    value = f.call
+    assert_equal :date, value[:type]
+    assert_equal '2010-01-06', value[:value], "negative values should go back in time"
+  end
+
+
+
   # Polygon searches
   
   test "radius()" do

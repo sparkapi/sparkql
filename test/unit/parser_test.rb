@@ -123,6 +123,24 @@ class ParserTest < Test::Unit::TestCase
     assert @parser.fatal_errors?, "Should be nil: #{@parser.errors.inspect}"
   end
 
+  def test_function_months
+    dt = DateTime.new(2014, 1, 5, 0, 0, 0, 0)
+    DateTime.expects(:now).returns(dt)
+    @parser = Parser.new
+    expressions = @parser.parse "ExpirationDate Gt months(-3)"
+    assert !@parser.errors?, "errors :( #{@parser.errors.inspect}"
+    assert_equal "2013-10-05", expressions.first[:value]
+  end
+
+  def test_function_years
+    dt = DateTime.new(2014, 1, 5, 0, 0, 0, 0)
+    DateTime.expects(:now).returns(dt)
+    @parser = Parser.new
+    expressions = @parser.parse "SoldDate Lt years(2)"
+    assert !@parser.errors?, "errors :( #{@parser.errors.inspect}"
+    assert_equal "2016-01-05", expressions.first[:value]
+  end
+
   def test_function_days
     d = Date.today
     dt = DateTime.new(d.year, d.month,d.day, 0,0,0, DateTime.now.offset)
