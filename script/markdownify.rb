@@ -43,7 +43,7 @@ class Markdownify
   end
   
   def format_doc line
-    line.gsub(/\s+\#\s*/, '')
+    line.sub(/\s*\#\s*/, '')
   end
   
   def format_bnf line
@@ -56,7 +56,7 @@ class Markdownify
   end
   
   def finish_code_block 
-    print "```\n"
+    print "```\n\n"
   end
 end
 
