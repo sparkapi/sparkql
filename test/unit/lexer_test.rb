@@ -10,6 +10,23 @@ class LexerTest < Test::Unit::TestCase
       assert_equal :STANDARD_FIELD, token.first, standard_field
     end
   end
+
+  def test_standard_field_formats
+    ["City", "PostalCodePlus4", "Inb4ParserError"].each do |standard_field|
+      @lexer = Lexer.new("#{standard_field} Eq true")
+      token = @lexer.shift
+      assert_equal :STANDARD_FIELD, token.first, standard_field
+      assert_equal token[1], standard_field
+    end
+  end
+
+  def test_bad_standard_field_formats
+    @lexer = Lexer.new("4PostalCodePlus4 Eq true")
+    token = @lexer.shift
+    assert_equal :INTEGER, token.first
+    assert_equal token[1][:value], "4" 
+  end
+
   def test_check_reserved_words_conjunctions
     ['And Derp', 'Or 123'].each do |conjunction|
       @lexer = Lexer.new(conjunction)
