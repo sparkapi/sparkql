@@ -105,8 +105,8 @@ on filtering values
 ```
      condition
        : literal
-       | literal_list 
        | function
+       | literal_list 
        ;
 ```
 
@@ -142,13 +142,15 @@ Functions may optionally have a comma delimited list of parameters.
 ```
 
 #### Literal List
-A comma delimited list of values.
+A comma delimited list of functions and values.
 
 
 ```
      literal_list
        : literals
+       | function
        | literal_list COMMA literals 
+       | literal_list COMMA function 
        ;
 ```
 
@@ -189,7 +191,7 @@ Literals only support a single value in a condition
 ```
 
 #### Range List
-Literals that can be used in a range                                                       
+Functions, and literals that can be used in a range                                                       
 
 
 ```
@@ -198,6 +200,7 @@ Literals that can be used in a range
        | DECIMAL
        | DATE
        | DATETIME
+       | function
        ;
 ```
 

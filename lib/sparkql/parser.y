@@ -98,8 +98,8 @@ rule
 # on filtering values
   condition
     : literal
-    | literal_list { result = tokenize_list(val[0]) }
     | function
+    | literal_list { result = tokenize_list(val[0]) }
     ;
     
 ##### Function
@@ -131,10 +131,12 @@ rule
     
 ##### Literal List
 # 
-# A comma delimited list of values.
+# A comma delimited list of functions and values.
   literal_list
     : literals
+    | function
     | literal_list COMMA literals { result = tokenize_multiple(val[0], val[2]) }
+    | literal_list COMMA function { result = tokenize_multiple(val[0], val[2]) }
     ;
     
 ##### Range List
@@ -166,12 +168,13 @@ rule
 
 ##### Range List
 # 
-# Literals that can be used in a range                                                       
+# Functions, and literals that can be used in a range                                                       
   rangeable
     : INTEGER
     | DECIMAL
     | DATE
     | DATETIME
+    | function
     ;
 
 #STOP_MARKDOWN

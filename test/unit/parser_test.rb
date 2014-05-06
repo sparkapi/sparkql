@@ -168,9 +168,41 @@ class ParserTest < Test::Unit::TestCase
   test "function data preserved in expression" do
     filter = "OriginalEntryTimestamp Ge days(-7)"
     @parser = Parser.new
-    expressions = @parser.parse("OriginalEntryTimestamp Ge days(-7)")
+    expressions = @parser.parse(filter)
     assert_equal 'days', expressions.first[:function_name]
     assert_equal([-7], expressions.first[:function_parameters])
+  end
+  
+  test "function rangeable " do
+    filter = "OriginalEntryTimestamp Bt days(-7),days(-1)"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert_equal(2, expressions.first[:value].size)
+  end
+
+  test "mixed rangeable " do
+    filter = "OriginalEntryTimestamp Bt days(-7),2013-07-26"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert_equal(2, expressions.first[:value].size)
+    assert_equal("2013-07-26", expressions.first[:value].last)
+  end
+
+  test "function list" do
+    filter = "OriginalEntryTimestamp Eq days(-1),days(-7),days(-30)"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert_equal(3, expressions.first[:value].size)
+  end
+
+  test "mixed list" do
+    # TODO This is an unrealistic example. We need number functions or support 
+    # for dates in lists
+    filter = "OriginalEntryTimestamp Eq 2014,days(-7)"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert_equal(2, expressions.first[:value].size)
+    assert_equal("2014", expressions.first[:value].first)
   end
   
   test "Location Eq polygon()" do
