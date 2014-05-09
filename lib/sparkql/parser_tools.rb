@@ -51,6 +51,7 @@ module Sparkql::ParserTools
 
   def tokenize_list(list)
     validate_multiple_values list[:value]
+    list[:condition] ||= list[:value]
     list
   end
 
@@ -62,11 +63,13 @@ module Sparkql::ParserTools
                       :syntax => true)    
     end
     array = Array(lit1[:value])
+    condition = lit1[:condition] || lit1[:value] 
     array << lit2[:value]
     {
       :type => lit1[:type],
       :value => array,
-      :multiple => "true"
+      :multiple => "true",
+      :condition => condition + "," + (lit2[:condition] || lit2[:value])
     }
   end
   
@@ -82,8 +85,9 @@ module Sparkql::ParserTools
 
     args = f_args.instance_of?(Array) ? f_args : [f_args]
     validate_multiple_arguments args
-    
+    condition_list = []
     args.each do |arg|
+      condition_list << arg[:value] # Needs to be pure string value
       arg[:value] = escape_value(arg)
     end
     resolver = Sparkql::FunctionResolver.new(name, args)
@@ -96,7 +100,7 @@ module Sparkql::ParserTools
                       :syntax => true)    
       return nil
     else
-      return resolver.call()
+      return resolver.call().merge(:condition => "#{name}(#{condition_list.join(',')})")
     end
   end
   

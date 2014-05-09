@@ -32,6 +32,7 @@ class ParserTest < Test::Unit::TestCase
     expression = @parser.parse('Test Eq 10 Or Test Ne 11 And Test Ne 9')
     assert_equal 9.to_s, expression.last[:value]
     assert_equal 'And', expression.last[:conjunction]
+    assert_equal '9', expression.last[:condition]
   end
 
   def test_grouping
@@ -52,6 +53,7 @@ class ParserTest < Test::Unit::TestCase
     @parser = Parser.new
     expression = @parser.parse('(Test Eq 10,11,12)').first
     assert_equal [10.to_s,11.to_s,12.to_s], expression[:value]
+    assert_equal '10,11,12', expression[:condition]
   end
     
   def parse(q,v)
@@ -130,6 +132,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse "ExpirationDate Gt months(-3)"
     assert !@parser.errors?, "errors :( #{@parser.errors.inspect}"
     assert_equal "2013-10-05", expressions.first[:value]
+    assert_equal 'months(-3)', expressions.first[:condition]
   end
 
   def test_function_years
@@ -139,6 +142,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse "SoldDate Lt years(2)"
     assert !@parser.errors?, "errors :( #{@parser.errors.inspect}"
     assert_equal "2016-01-05", expressions.first[:value]
+    assert_equal 'years(2)', expressions.first[:condition]
   end
 
   def test_function_days
@@ -149,6 +153,8 @@ class ParserTest < Test::Unit::TestCase
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal 'days(-7)', expressions.first[:condition]
+
     test_time = Time.parse(expressions.first[:value])
     
     assert (-605000 < test_time - start && -604000 > test_time - start), "Time range off by more than five seconds #{test_time - start} '#{test_time} - #{start}'"
@@ -160,6 +166,7 @@ class ParserTest < Test::Unit::TestCase
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal 'now()', expressions.first[:condition]
     test_time = Time.parse(expressions.first[:value])
     assert 5 > test_time - start, "Time range off by more than five seconds #{test_time - start}"
     assert -5 < test_time - start, "Time range off by more than five seconds #{test_time - start}"
@@ -170,6 +177,7 @@ class ParserTest < Test::Unit::TestCase
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert_equal 'days', expressions.first[:function_name]
+    assert_equal 'days(-7)', expressions.first[:condition]
     assert_equal([-7], expressions.first[:function_parameters])
   end
   
@@ -178,6 +186,7 @@ class ParserTest < Test::Unit::TestCase
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert_equal(2, expressions.first[:value].size)
+    assert_equal 'days(-7),days(-1)', expressions.first[:condition]
   end
 
   test "mixed rangeable " do
@@ -186,6 +195,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
     assert_equal(2, expressions.first[:value].size)
     assert_equal("2013-07-26", expressions.first[:value].last)
+    assert_equal 'days(-7),2013-07-26', expressions.first[:condition]
   end
 
   test "function list" do
@@ -193,6 +203,7 @@ class ParserTest < Test::Unit::TestCase
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert_equal(3, expressions.first[:value].size)
+    assert_equal 'days(-1),days(-7),days(-30)', expressions.first[:condition]
   end
 
   test "mixed list" do
@@ -203,6 +214,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
     assert_equal(2, expressions.first[:value].size)
     assert_equal("2014", expressions.first[:value].first)
+    assert_equal '2014,days(-7)', expressions.first[:condition]
   end
   
   test "Location Eq polygon()" do
@@ -210,6 +222,7 @@ class ParserTest < Test::Unit::TestCase
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal "polygon('35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32')", expressions.first[:condition]
     assert_equal :shape, expressions.first[:type]
     assert_equal [[-68.33, 35.12], [-68.33, 35.13], [-68.32,35.13], [-68.32,35.12],[-68.33, 35.12]], expressions.first[:value].to_coordinates.first, "#{expressions.first[:value].inspect} "
   end
@@ -354,6 +367,26 @@ class ParserTest < Test::Unit::TestCase
     assert_equal "Or", expression[:conjunction]
     assert_equal expression[:level], expression[:unary_level]
     assert_equal 0, expression[:conjunction_level]
+  end
+
+  def test_expression_conditions_attribute
+    conditions = [
+      "1",
+      "1,2",
+      "1.0,2.1,3.1415",
+      "'a '",
+      "'A',' b'",
+      "'A','B ',' c'",
+      "radius('35.12 -68.33',1.0)",
+      "days(-1),days(-7)",
+    ]
+    conditions.each do |condition|
+      @parser = Parser.new
+      expressions = @parser.parse("Test Eq #{condition}")
+      assert !@parser.errors?, @parser.inspect
+      expression = expressions.last
+      assert_equal condition, expression[:condition]
+    end
   end
 
   def parser_errors(filter)  
