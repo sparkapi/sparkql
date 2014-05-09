@@ -100,7 +100,8 @@ module Sparkql::ParserTools
                       :syntax => true)    
       return nil
     else
-      return resolver.call().merge(:condition => "#{name}(#{condition_list.join(',')})")
+      result = resolver.call()
+      return result.nil? ? result : result.merge(:condition => "#{name}(#{condition_list.join(',')})")
     end
   end
   
