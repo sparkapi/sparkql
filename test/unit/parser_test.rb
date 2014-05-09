@@ -378,7 +378,7 @@ class ParserTest < Test::Unit::TestCase
       "'A',' b'",
       "'A','B ',' c'",
       "radius('35.12 -68.33',1.0)",
-      "days(-1),days(-7)",
+      "days(-1),days(-7)"
     ]
     conditions.each do |condition|
       @parser = Parser.new
@@ -388,6 +388,19 @@ class ParserTest < Test::Unit::TestCase
       assert_equal condition, expression[:condition]
     end
   end
+
+  def test_bad_expressions_with_conditions_attribute
+    conditions = [
+      "BADSTRING",
+      "radius('46.8 -96.8',-20.0)"
+    ]
+    conditions.each do |condition|
+      @parser = Parser.new
+      expressions = @parser.parse("Test Eq #{condition}")
+      assert @parser.errors?, @parser.inspect
+    end
+  end
+
 
   def parser_errors(filter)  
     @parser = Parser.new
