@@ -22,6 +22,9 @@ class Sparkql::Parser
 
 #### Precedence Rules
 # 
+# Unless otherwise specified, SparkQL follows SQL precendence conventions for 
+# operators and conjunctions.
+# 
 # Unary minus is always tied to value, such as for negative numbers.
 prechigh
   nonassoc UMINUS
