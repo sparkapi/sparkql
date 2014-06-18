@@ -196,30 +196,37 @@ class Sparkql::FunctionResolver
   
   def radius(coords, length)
 
-    # The radius() function is overloaded to allow an identifier
-    # to be specified over lat/lon.  This identifier should specify a
-    # record that, in turn, references a lat/lon. Naturally, this won't be
-    # validated here.
-    shape = if is_coords?(coords)
-              new_coords = parse_coordinates(coords)
-              unless new_coords.size == 1
-                @errors << Sparkql::ParserError.new(:token => coords, 
-                  :message => "Function call 'radius' requires one coordinate for the center",
-                  :status => :fatal )
-                return
-              end
-              GeoRuby::SimpleFeatures::Circle.from_coordinates(new_coords.first, length);
-            else
-              Sparkql::Geo::RecordRadius.new(coords, length)
-            end
-
     unless length > 0
       @errors << Sparkql::ParserError.new(:token => length, 
         :message => "Function call 'radius' length must be positive",
         :status => :fatal )
       return
     end
-    
+
+    # The radius() function is overloaded to allow an identifier
+    # to be specified over lat/lon.  This identifier should specify a
+    # record that, in turn, references a lat/lon. Naturally, this won't be
+    # validated here.
+    shape_error = false
+    shape = if is_coords?(coords)
+              new_coords = parse_coordinates(coords)
+              if new_coords.size != 1
+                shape_error = true
+              else
+                GeoRuby::SimpleFeatures::Circle.from_coordinates(new_coords.first, length);
+              end
+            elsif Sparkql::Geo::RecordRadius.valid_record_id?(coords)
+              Sparkql::Geo::RecordRadius.new(coords, length)
+            else
+              shape_error = true
+            end
+
+    if shape_error
+      @errors << Sparkql::ParserError.new(:token => coords, 
+        :message => "Function call 'radius' requires one coordinate for the center",
+        :status => :fatal )
+      return
+    end
 
     {
       :type => :shape,

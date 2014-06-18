@@ -88,6 +88,14 @@ class ParserTest < Test::Unit::TestCase
     assert_equal 1.0, value[:value].radius, "#{value[:value].inspect} "
   end
 
+  test "radius() fails if not given coords or a flex ID" do
+    f = FunctionResolver.new('radius', [{:type => :character, :value => "35.12,-68.33"},
+                {:type => :decimal, :value => 1.0}])
+    f.validate
+    value = f.call
+    assert f.errors?
+  end
+
   test "polygon()" do
     f = FunctionResolver.new('polygon', [{:type => :character, :value => "35.12 -68.33,35.12 -68.32, 35.13 -68.32,35.13 -68.33"}])
     f.validate
