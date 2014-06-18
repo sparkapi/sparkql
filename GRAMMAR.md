@@ -3,6 +3,8 @@ This document explains the rules for the Spark API filter language syntax and
 is a living document generated from the reference implementation at 
 https://github.com/sparkapi/sparkql.
 ### Precedence Rules
+Unless otherwise specified, SparkQL follows SQL precendence conventions for 
+operators and conjunctions.
 Unary minus is always tied to value, such as for negative numbers.
 
 
@@ -105,8 +107,8 @@ on filtering values
 ```
      condition
        : literal
-       | literal_list 
        | function
+       | literal_list 
        ;
 ```
 
@@ -142,13 +144,15 @@ Functions may optionally have a comma delimited list of parameters.
 ```
 
 #### Literal List
-A comma delimited list of values.
+A comma delimited list of functions and values.
 
 
 ```
      literal_list
        : literals
+       | function
        | literal_list COMMA literals 
+       | literal_list COMMA function 
        ;
 ```
 
@@ -189,7 +193,7 @@ Literals only support a single value in a condition
 ```
 
 #### Range List
-Literals that can be used in a range                                                       
+Functions, and literals that can be used in a range                                                       
 
 
 ```
@@ -198,6 +202,7 @@ Literals that can be used in a range
        | DECIMAL
        | DATE
        | DATETIME
+       | function
        ;
 ```
 
