@@ -246,6 +246,13 @@ class ParserTest < Test::Unit::TestCase
     assert_equal [-68.33, 35.12], expressions.first[:value].center.to_coordinates, "#{expressions.first[:value].inspect} "
     assert_equal 1.0, expressions.first[:value].radius, "#{expressions.first[:value].inspect} "
   end
+
+  test "Location eq radius() error on invalid syntax" do
+    filter = "Location Eq radius('35.12,-68.33',1.0)"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert @parser.errors?, "Parser error expected due to comma between radius points"
+  end
   
   test "Location ALL TOGETHER NOW" do
     filter = "Location Eq radius('35.12 -68.33',1.0) And Location Eq rectangle('35.12 -68.33, 35.13 -68.32') And Location Eq polygon('35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32')"
