@@ -61,5 +61,12 @@ class LexerTest < Test::Unit::TestCase
       assert_equal :DATETIME, token.first, op
     end
   end
-      
+
+  def test_utc_offsets
+    ['2013-07-26T10:22:15.422804-0300', '2013-07-26T10:22:15+0400'].each do |op|
+      @lexer = Lexer.new(op)
+      token = @lexer.shift
+      assert_equal :DATETIME, token.first, op
+    end
+  end
 end
