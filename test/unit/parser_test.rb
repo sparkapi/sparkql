@@ -408,6 +408,17 @@ class ParserTest < Test::Unit::TestCase
     end
   end
 
+  def test_datetimes_as_ranges
+    ["DatetimeField Bt 2013-07-26T10:22:15.422804,2013-07-26T10:22:15.422805",
+     "DateTimeField Bt 2013-07-26T10:22:15,2013-07-26T10:22:16",
+     "DateTimeField Bt 2013-07-26T10:22:15.422804-0300,2013-07-26T10:22:15.422805-0300",
+     "DateTimeField Bt 2013-07-26T10:22:15+0400,2013-07-26T10:22:16+0400"].each do |filter|
+      @parser = Parser.new
+      expression = @parser.parse filter
+      assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+     end
+  end
+
 
   def parser_errors(filter)  
     @parser = Parser.new
