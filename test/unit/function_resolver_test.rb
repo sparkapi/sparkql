@@ -105,7 +105,17 @@ class ParserTest < Test::Unit::TestCase
     assert_equal GeoRuby::SimpleFeatures::Polygon, value[:value].class
     assert_equal [[-68.33, 35.12], [-68.32, 35.12], [-68.32, 35.13], [-68.33, 35.13], [-68.33, 35.12]], value[:value].to_coordinates.first, "#{value[:value].inspect} "
   end
-  
+ 
+  test "linestring()" do
+    f = FunctionResolver.new('linestring', [{:type => :character, :value => "35.12 -68.33,35.12 -68.32"}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :shape, value[:type]
+    assert_equal GeoRuby::SimpleFeatures::LineString, value[:value].class
+    assert_equal [[-68.33, 35.12], [-68.32, 35.12]], value[:value].to_coordinates, "#{value[:value].inspect} "
+  end
+
   test "rectangle()" do
     f = FunctionResolver.new('rectangle', [{:type => :character, :value => "35.12 -68.33, 35.13 -68.32"}])
     f.validate
