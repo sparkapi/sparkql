@@ -24,7 +24,11 @@ class Sparkql::FunctionResolver
     :radius => {
       :args => [:character, :decimal],
       :return_type => :shape
-    }, 
+    },
+    :linestring => {
+      :args => [:character],
+      :return_type => :shape
+    },
     :days => {
       :args => [:integer],
       :return_type => :datetime
@@ -166,6 +170,22 @@ class Sparkql::FunctionResolver
     end
     
     shape = GeoRuby::SimpleFeatures::Polygon.from_coordinates([new_coords])
+    {
+      :type => :shape,
+      :value => shape
+    }
+  end
+
+  def linestring(coords)
+    new_coords = parse_coordinates(coords)
+    unless new_coords.size > 1
+      @errors << Sparkql::ParserError.new(:token => coords,
+        :message => "Function call 'linestring' requires at least two coordinates",
+        :status => :fatal )
+      return
+    end
+
+    shape = GeoRuby::SimpleFeatures::LineString.from_coordinates(new_coords)
     {
       :type => :shape,
       :value => shape
