@@ -227,6 +227,17 @@ class ParserTest < Test::Unit::TestCase
     assert_equal [[-68.33, 35.12], [-68.33, 35.13], [-68.32,35.13], [-68.32,35.12],[-68.33, 35.12]], expressions.first[:value].to_coordinates.first, "#{expressions.first[:value].inspect} "
   end
 
+  test "Location Eq linestring()" do
+    filter = "Location Eq linestring('35.12 -68.33, 35.13 -68.33')"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal "linestring('35.12 -68.33, 35.13 -68.33')", expressions.first[:condition]
+    assert_equal :shape, expressions.first[:type]
+    assert_equal [[-68.33, 35.12], [-68.33, 35.13]], expressions.first[:value].to_coordinates, "#{expressions.first[:value].inspect} "
+
+  end
+
   test "Location Eq rectangle()" do
     filter = "Location Eq rectangle('35.12 -68.33, 35.13 -68.32')"
     @parser = Parser.new
@@ -255,11 +266,11 @@ class ParserTest < Test::Unit::TestCase
   end
   
   test "Location ALL TOGETHER NOW" do
-    filter = "Location Eq radius('35.12 -68.33',1.0) And Location Eq rectangle('35.12 -68.33, 35.13 -68.32') And Location Eq polygon('35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32')"
+    filter = "Location Eq linestring('35.12 -68.33, 35.13 -68.33') And Location Eq radius('35.12 -68.33',1.0) And Location Eq rectangle('35.12 -68.33, 35.13 -68.32') And Location Eq polygon('35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32')"
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-    assert_equal [:shape,:shape,:shape], expressions.map{|e| e[:type]}
+    assert_equal [:shape,:shape,:shape,:shape], expressions.map{|e| e[:type]}
   end
   
   def test_for_reserved_words_first_literals_second
@@ -407,6 +418,17 @@ class ParserTest < Test::Unit::TestCase
       expressions = @parser.parse("Test Eq #{condition}")
       assert @parser.errors?, @parser.inspect
     end
+  end
+
+  def test_datetimes_as_ranges
+    ["DatetimeField Bt 2013-07-26T10:22:15.422804,2013-07-26T10:22:15.422805",
+     "DateTimeField Bt 2013-07-26T10:22:15,2013-07-26T10:22:16",
+     "DateTimeField Bt 2013-07-26T10:22:15.422804-0300,2013-07-26T10:22:15.422805-0300",
+     "DateTimeField Bt 2013-07-26T10:22:15+0400,2013-07-26T10:22:16+0400"].each do |filter|
+      @parser = Parser.new
+      expression = @parser.parse filter
+      assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+     end
   end
 
 
