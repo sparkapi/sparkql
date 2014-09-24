@@ -5,7 +5,7 @@ module Sparkql::Token
   RPAREN = /\)/
   KEYWORD = /[A-Za-z]+/
   STANDARD_FIELD = /[A-Z]+[A-Za-z0-9]*/
-  CUSTOM_FIELD = /^(\"([^$."][^."]+)\".\"([^$."][^."]+)\")/
+  CUSTOM_FIELD = /^(\"([^$."][^."]+)\".\"([^$."][^."]*)\")/
   INTEGER = /^\-?[0-9]+/
   DECIMAL = /^\-?[0-9]+\.[0-9]+/
   CHARACTER = /^'([^'\\]*(\\.[^'\\]*)*)'/
