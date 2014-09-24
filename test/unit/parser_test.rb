@@ -287,6 +287,7 @@ class ParserTest < Test::Unit::TestCase
       '"General \'Property\' Description"."Taxes" Lt 500.0',
       '"General Property Description"."Taxes #" Lt 500.0',
       '"General$Description"."Taxes" Lt 500.0',
+      '"Garage Type"."1" Eq true',
       '" a "." b " Lt 500.0'
     ].each do |filter|
       @parser = Parser.new
