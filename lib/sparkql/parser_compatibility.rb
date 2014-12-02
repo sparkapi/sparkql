@@ -1,10 +1,10 @@
 # Required interface for existing parser implementations
 module Sparkql::ParserCompatibility
-  
-  MAXIMUM_MULTIPLE_VALUES = 25
+
+  MAXIMUM_MULTIPLE_VALUES = 100
   MAXIMUM_EXPRESSIONS = 50
   MAXIMUM_LEVEL_DEPTH = 2
-  
+
   # TODO I Really don't think this is required anymore
   # Ordered by precedence.
   FILTER_VALUES = [
@@ -52,9 +52,9 @@ module Sparkql::ParserCompatibility
       :operators => Sparkql::Token::EQUALITY_OPERATORS
     }
   ]
-  
+
   OPERATORS_SUPPORTING_MULTIPLES = ["Eq","Ne"]
-  
+
   # To be implemented by child class.
   # Shall return a valid query string for the respective database,
   # or nil if the source could not be processed.  It may be possible to return a valid
@@ -63,7 +63,7 @@ module Sparkql::ParserCompatibility
   def compile( source, mapper )
    raise NotImplementedError
   end
-  
+
   # Returns a list of expressions tokenized in the following format:
   # [{ :field => IdentifierName, :operator => "Eq", :value => "'Fargo'", :type => :character, :conjunction => "And" }]
   # This step will set errors if source is not syntactically correct.
@@ -72,22 +72,22 @@ module Sparkql::ParserCompatibility
 
     # Reset the parser error stack
     @errors = []
-      
+
     expressions = self.parse(source)
     expressions
   end
-  
+
   # Returns an array of errors.  This is an array of ParserError objects
   def errors
     @errors = [] unless defined?(@errors)
     @errors
   end
-  
+
   # Delegator for methods to process the error list.
   def process_errors
     Sparkql::ErrorsProcessor.new(@errors)
   end
-  
+
   # delegate :errors?, :fatal_errors?, :dropped_errors?, :recovered_errors?, :to => :process_errors
   # Since I don't have rails delegate...
   def errors?
@@ -102,7 +102,7 @@ module Sparkql::ParserCompatibility
   def recovered_errors?
     process_errors.recovered_errors?
   end
-  
+
   def escape_value_list( expression )
     final_list = []
     expression[:value].each do | value |
@@ -114,7 +114,7 @@ module Sparkql::ParserCompatibility
     end
     expression[:value] = final_list
   end
-  
+
   def escape_value( expression )
     if expression[:value].is_a? Array
       return escape_value_list( expression )
@@ -163,7 +163,7 @@ module Sparkql::ParserCompatibility
   def boolean_escape(string)
     "true" == string
   end
-  
+
   # Returns the rule hash for a given type
   def rules_for_type( type )
     FILTER_VALUES.each do |rule|
@@ -171,32 +171,32 @@ module Sparkql::ParserCompatibility
     end
     nil
   end
-  
+
   # true if a given type supports multiple values
   def supports_multiple?( type )
     rules_for_type(type).include?( :multiple )
   end
-  
+
   # Maximum supported nesting level for the parser filters
   def max_level_depth
     MAXIMUM_LEVEL_DEPTH
   end
-  
+
   def max_expressions
     MAXIMUM_EXPRESSIONS
   end
 
   def max_values
-    MAXIMUM_MULTIPLE_VALUES 
+    MAXIMUM_MULTIPLE_VALUES
   end
-  
+
   private
-  
+
   def tokenizer_error( error_hash )
     self.errors << Sparkql::ParserError.new( error_hash )
   end
   alias :compile_error :tokenizer_error
-  
+
   # Checks the type of an expression with what is expected.
   def check_type!(expression, expected, supports_nulls = true)
     if expected == expression[:type] || (supports_nulls && expression[:type] == :null)
@@ -213,13 +213,13 @@ module Sparkql::ParserCompatibility
     type_error(expression, expected)
     false
   end
-  
+
   def type_error( expression, expected )
       compile_error(:token => expression[:field], :expression => expression,
             :message => "expected #{expected} but found #{expression[:type]}",
             :status => :fatal )
   end
-  
+
   # Builds the correct operator based on the type and the value.
   # default should be the operator provided in the actual filter string
   def get_operator(expression, default )
@@ -238,7 +238,7 @@ module Sparkql::ParserCompatibility
       return nil
     end
   end
-  
+
   def multiple_values?(value)
     Array(value).size > 1
   end
@@ -246,9 +246,9 @@ module Sparkql::ParserCompatibility
   def range?(value)
     Array(value).size == 2
   end
-  
+
   def operator_supports_multiples?(operator)
     OPERATORS_SUPPORTING_MULTIPLES.include?(operator)
   end
-  
+
 end
