@@ -205,6 +205,10 @@ module Sparkql::ParserCompatibility
       expression[:type] = :datetime
       expression[:cast] = :date
       return true
+    elsif expected == :date && expression[:type] == :datetime && datestr = expression[:value].match(/^(\d{4}-\d{2}-\d{2})/)
+      expression[:type] = :datetime
+      expression[:value] = datestr[0]
+      return true
     elsif expected == :decimal && expression[:type] == :integer
       expression[:type] = :decimal
       expression[:cast] = :integer

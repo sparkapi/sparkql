@@ -126,7 +126,7 @@ class Sparkql::FunctionResolver
     d = Date.today + num
     {
       :type => :date,
-      :value => d.to_s
+      :value => d.strftime(STRFTIME_FORMAT)
     }
   end
   
