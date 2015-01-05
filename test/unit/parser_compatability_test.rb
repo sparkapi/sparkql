@@ -477,4 +477,13 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     assert_equal 100.0, parser.escape_value(expression)
   end
 
+  test "datetime->date type coercion" do
+    t = Time.now
+    parser = Parser.new
+    expression = parser.tokenize( "DateField Eq now()").first
+    assert parser.send(:check_type!, expression, :date)
+    assert_equal t.strftime(Sparkql::FunctionResolver::STRFTIME_FORMAT), 
+                 parser.escape_value(expression).strftime(Sparkql::FunctionResolver::STRFTIME_FORMAT)
+  end
+  
 end
