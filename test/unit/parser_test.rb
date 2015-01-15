@@ -430,6 +430,16 @@ class ParserTest < Test::Unit::TestCase
       assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
      end
   end
+  
+  def test_coercible_types
+    @parser = Parser.new
+    assert_equal :datetime, @parser.coercible_types(:date, :datetime)
+    assert_equal :datetime, @parser.coercible_types(:datetime, :date)
+    assert_equal :decimal, @parser.coercible_types(:decimal, :integer)
+    assert_equal :decimal, @parser.coercible_types(:integer, :decimal)
+    # That covers the gambit, anything else should be null
+    assert_nil @parser.coercible_types(:integer, :date)
+  end
 
 
   def parser_errors(filter)  

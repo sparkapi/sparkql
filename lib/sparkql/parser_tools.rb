@@ -1,6 +1,7 @@
 # This is the guts of the parser internals and is mixed into the parser for organization.
 module Sparkql::ParserTools
 
+  # Coercible types from highest precision to lowest
   DATE_TYPES = [:datetime, :date]
   NUMBER_TYPES = [:decimal, :integer]
   
@@ -160,6 +161,9 @@ module Sparkql::ParserTools
     end
   end
   
+  # If both types support coercion with eachother, always selects the highest 
+  # precision type to return as a reflection of the two. Any type that doesn't
+  # support coercion with the other type returns nil
   def coercible_types type1, type2
     if DATE_TYPES.include?(type1) && DATE_TYPES.include?(type2)
       DATE_TYPES.first
