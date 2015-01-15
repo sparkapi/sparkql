@@ -73,6 +73,11 @@ class ParserCompatabilityTest < Test::Unit::TestCase
         :operator => "In"
       },
       {
+        :string => "FloatField Eq 100.1,2,3.4",
+        :type => :decimal,
+        :operator => "In"
+      },
+      {
         :string => "DateField Eq 2010-10-10",
         :type => :date,
         :operator => "Eq"
@@ -155,7 +160,7 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     @test_filters.each do |elem|
       parser = Parser.new
       expressions = parser.tokenize( elem[:string] )
-      assert !parser.errors?, "Query: #{elem.inspect}"
+      assert !parser.errors?, "Query: #{elem.inspect} #{parser.errors.inspect}"
       assert_equal elem[:operator], expressions.first[:operator]
     end
   end
@@ -461,7 +466,7 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     end
 
     # truckload of fail
-    ["BathsFull Bt 10,12.5", "DateField Bt 10,2012-12-31"].each do |f|
+    ["BathsFull Bt 2012-12-31,1", "DateField Bt 10,2012-12-31"].each do |f|
       parser = Parser.new
       expressions = parser.tokenize f
       assert parser.errors?, "should have a type mismatch: #{parser.errors.first}"
@@ -481,9 +486,23 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     t = Time.now
     parser = Parser.new
     expression = parser.tokenize( "DateField Eq now()").first
+    assert !parser.errors?
     assert parser.send(:check_type!, expression, :date)
     assert_equal t.strftime(Sparkql::FunctionResolver::STRFTIME_FORMAT), 
                  parser.escape_value(expression).strftime(Sparkql::FunctionResolver::STRFTIME_FORMAT)
   end
+  
+  test "datetime->date type coercion array" do
+    today = Time.now
+    parser = Parser.new
+    expression = parser.tokenize('"Custom"."DateField" Bt days(-1),now()').first
+    assert !parser.errors?
+    assert parser.send(:check_type!, expression, :date)
+    yesterday = today - 3600 * 24
+    assert_equal [ yesterday.strftime(Sparkql::FunctionResolver::STRFTIME_FORMAT),
+                   today.strftime(Sparkql::FunctionResolver::STRFTIME_FORMAT)], 
+                 parser.escape_value(expression).map { |i| i.strftime(Sparkql::FunctionResolver::STRFTIME_FORMAT)}
+  end
+
   
 end
