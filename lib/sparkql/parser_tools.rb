@@ -48,22 +48,24 @@ module Sparkql::ParserTools
     exp2.first[:conjunction] = 'And'
     exp2.first[:conjunction_level] = @lexer.level
 
-    flip_expression_if_necessary(exp2, conj)
+    flip_expression_if_necessary(conj, exp2)
 
     exp1 + exp2
   end
 
   def tokenize_unary(conj, exp)
-    flip_expression_if_necessary(exp, conj)
-    exp.first[:unary_level] = @lexer.level
+    flip_expression_if_necessary(conj, exp)
     exp
   end
 
-  def flip_expression_if_necessary(exp, conj)
-    if exp.first[:unary].nil?
-      exp.first[:unary] = conj
-    else
-      exp.first.delete(:unary)
+  def flip_expression_if_necessary(conj, exp)
+    exp.each do |single|
+      if single[:unary].nil?
+        single[:unary] = conj
+        single[:unary_level] = @lexer.level
+      else
+        single.delete(:unary)
+      end
     end
   end
 

@@ -434,6 +434,32 @@ class ParserTest < Test::Unit::TestCase
     assert_equal 11.to_s, expression[:value]
     assert_equal 'Not', expression[:unary]
     assert_equal "And", expression[:conjunction]
+
+    @parser = Parser.new
+    expressions = @parser.parse('Not (Not (Not (Not ListPrice Eq 1000 Not ListPrice Eq 2000)))')
+    assert_equal 2, expressions.length
+    exp = expressions[0]
+    assert_equal "And", exp[:conjunction]
+    assert_equal "1000", exp[:value]
+    assert_nil exp[:unary]
+
+    exp = expressions[1]
+    assert_equal "And", exp[:conjunction]
+    assert_equal "2000", exp[:value]
+    assert_nil exp[:unary]
+
+    @parser = Parser.new
+    expressions = @parser.parse('Not (Not (Not ListPrice Eq 1000 Not ListPrice Eq 2000))')
+    assert_equal 2, expressions.length
+    exp = expressions[0]
+    assert_equal "And", exp[:conjunction]
+    assert_equal "1000", exp[:value]
+    assert_equal "Not", exp[:unary]
+
+    exp = expressions[1]
+    assert_equal "And", exp[:conjunction]
+    assert_equal "2000", exp[:value]
+    assert_equal "Not", exp[:unary]
   end
 
   def test_bad_expressions_with_conditions_attribute
