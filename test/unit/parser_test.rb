@@ -462,6 +462,23 @@ class ParserTest < Test::Unit::TestCase
     assert_equal "Not", exp[:unary]
   end
 
+  def test_not_group
+    @parser = Parser.new
+    expressions = @parser.parse("Not (ListPrice Eq 1000 And City Eq 'Fargo')")
+
+    assert_equal 2, expressions.length
+    exp = expressions.first
+    assert_equal "And", exp[:conjunction]
+    assert_equal "Not", exp[:unary]
+    assert_equal "1000", exp[:value]
+
+    exp = expressions.last
+    assert_equal "And", exp[:conjunction]
+    assert_equal "Not", exp[:unary]
+    assert_equal "'Fargo'", exp[:value]
+
+  end
+
   def test_bad_expressions_with_conditions_attribute
     conditions = [
       "BADSTRING",
