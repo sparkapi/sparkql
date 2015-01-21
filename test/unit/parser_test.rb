@@ -24,7 +24,8 @@ class ParserTest < Test::Unit::TestCase
     expression = @parser.parse('Test Eq 10 Not Test Ne 11')
     assert_equal 10.to_s, expression.first[:value]
     assert_equal 11.to_s, expression.last[:value]
-    assert_equal 'Not', expression.last[:conjunction]
+    assert_equal 'And', expression.last[:conjunction]
+    assert_equal 'Not', expression.last[:unary]
   end
   
   def test_tough_conjunction
@@ -352,7 +353,8 @@ class ParserTest < Test::Unit::TestCase
     assert !@parser.errors?, @parser.inspect
     expression = expressions.last
     assert_equal 2.to_s, expression[:value]
-    assert_equal "Not", expression[:conjunction]
+    assert_equal "And", expression[:conjunction]
+    assert_equal "Not", expression[:unary]
     assert_equal expression[:level], expression[:conjunction_level]
   end
 
@@ -406,6 +408,75 @@ class ParserTest < Test::Unit::TestCase
       expression = expressions.last
       assert_equal condition, expression[:condition]
     end
+  end
+
+  def test_nested_nots
+    @parser = Parser.new
+    expressions = @parser.parse('Not Test Eq 11')
+    assert !@parser.errors?, @parser.inspect
+    expression = expressions.last
+    assert_equal 11.to_s, expression[:value]
+    assert_equal "Not", expression[:unary]
+    assert_equal "And", expression[:conjunction]
+
+    @parser = Parser.new
+    expressions = @parser.parse('Not (Not Test Eq 11)')
+    assert !@parser.errors?, @parser.inspect
+    expression = expressions.last
+    assert_equal 11.to_s, expression[:value]
+    assert_nil expression[:unary]
+    assert_equal "And", expression[:conjunction]
+
+    @parser = Parser.new
+    expressions = @parser.parse('Not (Not (Not Test Eq 11))')
+    assert !@parser.errors?, @parser.inspect
+    expression = expressions.last
+    assert_equal 11.to_s, expression[:value]
+    assert_equal 'Not', expression[:unary]
+    assert_equal "And", expression[:conjunction]
+
+    @parser = Parser.new
+    expressions = @parser.parse('Not (Not (Not (Not ListPrice Eq 1000 Not ListPrice Eq 2000)))')
+    assert_equal 2, expressions.length
+    exp = expressions[0]
+    assert_equal "And", exp[:conjunction]
+    assert_equal "1000", exp[:value]
+    assert_nil exp[:unary]
+
+    exp = expressions[1]
+    assert_equal "And", exp[:conjunction]
+    assert_equal "2000", exp[:value]
+    assert_nil exp[:unary]
+
+    @parser = Parser.new
+    expressions = @parser.parse('Not (Not (Not ListPrice Eq 1000 Not ListPrice Eq 2000))')
+    assert_equal 2, expressions.length
+    exp = expressions[0]
+    assert_equal "And", exp[:conjunction]
+    assert_equal "1000", exp[:value]
+    assert_equal "Not", exp[:unary]
+
+    exp = expressions[1]
+    assert_equal "And", exp[:conjunction]
+    assert_equal "2000", exp[:value]
+    assert_equal "Not", exp[:unary]
+  end
+
+  def test_not_group
+    @parser = Parser.new
+    expressions = @parser.parse("Not (ListPrice Eq 1000 And City Eq 'Fargo')")
+
+    assert_equal 2, expressions.length
+    exp = expressions.first
+    assert_equal "And", exp[:conjunction]
+    assert_equal "Not", exp[:unary]
+    assert_equal "1000", exp[:value]
+
+    exp = expressions.last
+    assert_equal "And", exp[:conjunction]
+    assert_equal "Not", exp[:unary]
+    assert_equal "'Fargo'", exp[:value]
+
   end
 
   def test_bad_expressions_with_conditions_attribute

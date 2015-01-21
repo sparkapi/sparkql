@@ -65,7 +65,7 @@ rule
 # 
 # Some conjunctions don't need to expression at all times (e.g. 'NOT'). 
   unary_conjunction
-    : UNARY_CONJUNCTION expression { result = tokenize_unary_conjunction(val[0], val[1]) }
+    : UNARY_CONJUNCTION expression { result = tokenize_unary(val[0], val[1]) }
     ;  
   
 ##### Conjunction
@@ -73,7 +73,7 @@ rule
 # Two expressions joined together using a supported conjunction
   conjunction
     : expressions CONJUNCTION expression { result = tokenize_conjunction(val[0], val[1],val[2]) }
-    | expressions UNARY_CONJUNCTION expression { result = tokenize_conjunction(val[0], val[1],val[2]) }
+    | expressions UNARY_CONJUNCTION expression { result = tokenize_unary_conjunction(val[0], val[1],val[2]) }
     ;
   
 ##### Group
