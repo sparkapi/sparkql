@@ -235,6 +235,25 @@ class ParserTest < Test::Unit::TestCase
       assert_equal expressions.first[:value], value, "#{value} failed"
     end
   end
+
+  test "allow timezone offsets" do
+    values = [
+      "2013-07-26T10:22:15+01:00",
+      "2013-07-26T10:22:15.1-01:00",
+      "2013-07-26T10:22:15.11+0100",
+      "2013-07-26T10:22:15.111-0100",
+      "2013-07-26T10:22:15.1111+01:00",
+      "2013-07-26T10:22:15.11111+01:00",
+      "2013-07-26T10:22:15.111111+01:00"
+    ]
+    values.each do |value|
+      filter = "DatetimeField Eq #{value}"
+      @parser = Parser.new
+      expressions = @parser.parse(filter)
+      assert_not_nil expressions, "#{value} failed"
+      assert_equal expressions.first[:value], value, "#{value} failed"
+    end
+  end
   
   test "Location Eq polygon()" do
     filter = "Location Eq polygon('35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32')"
