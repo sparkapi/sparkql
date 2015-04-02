@@ -217,24 +217,6 @@ class ParserTest < Test::Unit::TestCase
     assert_equal '2014,days(-7)', expressions.first[:condition]
   end
 
-  test "allow different levels of microsecond precision" do
-    values = [
-      "2013-07-26T10:22:15",
-      "2013-07-26T10:22:15.1",
-      "2013-07-26T10:22:15.11",
-      "2013-07-26T10:22:15.111",
-      "2013-07-26T10:22:15.1111",
-      "2013-07-26T10:22:15.11111",
-      "2013-07-26T10:22:15.111111"
-    ]
-    values.each do |value|
-      filter = "DatetimeField Eq #{value}"
-      @parser = Parser.new
-      expressions = @parser.parse(filter)
-      assert_not_nil expressions, "#{value} failed"
-      assert_equal expressions.first[:value], value, "#{value} failed"
-    end
-  end
 
   test "allow timezone offsets" do
     values = [
@@ -242,7 +224,7 @@ class ParserTest < Test::Unit::TestCase
       "2013-07-26T10:22:15.1-01:00",
       "2013-07-26T10:22:15.11+0100",
       "2013-07-26T10:22:15.111-0100",
-      "2013-07-26T10:22:15.1111+01:00",
+      "2013-07-26T10:22:15.1111Z",
       "2013-07-26T10:22:15.11111+01:00",
       "2013-07-26T10:22:15.111111+01:00"
     ]
