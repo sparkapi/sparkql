@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -e
+
+script/bootstrap
+
+echo "==> Running tests..."
+bundle exec rake ci:setup:testunit test
