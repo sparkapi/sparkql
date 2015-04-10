@@ -3,4 +3,4 @@ set -e
 
 rm -rf pkg/*
 bundle exec rake build
-gem push pkg/*
+gem push pkg/* $@
