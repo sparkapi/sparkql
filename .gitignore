@@ -4,3 +4,4 @@ Gemfile.lock
 lib/sparkql/*.output
 pkg/*
 *.swp
+test/reports
