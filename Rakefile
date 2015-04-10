@@ -2,6 +2,7 @@ require "rubygems"
 require 'rubygems/user_interaction'
 require 'rake/testtask'
 require 'ci/reporter/rake/test_unit'
+require 'bundler/gem_tasks'
 
 Rake::TestTask.new(:test) do |test|
   test.libs << 'lib' << 'test'
