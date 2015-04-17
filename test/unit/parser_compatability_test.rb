@@ -301,12 +301,12 @@ class ParserCompatabilityTest < Test::Unit::TestCase
   test "max out values" do
     parser = Parser.new
     to_the_max = []
-    110.times do |x|
+    210.times do |x|
       to_the_max << x
     end
     ex = parser.tokenize("City Eq #{to_the_max.join(',')}")
     vals = ex.first[:value]
-    assert_equal 100, vals.size
+    assert_equal 200, vals.size
     assert parser.errors?
   end
 
@@ -324,7 +324,7 @@ class ParserCompatabilityTest < Test::Unit::TestCase
   test "max out function args" do
     parser = Parser.new
     to_the_max = []
-    101.times do |x|
+    201.times do |x|
       to_the_max << "1"
     end
     vals = parser.tokenize("Args Eq myfunc(#{to_the_max.join(",")})")

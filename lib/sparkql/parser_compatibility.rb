@@ -1,7 +1,7 @@
 # Required interface for existing parser implementations
 module Sparkql::ParserCompatibility
 
-  MAXIMUM_MULTIPLE_VALUES = 100
+  MAXIMUM_MULTIPLE_VALUES = 200
   MAXIMUM_EXPRESSIONS = 50
   MAXIMUM_LEVEL_DEPTH = 2
 
