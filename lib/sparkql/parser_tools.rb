@@ -1,5 +1,9 @@
 # This is the guts of the parser internals and is mixed into the parser for organization.
 module Sparkql::ParserTools
+
+  # Coercible types from highest precision to lowest
+  DATE_TYPES = [:datetime, :date]
+  NUMBER_TYPES = [:decimal, :integer]
   
   def parse(str)
     @lexer = Sparkql::Lexer.new(str)
@@ -56,17 +60,22 @@ module Sparkql::ParserTools
   end
 
   def tokenize_multiple(lit1, lit2)
+    final_type = lit1[:type]
     if lit1[:type] != lit2[:type]
-      tokenizer_error(:token => @lexer.last_field, 
-                      :message => "Type mismatch in field list.",
-                      :status => :fatal, 
-                      :syntax => true)    
+      final_type = coercible_types(lit1[:type],lit2[:type])
+      if final_type.nil?
+        final_type = lit1[:type]
+        tokenizer_error(:token => @lexer.last_field, 
+                        :message => "Type mismatch in field list.",
+                        :status => :fatal, 
+                        :syntax => true)
+      end
     end
     array = Array(lit1[:value])
     condition = lit1[:condition] || lit1[:value] 
     array << lit2[:value]
     {
-      :type => lit1[:type],
+      :type => final_type ,
       :value => array,
       :multiple => "true",
       :condition => condition + "," + (lit2[:condition] || lit2[:value])
@@ -149,6 +158,19 @@ module Sparkql::ParserTools
             :message => "You have exceeded the maximum parameter count.  Please limit to #{max_values} parameters to a single function.",
             :status => :fatal, :syntax => false, :constraint => true )
       args.slice!(max_values..-1)
+    end
+  end
+  
+  # If both types support coercion with eachother, always selects the highest 
+  # precision type to return as a reflection of the two. Any type that doesn't
+  # support coercion with the other type returns nil
+  def coercible_types type1, type2
+    if DATE_TYPES.include?(type1) && DATE_TYPES.include?(type2)
+      DATE_TYPES.first
+    elsif NUMBER_TYPES.include?(type1) && NUMBER_TYPES.include?(type2)
+      NUMBER_TYPES.first
+    else
+      nil
     end
   end
 

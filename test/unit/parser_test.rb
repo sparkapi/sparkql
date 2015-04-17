@@ -216,6 +216,26 @@ class ParserTest < Test::Unit::TestCase
     assert_equal("2014", expressions.first[:value].first)
     assert_equal '2014,days(-7)', expressions.first[:condition]
   end
+
+
+  test "allow timezone offsets" do
+    values = [
+      "2013-07-26T10:22:15+01:00",
+      "2013-07-26T10:22:15.1-01:00",
+      "2013-07-26T10:22:15.11+0100",
+      "2013-07-26T10:22:15.111-0100",
+      "2013-07-26T10:22:15.1111Z",
+      "2013-07-26T10:22:15.11111+01:00",
+      "2013-07-26T10:22:15.111111+01:00"
+    ]
+    values.each do |value|
+      filter = "DatetimeField Eq #{value}"
+      @parser = Parser.new
+      expressions = @parser.parse(filter)
+      assert_not_nil expressions, "#{value} failed"
+      assert_equal expressions.first[:value], value, "#{value} failed"
+    end
+  end
   
   test "Location Eq polygon()" do
     filter = "Location Eq polygon('35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32')"
@@ -429,6 +449,16 @@ class ParserTest < Test::Unit::TestCase
       expression = @parser.parse filter
       assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
      end
+  end
+  
+  def test_coercible_types
+    @parser = Parser.new
+    assert_equal :datetime, @parser.coercible_types(:date, :datetime)
+    assert_equal :datetime, @parser.coercible_types(:datetime, :date)
+    assert_equal :decimal, @parser.coercible_types(:decimal, :integer)
+    assert_equal :decimal, @parser.coercible_types(:integer, :decimal)
+    # That covers the gambit, anything else should be null
+    assert_nil @parser.coercible_types(:integer, :date)
   end
 
 

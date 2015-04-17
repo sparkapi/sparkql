@@ -205,6 +205,15 @@ module Sparkql::ParserCompatibility
       expression[:type] = :datetime
       expression[:cast] = :date
       return true
+    elsif expected == :date && expression[:type] == :datetime 
+      expression[:type] = :date
+      expression[:cast] = :datetime
+      if multiple_values?(expression[:value])
+        expression[:value].map!{ |val| coerce_datetime val }
+      else
+        expression[:value] = coerce_datetime expression[:value]
+      end
+      return true
     elsif expected == :decimal && expression[:type] == :integer
       expression[:type] = :decimal
       expression[:cast] = :integer
@@ -249,6 +258,14 @@ module Sparkql::ParserCompatibility
 
   def operator_supports_multiples?(operator)
     OPERATORS_SUPPORTING_MULTIPLES.include?(operator)
+  end
+  
+  def coerce_datetime datetime
+    if datestr = datetime.match(/^(\d{4}-\d{2}-\d{2})/)
+      datestr[0]
+    else
+      datetime
+    end
   end
 
 end

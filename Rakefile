@@ -1,8 +1,14 @@
 require "rubygems"
 require 'rubygems/user_interaction'
-require 'flexmls_gems/tasks'
-require 'flexmls_gems/tasks/test_unit'
-require 'flexmls_gems/tasks/rdoc'
+require 'rake/testtask'
+require 'ci/reporter/rake/test_unit'
+require 'bundler/gem_tasks'
+
+Rake::TestTask.new(:test) do |test|
+  test.libs << 'lib' << 'test'
+  test.pattern = 'test/**/*_test.rb'
+  test.verbose = true
+end
 
 rule '.rb' => '.y' do |t|
   sh "racc -l -o #{t.name} #{t.source}"
