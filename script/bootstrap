@@ -2,6 +2,6 @@
 
 ruby -v
 echo "==> Installing gems..."
-bundle check --path vendor/bundle 2>&1 > /dev/null || {
-  bundle install  --quiet --path vendor/bundle
+bundle check --path .bundle 2>&1 > /dev/null || {
+  bundle install  --quiet --path .bundle
 }
