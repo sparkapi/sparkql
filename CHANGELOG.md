@@ -1,5 +1,5 @@
 
-v0.3.2, 2015-04-14 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.18...v0.3.2))
+v0.3.2, 2015-04-14 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.18...v0.3.20))
 -------------------
 
   * [BUGFIX] Allow seconds for ISO-8601
