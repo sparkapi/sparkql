@@ -193,6 +193,11 @@ module Sparkql::ParserCompatibility
   private
 
   def tokenizer_error( error_hash )
+
+    if @lexer
+      error_hash[:token_index] = @lexer.token_index
+    end
+
     self.errors << Sparkql::ParserError.new( error_hash )
   end
   alias :compile_error :tokenizer_error

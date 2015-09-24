@@ -2,6 +2,21 @@ require 'test_helper'
 
 class LexerTest < Test::Unit::TestCase
   include Sparkql
+
+  test "record the current token and current oken position" do
+      @lexer = Lexer.new "City Eq 'Fargo'"
+      token = @lexer.shift
+      assert_equal "City", @lexer.current_token_value
+      assert_equal 0, @lexer.token_index
+
+      token = @lexer.shift
+      assert_equal " ", @lexer.current_token_value
+      assert_equal 4, @lexer.token_index
+
+      token = @lexer.shift
+      assert_equal "Eq", @lexer.current_token_value
+      assert_equal 5, @lexer.token_index
+  end
   
   def test_check_reserved_words_standard_fields
     ["OrOrOr Eq true", "Equador Eq true", "Oregon Ge 10"].each do |standard_field|

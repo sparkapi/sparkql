@@ -3,7 +3,7 @@ class Sparkql::Lexer < StringScanner
   
   attr_accessor :level, :block_group_identifier
   
-  attr_reader :last_field
+  attr_reader :last_field, :current_token_value, :token_index
 
   def initialize(str)
     str.freeze
@@ -18,43 +18,45 @@ class Sparkql::Lexer < StringScanner
   # TODO the old implementation did value type detection conversion at a later date, we can perform
   # this at parse time if we want!!!!
   def shift
+    @token_index = self.pos
+
     token = case
-      when value = scan(SPACE)
-        [:SPACE, value]
-      when value = scan(LPAREN)
+      when @current_token_value = scan(SPACE)
+        [:SPACE, @current_token_value]
+      when @current_token_value = scan(LPAREN)
         levelup
-        [:LPAREN, value]
-      when value = scan(RPAREN)
+        [:LPAREN, @current_token_value]
+      when @current_token_value = scan(RPAREN)
         # leveldown: do this after parsing group
-        [:RPAREN, value]
-      when value = scan(/\,/)
-        [:COMMA,value]
-      when value = scan(NULL)
+        [:RPAREN, @current_token_value]
+      when @current_token_value = scan(/\,/)
+        [:COMMA,@current_token_value]
+      when @current_token_value = scan(NULL)
         literal :NULL, "NULL"
-      when value = scan(STANDARD_FIELD)
-        check_standard_fields(value)
-      when value = scan(DATETIME)
-        literal :DATETIME, value
-      when value = scan(DATE)
-        literal :DATE, value
-      when value = scan(DECIMAL)
-        literal :DECIMAL, value
-      when value = scan(INTEGER)
-        literal :INTEGER, value
-      when value = scan(CHARACTER)
-        literal :CHARACTER, value
-      when value = scan(BOOLEAN)
-        literal :BOOLEAN, value
-      when value = scan(KEYWORD)
-        check_keywords(value)
-      when value = scan(CUSTOM_FIELD)
-        [:CUSTOM_FIELD,value]
+      when @current_token_value = scan(STANDARD_FIELD)
+        check_standard_fields(@current_token_value)
+      when @current_token_value = scan(DATETIME)
+        literal :DATETIME, @current_token_value
+      when @current_token_value = scan(DATE)
+        literal :DATE, @current_token_value
+      when @current_token_value = scan(DECIMAL)
+        literal :DECIMAL, @current_token_value
+      when @current_token_value = scan(INTEGER)
+        literal :INTEGER, @current_token_value
+      when @current_token_value = scan(CHARACTER)
+        literal :CHARACTER, @current_token_value
+      when @current_token_value = scan(BOOLEAN)
+        literal :BOOLEAN, @current_token_value
+      when @current_token_value = scan(KEYWORD)
+        check_keywords(@current_token_value)
+      when @current_token_value = scan(CUSTOM_FIELD)
+        [:CUSTOM_FIELD,@current_token_value]
       when empty?
         [false, false] # end of file, \Z don't work with StringScanner
       else
         [:UNKNOWN, "ERROR: '#{self.string}'"]
     end
-    #value.freeze
+
     token.freeze
   end
   
