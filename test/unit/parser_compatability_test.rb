@@ -241,7 +241,17 @@ class ParserCompatabilityTest < Test::Unit::TestCase
       expressions = parser.tokenize( f )
       assert_nil expressions, "filter: #{f}"
       assert parser.errors?
+      error = parser.errors.first
     end
+  end
+
+  test "report token index on error" do
+    parser = Parser.new
+    expressions = parser.tokenize( "MlsStatus 2eq 'Active'" )
+    error = parser.errors.first
+
+    assert_equal "2", error.token
+    assert_equal 10, error.token_index
   end
 
   test "tokenize edge case string value" do

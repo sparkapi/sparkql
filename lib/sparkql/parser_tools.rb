@@ -118,7 +118,7 @@ module Sparkql::ParserTools
     token_name = token_to_str(error_token_id)
     token_name.downcase!
     token = error_value.to_s.inspect
-    tokenizer_error(:token => @lexer.last_field, 
+    tokenizer_error(:token => @lexer.current_token_value, 
                     :message => "Error parsing token #{token_name}",
                     :status => :fatal, 
                     :syntax => true)    

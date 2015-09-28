@@ -38,11 +38,12 @@ class ErrorsProcessor
 end
 
 class ParserError
-  attr_accessor :token, :expression, :message, :status, :recovered_as
+  attr_accessor :token, :token_index, :expression, :message, :status, :recovered_as
   attr_writer :syntax, :constraint
 
   def initialize(error_hash={})
     @token = error_hash[:token]
+    @token_index = error_hash[:token_index]
     @expression = error_hash[:expression]
     @message = error_hash[:message]
     @status = error_hash[:status]

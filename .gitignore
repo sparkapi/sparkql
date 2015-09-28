@@ -5,3 +5,4 @@ lib/sparkql/*.output
 pkg/*
 *.swp
 test/reports
+vendor/bundle
