@@ -25,6 +25,10 @@ class Sparkql::FunctionResolver
       :args => [:character, :decimal],
       :return_type => :shape
     },
+    :regex => {
+      :args => [:character],
+      :return_type => :character
+    },
     :linestring => {
       :args => [:character],
       :return_type => :shape
@@ -118,6 +122,13 @@ class Sparkql::FunctionResolver
   protected 
   
   # Supported function calls
+
+  def regex(regular_expression)
+    {
+      :type => :character,
+      :value => regular_expression
+    }
+  end
   
   # Offset the current timestamp by a number of days
   def days(num)
