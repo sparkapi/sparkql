@@ -224,6 +224,13 @@ class ParserTest < Test::Unit::TestCase
     assert_equal '^[0-9]{3}-[0-9]{2}-[0-9]{3}$', expressions.first[:value]
   end
 
+  test "invalid regex" do
+    filter = "ParcelNumber Eq regex('[1234')"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert @parser.errors?, "Parser error expected due to invalid regex"
+  end
+
   test "allow timezone offsets" do
     values = [
       "2013-07-26T10:22",

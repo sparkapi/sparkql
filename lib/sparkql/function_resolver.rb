@@ -124,6 +124,15 @@ class Sparkql::FunctionResolver
   # Supported function calls
 
   def regex(regular_expression)
+    begin
+      Regexp.new(regular_expression)
+    rescue => e
+      @errors << Sparkql::ParserError.new(:token => regular_expression,
+        :message => "Invalid Regexp",
+        :status => :fatal)
+      return
+    end
+
     {
       :type => :character,
       :value => regular_expression
