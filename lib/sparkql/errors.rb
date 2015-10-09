@@ -38,7 +38,8 @@ class ErrorsProcessor
 end
 
 class ParserError
-  attr_accessor :token, :token_index, :expression, :message, :status, :recovered_as
+  attr_accessor :token, :token_index, :expression, :message, :status, :recovered_as,
+    :sparkql, :nested_errors
   attr_writer :syntax, :constraint
 
   def initialize(error_hash={})
@@ -49,6 +50,8 @@ class ParserError
     @status = error_hash[:status]
     @recovered_as = error_hash[:recovered_as]
     @recovered_as = error_hash[:recovered_as]
+    @sparkql = error_hash[:sparkql]
+    @nested_errors = error_hash[:nested_errors]
     self.syntax= error_hash[:syntax] == false ? false : true
     self.constraint= error_hash[:constraint] == true
   end
