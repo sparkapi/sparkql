@@ -232,7 +232,7 @@ class ParserTest < Test::Unit::TestCase
   end
 
   test "invalid regex" do
-    filter = "ParcelNumber Eq regex('[1234')"
+    filter = "ParcelNumber Eq regex('[1234', '')"
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert @parser.errors?, "Parser error expected due to invalid regex"
