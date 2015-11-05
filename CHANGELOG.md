@@ -1,3 +1,8 @@
+v0.3.23, 2015-10-09 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.22...v0.3.23))
+-------------------
+
+  * [IMPROVEMENT] Add regex function for character types
+
 v0.3.22, 2015-10-09 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.21...v0.3.22))
 -------------------
 
