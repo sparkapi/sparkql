@@ -217,6 +217,28 @@ class ParserTest < Test::Unit::TestCase
     assert_equal '2014,days(-7)', expressions.first[:condition]
   end
 
+  test "regex function parses without second param" do
+    filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$')"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert_equal '', expression[:function_parameters][1]
+    assert_equal '^[0-9]{3}-[0-9]{2}-[0-9]{3}$', expression[:function_parameters][0]
+  end
+
+  test "regex function parses with case-insensitive flag" do
+    filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$', 'i')"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert_equal 'i', expression[:function_parameters][1]
+    assert_equal '^[0-9]{3}-[0-9]{2}-[0-9]{3}$', expression[:function_parameters][0]
+  end
+
+  test "invalid regex" do
+    filter = "ParcelNumber Eq regex('[1234', '')"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert @parser.errors?, "Parser error expected due to invalid regex"
+  end
 
   test "allow timezone offsets" do
     values = [

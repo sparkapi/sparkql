@@ -12,6 +12,7 @@ class Sparkql::FunctionResolver
   SECONDS_IN_DAY = 60 * 60 * 24
   STRFTIME_FORMAT = '%Y-%m-%d'
   
+  VALID_REGEX_FLAGS = ["", "i"]
   SUPPORTED_FUNCTIONS = {
     :polygon => {
       :args => [:character],
@@ -24,6 +25,14 @@ class Sparkql::FunctionResolver
     :radius => {
       :args => [:character, :decimal],
       :return_type => :shape
+    },
+    :regex => {
+      :args => [:character],
+      :opt_args => [{
+        :type => :character,
+        :default => ''
+      }],
+      :return_type => :character
     },
     :linestring => {
       :args => [:character],
@@ -67,8 +76,11 @@ class Sparkql::FunctionResolver
         :status => :fatal )
       return
     end
+
     required_args = support[name][:args]
-    unless required_args.size == @args.size
+    total_args = required_args + Array(support[name][:opt_args]).collect {|args| args[:type]}
+
+    if @args.size < required_args.size || @args.size > total_args.size
       @errors << Sparkql::ParserError.new(:token => @name, 
         :message => "Function call '#{@name}' requires #{required_args.size} arguments",
         :status => :fatal )
@@ -77,7 +89,7 @@ class Sparkql::FunctionResolver
     
     count = 0
     @args.each do |arg|
-      unless arg[:type] == required_args[count]
+      unless arg[:type] == total_args[count]
         @errors << Sparkql::ParserError.new(:token => @name, 
           :message => "Function call '#{@name}' has an invalid argument at #{arg[:value]}",
           :status => :fatal )
@@ -105,7 +117,17 @@ class Sparkql::FunctionResolver
   # Execute the function
   def call()
     real_vals = @args.map { |i| i[:value]}
-    v = self.send(@name.to_sym, *real_vals)
+    name = @name.to_sym
+
+    required_args = support[name][:args]
+    total_args = required_args + Array(support[name][:opt_args]).collect {|args| args[:default]}
+    fill_in_optional_args = total_args.drop(real_vals.length)
+
+    fill_in_optional_args.each do |default|
+      real_vals << default
+    end
+
+    v = self.send(name, *real_vals)
 
     unless v.nil?
       v[:function_name] = @name
@@ -118,6 +140,30 @@ class Sparkql::FunctionResolver
   protected 
   
   # Supported function calls
+
+  def regex(regular_expression, flags)
+
+    unless (flags.chars.to_a - VALID_REGEX_FLAGS).empty?
+      @errors << Sparkql::ParserError.new(:token => regular_expression,
+        :message => "Invalid Regexp",
+        :status => :fatal)
+      return
+    end
+
+    begin
+      Regexp.new(regular_expression)
+    rescue => e
+      @errors << Sparkql::ParserError.new(:token => regular_expression,
+        :message => "Invalid Regexp",
+        :status => :fatal)
+      return
+    end
+
+    {
+      :type => :character,
+      :value => regular_expression
+    }
+  end
   
   # Offset the current timestamp by a number of days
   def days(num)
