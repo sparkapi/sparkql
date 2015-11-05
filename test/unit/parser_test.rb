@@ -147,15 +147,16 @@ class ParserTest < Test::Unit::TestCase
 
   def test_function_days
     d = Date.today
-    dt = DateTime.new(d.year, d.month,d.day, 0,0,0, DateTime.now.offset)
-    start = Time.parse(dt.to_s)
+    start = Time.utc(d.year,d.month,d.day,0,0,0)
     filter = "OriginalEntryTimestamp Ge days(-7)"
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
     assert_equal 'days(-7)', expressions.first[:condition]
 
-    test_time = Time.parse(expressions.first[:value])
+    vals = expressions.first[:value].split('-')
+
+    test_time = Time.utc(vals[0].to_i, vals[1].to_i, vals[2].to_i)
     
     assert (-605000 < test_time - start && -604000 > test_time - start), "Time range off by more than five seconds #{test_time - start} '#{test_time} - #{start}'"
   end
