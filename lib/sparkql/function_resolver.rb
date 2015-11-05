@@ -28,7 +28,10 @@ class Sparkql::FunctionResolver
     },
     :regex => {
       :args => [:character],
-      :opt_args => [:character],
+      :opt_args => [{
+        :type => :character,
+        :default => ''
+      }],
       :return_type => :character
     },
     :linestring => {
@@ -75,7 +78,7 @@ class Sparkql::FunctionResolver
     end
 
     required_args = support[name][:args]
-    total_args = required_args + Array(support[name][:opt_args])
+    total_args = required_args + Array(support[name][:opt_args]).collect {|args| args[:type]}
 
     if @args.size < required_args.size || @args.size > total_args.size
       @errors << Sparkql::ParserError.new(:token => @name, 
@@ -114,7 +117,17 @@ class Sparkql::FunctionResolver
   # Execute the function
   def call()
     real_vals = @args.map { |i| i[:value]}
-    v = self.send(@name.to_sym, *real_vals)
+    name = @name.to_sym
+
+    required_args = support[name][:args]
+    total_args = required_args + Array(support[name][:opt_args]).collect {|args| args[:default]}
+    fill_in_optional_args = total_args.drop(real_vals.length)
+
+    fill_in_optional_args.each do |default|
+      real_vals << default
+    end
+
+    v = self.send(name, *real_vals)
 
     unless v.nil?
       v[:function_name] = @name
@@ -128,7 +141,7 @@ class Sparkql::FunctionResolver
   
   # Supported function calls
 
-  def regex(regular_expression, flags='')
+  def regex(regular_expression, flags)
 
     unless (flags.chars.to_a - VALID_REGEX_FLAGS).empty?
       @errors << Sparkql::ParserError.new(:token => regular_expression,

@@ -217,18 +217,20 @@ class ParserTest < Test::Unit::TestCase
     assert_equal '2014,days(-7)', expressions.first[:condition]
   end
 
-  test "regex function parses" do
-    filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$', '')"
+  test "regex function parses without second param" do
+    filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$')"
     @parser = Parser.new
-    expressions = @parser.parse(filter)
-    assert_equal '^[0-9]{3}-[0-9]{2}-[0-9]{3}$', expressions.first[:value]
+    expression = @parser.parse(filter).first
+    assert_equal '', expression[:function_parameters][1]
+    assert_equal '^[0-9]{3}-[0-9]{2}-[0-9]{3}$', expression[:function_parameters][0]
   end
 
   test "regex function parses with case-insensitive flag" do
     filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$', 'i')"
     @parser = Parser.new
-    expressions = @parser.parse(filter)
-    assert_equal '^[0-9]{3}-[0-9]{2}-[0-9]{3}$', expressions.first[:value]
+    expression = @parser.parse(filter).first
+    assert_equal 'i', expression[:function_parameters][1]
+    assert_equal '^[0-9]{3}-[0-9]{2}-[0-9]{3}$', expression[:function_parameters][0]
   end
 
   test "invalid regex" do
