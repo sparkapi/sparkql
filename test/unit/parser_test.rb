@@ -218,7 +218,14 @@ class ParserTest < Test::Unit::TestCase
   end
 
   test "regex function parses" do
-    filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$')"
+    filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$', '')"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert_equal '^[0-9]{3}-[0-9]{2}-[0-9]{3}$', expressions.first[:value]
+  end
+
+  test "regex function parses with case-insensitive flag" do
+    filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$', 'i')"
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert_equal '^[0-9]{3}-[0-9]{2}-[0-9]{3}$', expressions.first[:value]

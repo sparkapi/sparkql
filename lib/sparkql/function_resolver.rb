@@ -12,6 +12,7 @@ class Sparkql::FunctionResolver
   SECONDS_IN_DAY = 60 * 60 * 24
   STRFTIME_FORMAT = '%Y-%m-%d'
   
+  VALID_REGEX_FLAGS = ["", "i"]
   SUPPORTED_FUNCTIONS = {
     :polygon => {
       :args => [:character],
@@ -26,7 +27,7 @@ class Sparkql::FunctionResolver
       :return_type => :shape
     },
     :regex => {
-      :args => [:character],
+      :args => [:character, :character],
       :return_type => :character
     },
     :linestring => {
@@ -123,7 +124,15 @@ class Sparkql::FunctionResolver
   
   # Supported function calls
 
-  def regex(regular_expression)
+  def regex(regular_expression, flags)
+
+    unless (flags.chars.to_a - VALID_REGEX_FLAGS).empty?
+      @errors << Sparkql::ParserError.new(:token => regular_expression,
+        :message => "Invalid Regexp",
+        :status => :fatal)
+      return
+    end
+
     begin
       Regexp.new(regular_expression)
     rescue => e
