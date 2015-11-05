@@ -27,7 +27,8 @@ class Sparkql::FunctionResolver
       :return_type => :shape
     },
     :regex => {
-      :args => [:character, :character],
+      :args => [:character],
+      :opt_args => [:character],
       :return_type => :character
     },
     :linestring => {
@@ -72,8 +73,11 @@ class Sparkql::FunctionResolver
         :status => :fatal )
       return
     end
+
     required_args = support[name][:args]
-    unless required_args.size == @args.size
+    total_args = required_args + Array(support[name][:opt_args])
+
+    if @args.size < required_args.size || @args.size > total_args.size
       @errors << Sparkql::ParserError.new(:token => @name, 
         :message => "Function call '#{@name}' requires #{required_args.size} arguments",
         :status => :fatal )
@@ -82,7 +86,7 @@ class Sparkql::FunctionResolver
     
     count = 0
     @args.each do |arg|
-      unless arg[:type] == required_args[count]
+      unless arg[:type] == total_args[count]
         @errors << Sparkql::ParserError.new(:token => @name, 
           :message => "Function call '#{@name}' has an invalid argument at #{arg[:value]}",
           :status => :fatal )
@@ -124,7 +128,7 @@ class Sparkql::FunctionResolver
   
   # Supported function calls
 
-  def regex(regular_expression, flags)
+  def regex(regular_expression, flags='')
 
     unless (flags.chars.to_a - VALID_REGEX_FLAGS).empty?
       @errors << Sparkql::ParserError.new(:token => regular_expression,
