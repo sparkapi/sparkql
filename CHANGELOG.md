@@ -1,3 +1,8 @@
+v0.3.22, 2015-10-09 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.21...v0.3.22))
+-------------------
+
+  * [IMPROVEMENT] Record sparkql and nested errors for fields that embed sparkql
+
 v0.3.21, 2015-09-24 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.20...v0.3.21))
 -------------------
 
