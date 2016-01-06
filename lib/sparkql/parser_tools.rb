@@ -7,6 +7,7 @@ module Sparkql::ParserTools
   
   def parse(str)
     @lexer = Sparkql::Lexer.new(str)
+    @expression_count = 0
     results = do_parse
     return if results.nil?
     validate_expressions results
@@ -33,6 +34,7 @@ module Sparkql::ParserTools
       tokenizer_error(:token => op, :expression => expression,
         :message => "Operator not supported for this type and value string", :status => :fatal )
     end
+    @expression_count += 1
     [expression]
   end
   
@@ -43,6 +45,14 @@ module Sparkql::ParserTools
   end
 
   def tokenize_unary_conjunction(conj, exp)
+
+    # Handles the case when a SparkQL filter string
+    # begins with a unary operator, and is nested, such as:
+    # Not (Not Field Eq 1)
+    if @expression_count == 1 && @lexer.level > 0
+      exp.first[:conjunction] = conj 
+    end
+
     exp.first[:unary] = conj
     exp.first[:unary_level] = @lexer.level
     exp

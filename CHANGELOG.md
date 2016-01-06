@@ -1,3 +1,8 @@
+v0.3.24, 2016-01-05 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.23...v0.3.24))
+-------------------
+
+  * [BUGFIX] Support opening Not operator for "Not (Not ...)" expressions.
+
 v0.3.23, 2015-10-09 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.22...v0.3.23))
 -------------------
 
