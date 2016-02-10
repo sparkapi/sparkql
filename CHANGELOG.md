@@ -1,3 +1,10 @@
+v0.4.0, 2015-04-14 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.20...v0.4.0))
+-------------------
+
+  * Drop support for ruby 1.8.7. Georuby dropped support several years back and
+    this drop allows us to pick up newer update allows us to stay in sync with
+    that gems development
+
 v0.3.24, 2016-01-05 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.23...v0.3.24))
 -------------------
 
