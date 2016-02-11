@@ -50,6 +50,11 @@ module Sparkql::ParserCompatibility
       :type => :null,
       :regex => /^NULL|Null|null$/,
       :operators => Sparkql::Token::EQUALITY_OPERATORS
+    },
+    {
+      :type => :function,
+      # This type is not parseable, so no regex
+      :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
     }
   ]
 

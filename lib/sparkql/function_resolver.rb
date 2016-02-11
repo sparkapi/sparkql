@@ -10,8 +10,8 @@ require 'sparkql/geo'
 # SUPPORTED_FUNCTIONS which will run validation on the function syntax prior to execution.
 class Sparkql::FunctionResolver
   SECONDS_IN_DAY = 60 * 60 * 24
-  STRFTIME_FORMAT = '%Y-%m-%d'
-  
+  STRFTIME_DATE_FORMAT = '%Y-%m-%d'
+  STRFTIME_TIME_FORMAT = '%H:%M:%S.%N'
   VALID_REGEX_FLAGS = ["", "i"]
   SUPPORTED_FUNCTIONS = {
     :polygon => {
@@ -53,6 +53,16 @@ class Sparkql::FunctionResolver
     :now => { 
       :args => [],
       :return_type => :datetime
+    },
+    :date => { 
+      :args => [[:field,:datetime]],
+      :resolve_for_type => true,
+      :return_type => :date
+    },
+    :time => { 
+      :args => [[:field,:datetime]],
+      :resolve_for_type => true,
+      :return_type => :time
     }
   }
   
@@ -89,7 +99,7 @@ class Sparkql::FunctionResolver
     
     count = 0
     @args.each do |arg|
-      unless arg[:type] == total_args[count]
+      unless Array(total_args[count]).include?(arg[:type])
         @errors << Sparkql::ParserError.new(:token => @name, 
           :message => "Function call '#{@name}' has an invalid argument at #{arg[:value]}",
           :status => :fatal )
@@ -99,7 +109,7 @@ class Sparkql::FunctionResolver
   end
   
   def return_type
-    supported[@name.to_sym][:return_type]
+    support[@name.to_sym][:return_type]
   end
   
   def errors
@@ -126,8 +136,12 @@ class Sparkql::FunctionResolver
     fill_in_optional_args.each do |default|
       real_vals << default
     end
-
-    v = self.send(name, *real_vals)
+    method = name
+    if support[name][:resolve_for_type]
+      method_type =  @args.first[:type]
+      method = "#{method}_#{method_type}"
+    end
+    v = self.send(method, *real_vals)
 
     unless v.nil?
       v[:function_name] = @name
@@ -172,7 +186,7 @@ class Sparkql::FunctionResolver
     d = Date.today + num
     {
       :type => :date,
-      :value => d.strftime(STRFTIME_FORMAT)
+      :value => d.strftime(STRFTIME_DATE_FORMAT)
     }
   end
   
@@ -183,12 +197,42 @@ class Sparkql::FunctionResolver
       :value => Time.now.iso8601
     }
   end
+  
+  def date_field(arg)
+    {
+      :type => :function,
+      :value => "date",
+      :args => [arg]
+    }
+  end
+  
+  def time_field(arg)
+    {
+      :type => :function,
+      :value => "time",
+      :args => [arg]
+    }
+  end
+
+  def date_datetime(dt)
+    {
+      :type => :date,
+      :value => dt.strftime(STRFTIME_DATE_FORMAT)
+    }
+  end
+  
+  def time_datetime(dt)
+    {
+      :type => :time,
+      :value => dt.strftime(STRFTIME_TIME_FORMAT)
+    }
+  end
 
   def months num_months
     d = DateTime.now >> num_months
     {
       :type => :date,
-      :value => d.strftime(STRFTIME_FORMAT)
+      :value => d.strftime(STRFTIME_DATE_FORMAT)
     }
   end
 
@@ -196,7 +240,7 @@ class Sparkql::FunctionResolver
     d = DateTime.now >> (num_years * 12)
     {
       :type => :date,
-      :value => d.strftime(STRFTIME_FORMAT)
+      :value => d.strftime(STRFTIME_DATE_FORMAT)
     }
   end
   

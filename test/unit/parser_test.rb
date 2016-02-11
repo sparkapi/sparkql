@@ -218,6 +218,36 @@ class ParserTest < Test::Unit::TestCase
     assert_equal '2014,days(-7)', expressions.first[:condition]
   end
 
+  def test_function_date
+    filter = "OnMarketDate Eq date(OriginalEntryTimestamp)"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal 'date(OriginalEntryTimestamp)', expressions.first[:condition]
+    assert_equal 'date', expressions.first[:value]
+    assert_equal :function, expressions.first[:type]
+    # Run using a static value, we just resolve the type
+    filter = "OnMarketDate Eq date(2013-07-26T10:22:15.111-0100)"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal 'date(2013-07-26T10:22:15.111-0100)', expressions.first[:condition]
+    assert_equal '2013-07-26', expressions.first[:value]
+    assert_equal :date, expressions.first[:type]
+    # And the grand finale: run on both sides
+    filter = "date(OriginalEntryTimestamp) Eq date(2013-07-26T10:22:15.111-0100)"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal 'date(2013-07-26T10:22:15.111-0100)', expression[:condition]
+    assert_equal '2013-07-26', expression[:value]
+    assert_equal :date, expression[:type]
+    # annnd the field function stuff
+    assert_equal "OriginalEntryTimestamp", expression[:field]
+    assert_equal :date, expression[:field_function_type]
+    assert_equal "date", expression[:field_function]
+  end
+
   test "regex function parses without second param" do
     filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$')"
     @parser = Parser.new

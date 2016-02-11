@@ -94,6 +94,7 @@ filter.
      field
      	: STANDARD_FIELD
      	| CUSTOM_FIELD
+     	| function
      	;
 ```
 
@@ -140,6 +141,7 @@ Functions may optionally have a comma delimited list of parameters.
      function_arg
        : literal
        | literals
+       | field 
        ;
 ```
 

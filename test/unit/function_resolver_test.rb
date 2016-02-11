@@ -1,8 +1,10 @@
 require 'test_helper'
 require 'sparkql/geo'
 
-class ParserTest < Test::Unit::TestCase
+class FunctionResolverTest < Test::Unit::TestCase
   include Sparkql
+  
+  EXAMPLE_DATE = DateTime.parse("2013-07-26T10:22:15.422804")
 
   test "function parameters and name preserved" do
     f = FunctionResolver.new('radius', [{:type => :character, 
@@ -147,10 +149,59 @@ class ParserTest < Test::Unit::TestCase
     assert_nil f.call
   end
   
+  test "return_type" do 
+    f = FunctionResolver.new('radius', [{:type => :character, 
+        :value => "35.12 -68.33, 35.13 -68.34"},{:type => :decimal, 
+        :value => 1.0}])
+    assert_equal :shape, f.return_type
+  end
+  
   test "invalid function" do
     f = FunctionResolver.new('then', [])
     f.validate
     assert f.errors?, "'then' is not a function"
   end
+
+  test "time(datetime)" do
+    f = FunctionResolver.new('time', [{:type => :datetime, :value => EXAMPLE_DATE}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :time, value[:type]
+    assert_equal '10:22:15.422804000', value[:value]
+  end
+
+  test "date(datetime)" do
+    f = FunctionResolver.new('date', [{:type => :datetime, :value => EXAMPLE_DATE}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :date, value[:type]
+    assert_equal '2013-07-26', value[:value]
+  end
+
+###
+# Delayed functions. These functions don't get run immediately and require
+#  resolution by the backing system
+###
   
+  test "time(field)" do
+    f = FunctionResolver.new('time', [{:type => :field, :value => "OriginalEntryTimestamp"}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :function, value[:type]
+    assert_equal 'time', value[:value]
+    assert_equal "OriginalEntryTimestamp", value[:args].first
+  end
+  
+  test "date(field)" do
+    f = FunctionResolver.new('date', [{:type => :field, :value => "OriginalEntryTimestamp"}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :function, value[:type]
+    assert_equal 'date', value[:value]
+    assert_equal "OriginalEntryTimestamp", value[:args].first
+  end
 end

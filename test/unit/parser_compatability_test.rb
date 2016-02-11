@@ -498,8 +498,8 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     expression = parser.tokenize( "DateField Eq now()").first
     assert !parser.errors?
     assert parser.send(:check_type!, expression, :date)
-    assert_equal t.strftime(Sparkql::FunctionResolver::STRFTIME_FORMAT), 
-                 parser.escape_value(expression).strftime(Sparkql::FunctionResolver::STRFTIME_FORMAT)
+    assert_equal t.strftime(Sparkql::FunctionResolver::STRFTIME_DATE_FORMAT), 
+                 parser.escape_value(expression).strftime(Sparkql::FunctionResolver::STRFTIME_DATE_FORMAT)
   end
   
   test "datetime->date type coercion array" do
@@ -509,9 +509,9 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     assert !parser.errors?
     assert parser.send(:check_type!, expression, :date)
     yesterday = today - 3600 * 24
-    assert_equal [ yesterday.strftime(Sparkql::FunctionResolver::STRFTIME_FORMAT),
-                   today.strftime(Sparkql::FunctionResolver::STRFTIME_FORMAT)], 
-                 parser.escape_value(expression).map { |i| i.strftime(Sparkql::FunctionResolver::STRFTIME_FORMAT)}
+    assert_equal [ yesterday.strftime(Sparkql::FunctionResolver::STRFTIME_DATE_FORMAT),
+                   today.strftime(Sparkql::FunctionResolver::STRFTIME_DATE_FORMAT)], 
+                 parser.escape_value(expression).map { |i| i.strftime(Sparkql::FunctionResolver::STRFTIME_DATE_FORMAT)}
   end
 
   
