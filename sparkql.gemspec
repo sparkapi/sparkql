@@ -20,14 +20,11 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  # georuby 2.1.x adds ruby 1.9-only syntax, so that's 
-  # a no-go for us at the moment
-  s.add_dependency             'georuby', '~> 2.0.0'
-  s.add_development_dependency 'racc', '1.4.8'
+  s.add_dependency             'georuby', '~> 2.0'
+  s.add_development_dependency 'racc', '~> 1.4.8'
   s.add_development_dependency 'rake', '~> 0.9.2'
   s.add_development_dependency 'test-unit', '~> 2.1.0'
   s.add_development_dependency 'ci_reporter', '~> 1.6'
   s.add_development_dependency 'mocha', '~> 0.12.0'
-  s.add_development_dependency 'rcov', '~> 0.9.9'
 
 end

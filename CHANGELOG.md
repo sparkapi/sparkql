@@ -1,3 +1,11 @@
+v1.0.0, 2016-02-11 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.20...v1.0.0))
+-------------------
+  * [IMPROVEMENT] function support for fields (delayed resolution). Backing systems must
+    implement necessary function behaviour.
+  * Drop support for ruby 1.8.7. Georuby dropped support several years back and
+    this drop allows us to pick up newer update allows us to stay in sync with
+    that gems development
+
 v0.3.24, 2016-01-05 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.23...v0.3.24))
 -------------------
 

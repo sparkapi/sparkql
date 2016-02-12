@@ -19,6 +19,11 @@ module Sparkql::ParserCompatibility
       :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
     },
     {
+      :type => :time,
+      :regex => /^[0-9]{2}\:[0-9]{2}(\:[0-9]{2})?(\.[0-9]{6)$/,
+      :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
+    },
+    {
       :type => :character,
       :regex => /^'([^'\\]*(\\.[^'\\]*)*)'$/, # Strings must be single quoted.  Any inside single quotes must be escaped.
       :multiple => /^'([^'\\]*(\\.[^'\\]*)*)'/,
@@ -50,6 +55,11 @@ module Sparkql::ParserCompatibility
       :type => :null,
       :regex => /^NULL|Null|null$/,
       :operators => Sparkql::Token::EQUALITY_OPERATORS
+    },
+    {
+      :type => :function,
+      # This type is not parseable, so no regex
+      :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
     }
   ]
 
@@ -130,6 +140,8 @@ module Sparkql::ParserCompatibility
       return date_escape(expression[:value])
     when :datetime
       return datetime_escape(expression[:value])
+    when :time
+      return time_escape(expression[:value])
     when :boolean
       return boolean_escape(expression[:value])
     when :null
@@ -157,6 +169,10 @@ module Sparkql::ParserCompatibility
   end
 
   def datetime_escape(string)
+    DateTime.parse(string)
+  end
+  
+  def time_escape(string)
     DateTime.parse(string)
   end
 
@@ -204,7 +220,8 @@ module Sparkql::ParserCompatibility
 
   # Checks the type of an expression with what is expected.
   def check_type!(expression, expected, supports_nulls = true)
-    if expected == expression[:type] || (supports_nulls && expression[:type] == :null)
+    if expected == expression[:type] || check_function_type?(expression, expected) ||
+      (supports_nulls && expression[:type] == :null)
       return true
     elsif expected == :datetime && expression[:type] == :date
       expression[:type] = :datetime
@@ -232,6 +249,17 @@ module Sparkql::ParserCompatibility
       compile_error(:token => expression[:field], :expression => expression,
             :message => "expected #{expected} but found #{expression[:type]}",
             :status => :fatal )
+  end
+  
+  # If a function is being applied to a field, we check that the return type of
+  # the function matches what is expected, and that the function supports the
+  # field type as the first argument.
+  def check_function_type?(expression, expected)
+    return false unless expression[:field_function_type] == expression[:type]
+    # Lookup the function arguments
+    function = Sparkql::FunctionResolver::SUPPORTED_FUNCTIONS[expression[:field_function].to_sym]
+    return false if function.nil?
+    Array(function[:args].first).include?(expected)
   end
 
   # Builds the correct operator based on the type and the value.

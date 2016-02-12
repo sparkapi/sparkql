@@ -94,6 +94,7 @@ filter.
      field
      	: STANDARD_FIELD
      	| CUSTOM_FIELD
+     	| function
      	;
 ```
 
@@ -140,6 +141,7 @@ Functions may optionally have a comma delimited list of parameters.
      function_arg
        : literal
        | literals
+       | field 
        ;
 ```
 
@@ -187,6 +189,7 @@ Literals only support a single value in a condition
      literal
        : DATE
        | DATETIME
+       | TIME
        | BOOLEAN
        | NULL
        ;
@@ -202,6 +205,7 @@ Functions, and literals that can be used in a range
        | DECIMAL
        | DATE
        | DATETIME
+       | TIME
        | function
        ;
 ```

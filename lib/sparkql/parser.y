@@ -91,6 +91,7 @@ rule
   field
   	: STANDARD_FIELD
   	| CUSTOM_FIELD
+  	| function
   	;
   
 ##### Condition
@@ -130,6 +131,7 @@ rule
   function_arg
     : literal
     | literals
+    | field { result = tokenize_field_arg(val[0]) }
     ;
     
 ##### Literal List
@@ -165,6 +167,7 @@ rule
   literal
     : DATE
     | DATETIME
+    | TIME
     | BOOLEAN
     | NULL
     ;
@@ -177,6 +180,7 @@ rule
     | DECIMAL
     | DATE
     | DATETIME
+    | TIME
     | function
     ;
 
