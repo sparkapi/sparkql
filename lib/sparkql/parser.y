@@ -167,6 +167,7 @@ rule
   literal
     : DATE
     | DATETIME
+    | TIME
     | BOOLEAN
     | NULL
     ;
@@ -179,6 +180,7 @@ rule
     | DECIMAL
     | DATE
     | DATETIME
+    | TIME
     | function
     ;
 

@@ -273,6 +273,10 @@ class ParserTest < Test::Unit::TestCase
 
   test "allow timezone offsets" do
     values = [
+      "2013-07-26",
+      "10:22",
+      "10:22:15.1111",
+      "10:22:15",
       "2013-07-26T10:22",
       "2013-07-26T10:22Z",
       "2013-07-26T10:22+01:00",
@@ -288,6 +292,7 @@ class ParserTest < Test::Unit::TestCase
       filter = "DatetimeField Eq #{value}"
       @parser = Parser.new
       expressions = @parser.parse(filter)
+      assert !@parser.errors?, "errors #{@parser.errors.inspect}"
       assert_not_nil expressions, "#{value} failed"
       assert_equal expressions.first[:value], value, "#{value} failed"
     end

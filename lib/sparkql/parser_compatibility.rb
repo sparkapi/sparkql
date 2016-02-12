@@ -19,6 +19,11 @@ module Sparkql::ParserCompatibility
       :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
     },
     {
+      :type => :time,
+      :regex => /^[0-9]{2}\:[0-9]{2}(\:[0-9]{2})?(\.[0-9]{6)$/,
+      :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
+    },
+    {
       :type => :character,
       :regex => /^'([^'\\]*(\\.[^'\\]*)*)'$/, # Strings must be single quoted.  Any inside single quotes must be escaped.
       :multiple => /^'([^'\\]*(\\.[^'\\]*)*)'/,
@@ -135,6 +140,8 @@ module Sparkql::ParserCompatibility
       return date_escape(expression[:value])
     when :datetime
       return datetime_escape(expression[:value])
+    when :time
+      return time_escape(expression[:value])
     when :boolean
       return boolean_escape(expression[:value])
     when :null
@@ -162,6 +169,10 @@ module Sparkql::ParserCompatibility
   end
 
   def datetime_escape(string)
+    DateTime.parse(string)
+  end
+  
+  def time_escape(string)
     DateTime.parse(string)
   end
 

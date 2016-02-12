@@ -16,54 +16,60 @@ module Sparkql
 ##### State transition tables begin ###
 
 racc_action_table = [
-    46,    10,    11,    14,    52,    31,    32,    33,    34,    35,
-    36,    37,    10,    11,    14,    53,    31,    32,    33,    34,
-    35,    36,    37,    14,   -28,    31,    32,    33,    34,    35,
-    36,    37,     8,    23,     9,    22,    10,    11,    14,    14,
-    15,    40,    41,    54,    42,    43,     8,    55,     9,   nil,
-    10,    11,    14,    14,   nil,    40,    41,   nil,    42,    43,
+    48,    10,    11,    14,    54,    31,    32,    33,    34,    35,
+    36,    37,    38,    10,    11,    14,    55,    31,    32,    33,
+    34,    35,    36,    37,    38,    14,   -28,    31,    32,    33,
+    34,    35,    36,    37,    38,    14,    23,    41,    42,    22,
+    43,    44,    45,    14,    15,    41,    42,   nil,    43,    44,
+    45,     8,   nil,     9,   nil,    10,    11,    14,     8,   nil,
      9,   nil,    10,    11,    14,     9,   nil,    10,    11,    14,
-     9,   nil,    10,    11,    14,    14,   nil,    31,    32,    33,
-    17,    16,   nil,    45,    18,    19,    17,    16 ]
+     9,   nil,    10,    11,    14,     9,    56,    10,    11,    14,
+    57,    14,   nil,    31,    32,    33,    17,    16,   nil,    47,
+    18,    19,    17,    16 ]
 
 racc_action_check = [
     22,    22,    22,    22,    29,    22,    22,    22,    22,    22,
-    22,    22,    55,    55,    55,    39,    55,    55,    55,    55,
-    55,    55,    55,    18,    28,    18,    18,    18,    18,    18,
-    18,    18,     0,    15,     0,    13,     0,     0,     0,    53,
-     1,    53,    53,    47,    53,    53,     9,    47,     9,   nil,
-     9,     9,     9,    19,   nil,    19,    19,   nil,    19,    19,
-     8,   nil,     8,     8,     8,    16,   nil,    16,    16,    16,
-    17,   nil,    17,    17,    17,    52,   nil,    52,    52,    52,
-    21,    21,   nil,    21,     6,     6,     2,     2 ]
+    22,    22,    22,    57,    57,    57,    40,    57,    57,    57,
+    57,    57,    57,    57,    57,    18,    28,    18,    18,    18,
+    18,    18,    18,    18,    18,    19,    15,    19,    19,    13,
+    19,    19,    19,    55,     1,    55,    55,   nil,    55,    55,
+    55,     9,   nil,     9,   nil,     9,     9,     9,     0,   nil,
+     0,   nil,     0,     0,     0,     8,   nil,     8,     8,     8,
+    16,   nil,    16,    16,    16,    17,    49,    17,    17,    17,
+    49,    54,   nil,    54,    54,    54,    21,    21,   nil,    21,
+     6,     6,     2,     2 ]
 
 racc_action_pointer = [
-    27,    40,    81,   nil,   nil,   nil,    81,   nil,    53,    41,
-   nil,   nil,   nil,    28,   nil,    33,    58,    63,    12,    42,
-   nil,    75,    -8,   nil,   nil,   nil,   nil,   nil,    12,    -8,
-   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,     3,
-   nil,   nil,   nil,   nil,   nil,   nil,   nil,    35,   nil,   nil,
-   nil,   nil,    64,    28,   nil,     3,   nil,   nil,   nil,   nil ]
+    53,    44,    87,   nil,   nil,   nil,    87,   nil,    58,    46,
+   nil,   nil,   nil,    32,   nil,    36,    63,    68,    14,    24,
+   nil,    81,    -8,   nil,   nil,   nil,   nil,   nil,    14,    -8,
+   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+     4,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,    68,
+   nil,   nil,   nil,   nil,    70,    32,   nil,     4,   nil,   nil,
+   nil,   nil ]
 
 racc_action_default = [
-    -2,   -44,    -1,    -3,    -4,    -5,   -44,    -8,   -44,   -44,
-   -13,   -14,   -15,   -44,   -21,   -44,   -44,   -44,   -44,   -44,
-    -9,   -44,   -44,    60,   -10,   -11,    -6,   -16,   -17,   -18,
-   -27,   -32,   -33,   -34,   -35,   -36,   -37,   -38,    -7,   -44,
-   -39,   -40,   -41,   -42,   -43,   -12,   -19,   -44,   -22,   -24,
-   -25,   -26,   -44,   -44,   -20,   -44,   -29,   -30,   -31,   -23 ]
+    -2,   -46,    -1,    -3,    -4,    -5,   -46,    -8,   -46,   -46,
+   -13,   -14,   -15,   -46,   -21,   -46,   -46,   -46,   -46,   -46,
+    -9,   -46,   -46,    62,   -10,   -11,    -6,   -16,   -17,   -18,
+   -27,   -32,   -33,   -34,   -35,   -36,   -37,   -38,   -39,    -7,
+   -46,   -40,   -41,   -42,   -43,   -44,   -45,   -12,   -19,   -46,
+   -22,   -24,   -25,   -26,   -46,   -46,   -20,   -46,   -29,   -30,
+   -31,   -23 ]
 
 racc_goto_table = [
-    28,    44,    30,    39,     2,    51,    48,    20,    29,    27,
-    47,    38,    26,    21,     1,    24,    25,   nil,   nil,   nil,
+    28,    46,    30,    40,     2,    53,    50,    20,    29,    27,
+    49,    39,    26,    21,     1,    24,    25,   nil,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
-   nil,   nil,   nil,   nil,    57,    44,    56,    58,    51,    59 ]
+   nil,   nil,   nil,   nil,   nil,   nil,    59,    46,    58,    60,
+    53,    61 ]
 
 racc_goto_check = [
     10,    10,    16,    17,     2,     6,    15,     3,    12,    11,
     14,     8,     7,     2,     1,     3,     3,   nil,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
-   nil,   nil,   nil,   nil,    10,    10,    16,    17,     6,    15 ]
+   nil,   nil,   nil,   nil,   nil,   nil,    10,    10,    16,    17,
+     6,    15 ]
 
 racc_goto_pointer = [
    nil,    14,     4,    -1,   nil,   nil,   -17,    -6,    -8,   nil,
@@ -71,57 +77,59 @@ racc_goto_pointer = [
 
 racc_goto_default = [
    nil,   nil,   nil,     3,     4,     5,     6,   nil,   nil,     7,
-    12,    49,   nil,    13,   nil,   nil,    50,   nil ]
+    12,    51,   nil,    13,   nil,   nil,    52,   nil ]
 
 racc_reduce_table = [
   0, 0, :racc_error,
-  1, 21, :_reduce_none,
-  0, 21, :_reduce_2,
   1, 22, :_reduce_none,
-  1, 22, :_reduce_none,
-  1, 22, :_reduce_none,
-  3, 23, :_reduce_6,
-  3, 23, :_reduce_7,
+  0, 22, :_reduce_2,
   1, 23, :_reduce_none,
-  2, 25, :_reduce_9,
-  3, 24, :_reduce_10,
-  3, 24, :_reduce_11,
-  3, 29, :_reduce_12,
-  1, 26, :_reduce_none,
-  1, 26, :_reduce_none,
-  1, 26, :_reduce_none,
+  1, 23, :_reduce_none,
+  1, 23, :_reduce_none,
+  3, 24, :_reduce_6,
+  3, 24, :_reduce_7,
+  1, 24, :_reduce_none,
+  2, 26, :_reduce_9,
+  3, 25, :_reduce_10,
+  3, 25, :_reduce_11,
+  3, 30, :_reduce_12,
   1, 27, :_reduce_none,
   1, 27, :_reduce_none,
-  1, 27, :_reduce_18,
-  3, 30, :_reduce_19,
-  4, 30, :_reduce_20,
-  1, 33, :_reduce_none,
+  1, 27, :_reduce_none,
+  1, 28, :_reduce_none,
+  1, 28, :_reduce_none,
+  1, 28, :_reduce_18,
+  3, 31, :_reduce_19,
+  4, 31, :_reduce_20,
   1, 34, :_reduce_none,
-  3, 34, :_reduce_23,
   1, 35, :_reduce_none,
-  1, 35, :_reduce_none,
-  1, 35, :_reduce_26,
+  3, 35, :_reduce_23,
+  1, 36, :_reduce_none,
+  1, 36, :_reduce_none,
+  1, 36, :_reduce_26,
+  1, 33, :_reduce_none,
+  1, 33, :_reduce_none,
+  3, 33, :_reduce_29,
+  3, 33, :_reduce_30,
+  3, 29, :_reduce_31,
+  1, 37, :_reduce_none,
+  1, 37, :_reduce_none,
+  1, 37, :_reduce_none,
   1, 32, :_reduce_none,
   1, 32, :_reduce_none,
-  3, 32, :_reduce_29,
-  3, 32, :_reduce_30,
-  3, 28, :_reduce_31,
-  1, 36, :_reduce_none,
-  1, 36, :_reduce_none,
-  1, 36, :_reduce_none,
-  1, 31, :_reduce_none,
-  1, 31, :_reduce_none,
-  1, 31, :_reduce_none,
-  1, 31, :_reduce_none,
-  1, 37, :_reduce_none,
-  1, 37, :_reduce_none,
-  1, 37, :_reduce_none,
-  1, 37, :_reduce_none,
-  1, 37, :_reduce_none ]
+  1, 32, :_reduce_none,
+  1, 32, :_reduce_none,
+  1, 32, :_reduce_none,
+  1, 38, :_reduce_none,
+  1, 38, :_reduce_none,
+  1, 38, :_reduce_none,
+  1, 38, :_reduce_none,
+  1, 38, :_reduce_none,
+  1, 38, :_reduce_none ]
 
-racc_reduce_n = 44
+racc_reduce_n = 46
 
-racc_shift_n = 60
+racc_shift_n = 62
 
 racc_token_table = {
   false => 0,
@@ -142,10 +150,11 @@ racc_token_table = {
   :CHARACTER => 15,
   :DATE => 16,
   :DATETIME => 17,
-  :BOOLEAN => 18,
-  :NULL => 19 }
+  :TIME => 18,
+  :BOOLEAN => 19,
+  :NULL => 20 }
 
-racc_nt_base = 20
+racc_nt_base = 21
 
 racc_use_result_var = true
 
@@ -184,6 +193,7 @@ Racc_token_to_s_table = [
   "CHARACTER",
   "DATE",
   "DATETIME",
+  "TIME",
   "BOOLEAN",
   "NULL",
   "$start",
@@ -341,6 +351,10 @@ end
 # reduce 42 omitted
 
 # reduce 43 omitted
+
+# reduce 44 omitted
+
+# reduce 45 omitted
 
 def _reduce_none(val, _values, result)
   val[0]

@@ -39,6 +39,8 @@ class Sparkql::Lexer < StringScanner
         literal :DATETIME, @current_token_value
       when @current_token_value = scan(DATE)
         literal :DATE, @current_token_value
+      when @current_token_value = scan(TIME)
+        literal :TIME, @current_token_value
       when @current_token_value = scan(DECIMAL)
         literal :DECIMAL, @current_token_value
       when @current_token_value = scan(INTEGER)

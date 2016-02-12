@@ -189,6 +189,7 @@ Literals only support a single value in a condition
      literal
        : DATE
        | DATETIME
+       | TIME
        | BOOLEAN
        | NULL
        ;
@@ -204,6 +205,7 @@ Functions, and literals that can be used in a range
        | DECIMAL
        | DATE
        | DATETIME
+       | TIME
        | function
        ;
 ```
