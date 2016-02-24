@@ -100,4 +100,13 @@ class LexerTest < Test::Unit::TestCase
       assert_equal :DATETIME, token.first, op
     end
   end
+
+  def test_decimal_matches
+    ['-15.42', '1.0', '0.22', '9.0E-6', '-9.0E-3'].each do |op|
+      @lexer = Lexer.new(op)
+      token = @lexer.shift
+      assert_equal :DECIMAL, token.first, op
+    end
+  end
+
 end

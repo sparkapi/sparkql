@@ -68,6 +68,21 @@ class ParserCompatabilityTest < Test::Unit::TestCase
         :operator => "Eq"
       },
       {
+        :string => "FloatField Eq 9.1E-6",
+        :type => :decimal,
+        :operator => "Eq"
+      },
+      {
+        :string => "FloatField Eq -9.1E-6",
+        :type => :decimal,
+        :operator => "Eq"
+      },
+      {
+        :string => "FloatField Eq 1.0E8",
+        :type => :decimal,
+        :operator => "Eq"
+      },
+      {
         :string => "FloatField Eq -2001.120,-2002.0",
         :type => :decimal,
         :operator => "In"
@@ -466,6 +481,13 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     parser = Parser.new
     expressions = parser.tokenize( "BooleanField Eq true" )
     assert_equal true, parser.escape_value(expressions.first)
+  end
+
+  test "escape decimal values" do
+    parser = Parser.new
+    expressions = parser.tokenize( "DecimalField Eq 0.00005 And DecimalField Eq 5.0E-5" )
+    assert_equal 5.0E-5, parser.escape_value(expressions.first)
+    assert_equal parser.escape_value(expressions.first), parser.escape_value(expressions.last)
   end
 
   test "Between" do
