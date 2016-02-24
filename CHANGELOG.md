@@ -1,4 +1,8 @@
-v1.0.0, 2016-02-11 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.20...v1.0.0))
+v1.0.1, 2016-02-24 ([changes](https://github.com/sparkapi/sparkql/compare/v1.0.0...v1.0.1))
+-------------------
+  * [IMPROVEMENT] Support scientific notation for floating point numbers
+
+v1.0.0, 2016-02-11 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.23...v1.0.0))
 -------------------
   * [IMPROVEMENT] function support for fields (delayed resolution). Backing systems must
     implement necessary function behaviour.
