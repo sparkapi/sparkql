@@ -513,7 +513,9 @@ class ParserTest < Test::Unit::TestCase
       "'A',' b'",
       "'A','B ',' c'",
       "radius('35.12 -68.33',1.0)",
-      "days(-1),days(-7)"
+      "days(-1),days(-7)",
+      "2016-03-10",
+      "2016-03-10T10:01:15.1-06:00"
     ]
     conditions.each do |condition|
       @parser = Parser.new

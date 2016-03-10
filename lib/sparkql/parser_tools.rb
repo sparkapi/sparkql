@@ -43,6 +43,7 @@ module Sparkql::ParserTools
     expression = {:field => field, :operator => operator, :conjunction => 'And', 
       :level => @lexer.level, :block_group => block_group, :custom_field => custom_field}.merge!(field_args)
     expression = val.merge(expression) unless val.nil?
+    expression[:condition] ||= expression[:value]
     validate_level_depth expression
     if operator.nil?
       tokenizer_error(:token => op, :expression => expression,
