@@ -351,7 +351,6 @@ class Sparkql::FunctionResolver
   def range(start_str, end_str)
     {
       :type => :character,
-      :operator => "Bt",
       :value => [start_str.to_s, end_str.to_s]
     }
   end
