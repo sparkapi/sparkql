@@ -173,6 +173,17 @@ class ParserTest < Test::Unit::TestCase
     assert -5 < test_time - start, "Time range off by more than five seconds #{test_time - start}"
   end
 
+  def test_function_range
+    start = Time.now
+    filter = "MapCoordinates Eq range('M01','M04')"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal "range('M01','M04')", expressions.first[:condition]
+    assert_equal 'M01', expressions.first[:value].first
+    assert_equal 'M04', expressions.first[:value][1]
+  end
+
   test "function data preserved in expression" do
     filter = "OriginalEntryTimestamp Ge days(-7)"
     @parser = Parser.new

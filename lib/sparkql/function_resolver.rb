@@ -1,4 +1,4 @@
-require 'time'
+require 'time' 
 require 'geo_ruby'
 require 'sparkql/geo'
 
@@ -63,6 +63,10 @@ class Sparkql::FunctionResolver
       :args => [[:field,:datetime]],
       :resolve_for_type => true,
       :return_type => :time
+    },
+    :range => {
+      :args => [:character, :character],
+      :return_type => :character
     }
   }
   
@@ -341,6 +345,14 @@ class Sparkql::FunctionResolver
     {
       :type => :shape,
       :value => shape 
+    }
+  end
+  
+  def range(start_str, end_str)
+    {
+      :type => :character,
+      :operator => "Bt",
+      :value => [start_str.to_s, end_str.to_s]
     }
   end
   

@@ -1,3 +1,7 @@
+v1.0.2, 2016-04-26 ([changes](https://github.com/sparkapi/sparkql/compare/v1.0.1...v1.0.2))
+-------------------
+  * [IMPROVEMENT] Support for new range() function for character ranges
+
 v1.0.1, 2016-02-24 ([changes](https://github.com/sparkapi/sparkql/compare/v1.0.0...v1.0.1))
 -------------------
   * [IMPROVEMENT] Support scientific notation for floating point numbers
