@@ -127,6 +127,16 @@ class FunctionResolverTest < Test::Unit::TestCase
     assert_equal GeoRuby::SimpleFeatures::Polygon, value[:value].class
     assert_equal [[-68.33,35.12], [-68.32,35.12], [-68.32,35.13], [-68.33,35.13], [-68.33,35.12]], value[:value].to_coordinates.first, "#{value[:value].inspect} "
   end
+
+  test "range()" do
+    f = FunctionResolver.new('range', [{:type => :character, :value => "M01"},
+                                              {:type => :character, :value => "M05"}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :character, value[:type]
+    assert_equal ["M01", "M05"], value[:value]
+  end
   
   test "invalid params" do
     f = FunctionResolver.new('now', [{:type => :character, :value=>'bad value'}])
