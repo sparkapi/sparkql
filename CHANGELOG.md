@@ -1,3 +1,7 @@
+v1.0.3, 2016-06-06 ([changes](https://github.com/sparkapi/sparkql/compare/v1.0.2...v1.0.3))
+-------------------
+  * [IMPROVEMENT] Expression limit lifted to 75 expressions
+
 v1.0.2, 2016-04-26 ([changes](https://github.com/sparkapi/sparkql/compare/v1.0.1...v1.0.2))
 -------------------
   * [IMPROVEMENT] Support for new range() function for character ranges

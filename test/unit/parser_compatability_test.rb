@@ -338,11 +338,11 @@ class ParserCompatabilityTest < Test::Unit::TestCase
   test "max out expressions" do
     parser = Parser.new
     to_the_max = []
-    60.times do |x|
+    80.times do |x|
       to_the_max << "City Eq 'Fargo'"
     end
     vals = parser.tokenize(to_the_max.join(" And "))
-    assert_equal 50, vals.size
+    assert_equal 75, vals.size
     assert parser.errors?
   end
 
