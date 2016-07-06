@@ -2,7 +2,7 @@
 module Sparkql::ParserCompatibility
 
   MAXIMUM_MULTIPLE_VALUES = 200
-  MAXIMUM_EXPRESSIONS = 50
+  MAXIMUM_EXPRESSIONS = 75
   MAXIMUM_LEVEL_DEPTH = 2
 
   # TODO I Really don't think this is required anymore
