@@ -60,16 +60,17 @@ module Sparkql::ParserTools
   end
 
   def tokenize_unary_conjunction(conj, exp)
-
     # Handles the case when a SparkQL filter string
     # begins with a unary operator, and is nested, such as:
-    # Not (Not Field Eq 1)
+    #   Not (Not Field Eq 1)
+    # In this instance we treat the outer unary as a conjunction.
     if @expression_count == 1 && @lexer.level > 0
-      exp.first[:conjunction] = conj 
+      exp.first[:conjunction] = conj
+      exp.first[:conjunction_level] = @lexer.level - 1
     end
-
     exp.first[:unary] = conj
     exp.first[:unary_level] = @lexer.level
+
     exp
   end
     
