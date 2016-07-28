@@ -1,3 +1,7 @@
+v1.1.0, 2016-07-28 ([changes](https://github.com/sparkapi/sparkql/compare/v1.0.3...v1.1.0))
+-------------------
+  * [IMPROVEMENT] Evaluation class for sparkql boolean algebra processing
+
 v1.0.3, 2016-06-06 ([changes](https://github.com/sparkapi/sparkql/compare/v1.0.2...v1.0.3))
 -------------------
   * [IMPROVEMENT] Expression limit lifted to 75 expressions
