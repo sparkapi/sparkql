@@ -1,4 +1,4 @@
-# Using an external source for resolving the individual sparkql expressions,
+# Using an instance of ExpressionResolver to resolve the individual expressions,
 # this class will evaluate the rest of a parsed sparkql string to true or false.
 # Namely, this class will handle all the nesting, boolean algebra, and dropped 
 # fields. Plus, it has some optimizations built in to skip the processing for
@@ -28,7 +28,7 @@ class Sparkql::Evaluator
       adjust_expression_for_dropped_field(expression)
       check_for_good_ors(expression)
       next if skip?(expression)
-      result = evaluate_expression(expression)
+      evaluate_expression(expression)
     end
     cleanup
     return @index[:match]
