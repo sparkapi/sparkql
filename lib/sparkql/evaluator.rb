@@ -1,9 +1,22 @@
 # Using an instance of ExpressionResolver to resolve the individual expressions,
 # this class will evaluate the rest of a parsed sparkql string to true or false.
-# Namely, this class will handle all the nesting, boolean algebra, and dropped 
+# Namely, this class will handle all the nesting, boolean algebra, and dropped
 # fields. Plus, it has some optimizations built in to skip the processing for
 # any expressions that don't contribute to the net result of the filter.
 class Sparkql::Evaluator
+
+  # The struct here mimics some of the parser information about an expression,
+  # but should not be confused for an expression. Nodes reduce the expressions
+  # to a result based on conjunction logic, and only one exists per block group.
+  Node = Struct.new(
+    :level,
+    :block_group,
+    :conjunction,
+    :conjunction_level,
+    :match,
+    :good_ors,
+    :expressions,
+    :unary)
 
   attr_reader :processed_count
 
@@ -13,15 +26,7 @@ class Sparkql::Evaluator
 
   def evaluate(expressions)
     @processed_count = 0
-    @index = {
-      level: 0,
-      block_group: 0,
-      conjunction: "And",
-      conjunction_level: 0,
-      match: true,
-      good_ors: false,
-      expressions: 0
-    }
+    @index = Node.new(0, 0, "And", 0, true, false, 0, nil)
     @groups = [@index]
     expressions.each do |expression|
       handle_group(expression)
@@ -106,18 +111,12 @@ class Sparkql::Evaluator
   end
 
   def new_group(expression)
-    {
-      level: expression[:level],
-      block_group: expression[:block_group],
-      conjunction: expression[:conjunction],
-      conjunction_level: expression[:conjunction_level],
-      match: true,
-      good_ors: false,
-      expressions: 0
-    }
+    Node.new(expression[:level], expression[:block_group],
+      expression[:conjunction], expression[:conjunction_level],
+      true, false, 0, nil)
   end
 
-  # When the last expression was dropped, we need to repair the filter by 
+  # When the last expression was dropped, we need to repair the filter by
   # stealing the conjunction of that dropped field.
   def adjust_expression_for_dropped_field(expression)
     if @dropped_expression.nil?
@@ -129,8 +128,8 @@ class Sparkql::Evaluator
     @dropped_expression = nil
   end
 
-  # This is similar to the cleanup step, but happens when we return from a 
-  # nesting level. Before we can proceed, we need wrap up the result of the 
+  # This is similar to the cleanup step, but happens when we return from a
+  # nesting level. Before we can proceed, we need wrap up the result of the
   # nested group.
   def smoosh_group(expression)
     until  @groups.last[:block_group] == expression[:block_group]

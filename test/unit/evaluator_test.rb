@@ -21,6 +21,32 @@ class EvaluatorTest < Test::Unit::TestCase
     assert !sample("Test Eq false Or Test Eq false")
   end
 
+  # One passing or expression in the set should always affirm a match this tests
+  # every permutation of one passing expression
+  def test_ors_stay_good
+    5.times do |i|
+      expressions = []
+      5.times do |j|
+        expressions << "Test Eq #{i == j}"
+      end
+      filter = expressions.join(" Or ")
+      assert sample(filter), "Filter: #{filter}"
+    end
+  end
+
+  # One failing AND expression in a set should always fail. Here we ensure every
+  # permutation of one failing
+  def test_ands_stay_bad
+    5.times do |i|
+      expressions = []
+      5.times do |j|
+        expressions << "Test Eq #{i != j}"
+      end
+      filter = expressions.join(" And ")
+      assert !sample(filter), "Filter: #{filter}"
+    end
+  end
+
   def test_dropped_field_handling
     assert sample("Test Eq 'Drop' And Test Eq true")
     assert !sample("Test Eq 'Drop' And Test Eq false")
