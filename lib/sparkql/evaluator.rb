@@ -71,8 +71,8 @@ class Sparkql::Evaluator
     end
     if node[:conjunction] == 'Not' &&
        (node[:conjunction_level] == node[:level] ||
-      node[:conjunction_level] == @index[:level])
-      @index[:match] = !result
+        node[:conjunction_level] == @index[:level])
+      @index[:match] = !result if @index[:match]
     elsif node[:conjunction] == 'And' || @index[:expressions] == 0
       @index[:match] = result if @index[:match]
     elsif node[:conjunction] == 'Or' && result
