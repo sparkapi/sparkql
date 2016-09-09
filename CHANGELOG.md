@@ -1,3 +1,7 @@
+v1.1.1, 2016-09-09 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.0...v1.1.1))
+-------------------
+  * [BUGFIX] Fix `Not` handling in the new Evaluation class
+
 v1.1.0, 2016-07-28 ([changes](https://github.com/sparkapi/sparkql/compare/v1.0.3...v1.1.0))
 -------------------
   * [IMPROVEMENT] Evaluation class for sparkql boolean algebra processing
