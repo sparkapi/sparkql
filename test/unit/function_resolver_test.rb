@@ -63,7 +63,39 @@ class FunctionResolverTest < Test::Unit::TestCase
     assert_equal '2010-01-06', value[:value], "negative values should go back in time"
   end
 
+  test "year(), month(), and day()" do
+    ['year', 'month', 'day'].each do |function|
+      f = FunctionResolver.new(function, [{:type => :field, :value => "OriginalEntryTimestamp"}])
+      f.validate
+      assert !f.errors?, "Errors #{f.errors.inspect}"
+      value = f.call
+      assert_equal :function, value[:type]
+      assert_equal function, value[:value]
+      assert_equal "OriginalEntryTimestamp", value[:args].first
+    end
+  end
 
+  test "hour(), minute(), and second()" do
+    ['year', 'month', 'day'].each do |function|
+      f = FunctionResolver.new(function, [{:type => :field, :value => "OriginalEntryTimestamp"}])
+      f.validate
+      assert !f.errors?, "Errors #{f.errors.inspect}"
+      value = f.call
+      assert_equal :function, value[:type]
+      assert_equal function, value[:value]
+      assert_equal "OriginalEntryTimestamp", value[:args].first
+    end
+  end
+
+  test "fractionalseconds()" do
+    f = FunctionResolver.new('fractionalseconds', [{:type => :field, :value => "OriginalEntryTimestamp"}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :function, value[:type]
+    assert_equal 'fractionalseconds', value[:value]
+    assert_equal "OriginalEntryTimestamp", value[:args].first
+  end
 
   # Polygon searches
   
