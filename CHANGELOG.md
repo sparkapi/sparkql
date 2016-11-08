@@ -1,3 +1,8 @@
+v1.1.2, 2016-11-08 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.1...v1.1.2))
+-------------------
+  * [IMPROVEMENT] New functions: year(), month(), day(), hour(), minute(), second(), and
+    fractionalseconds().
+
 v1.1.1, 2016-09-09 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.0...v1.1.1))
 -------------------
   * [BUGFIX] Fix `Not` handling in the new Evaluation class
