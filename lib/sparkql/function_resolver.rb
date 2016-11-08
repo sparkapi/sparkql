@@ -55,14 +55,49 @@ class Sparkql::FunctionResolver
       :return_type => :datetime
     },
     :date => { 
-      :args => [[:field,:datetime]],
+      :args => [[:field,:datetime,:date]],
       :resolve_for_type => true,
       :return_type => :date
     },
     :time => { 
-      :args => [[:field,:datetime]],
+      :args => [[:field,:datetime,:date]],
       :resolve_for_type => true,
       :return_type => :time
+    },
+    :year => { 
+      :args => [[:field,:datetime,:date]],
+      :resolve_for_type => true,
+      :return_type => :integer
+    },
+    :month => { 
+      :args => [[:field,:datetime,:date]],
+      :resolve_for_type => true,
+      :return_type => :integer
+    },
+    :day => { 
+      :args => [[:field,:datetime,:date]],
+      :resolve_for_type => true,
+      :return_type => :integer
+    },
+    :hour => { 
+      :args => [[:field,:datetime,:date]],
+      :resolve_for_type => true,
+      :return_type => :integer
+    },
+    :minute => { 
+      :args => [[:field,:datetime,:date]],
+      :resolve_for_type => true,
+      :return_type => :integer
+    },
+    :second => { 
+      :args => [[:field,:datetime,:date]],
+      :resolve_for_type => true,
+      :return_type => :integer
+    },
+    :fractionalseconds => { 
+      :args => [[:field,:datetime,:date]],
+      :resolve_for_type => true,
+      :return_type => :decimal
     },
     :range => {
       :args => [:character, :character],
@@ -214,6 +249,62 @@ class Sparkql::FunctionResolver
     {
       :type => :function,
       :value => "time",
+      :args => [arg]
+    }
+  end
+
+  def year_field(arg)
+    {
+      :type => :function,
+      :value => "year",
+      :args => [arg]
+    }
+  end
+
+  def month_field(arg)
+    {
+      :type => :function,
+      :value => "month",
+      :args => [arg]
+    }
+  end
+
+  def day_field(arg)
+    {
+      :type => :function,
+      :value => "day",
+      :args => [arg]
+    }
+  end
+
+  def hour_field(arg)
+    {
+      :type => :function,
+      :value => "hour",
+      :args => [arg]
+    }
+  end
+
+  def minute_field(arg)
+    {
+      :type => :function,
+      :value => "minute",
+      :args => [arg]
+    }
+  end
+
+  def second_field(arg)
+    {
+      :type => :function,
+      :value => "second",
+      :args => [arg]
+    }
+  end
+
+  def fractionalseconds_field(arg)
+    {
+      :type => :function,
+      :value => "fractionalseconds",
       :args => [arg]
     }
   end
