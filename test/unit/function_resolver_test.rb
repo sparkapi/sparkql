@@ -14,6 +14,44 @@ class FunctionResolverTest < Test::Unit::TestCase
     assert_equal(["35.12 -68.33", 1.0], value[:function_parameters])
   end
 
+  test "tolower(SomeField)" do
+    f = FunctionResolver.new('tolower', [{:type => :field, :value => "City"}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :function, value[:type]
+    assert_equal 'tolower', value[:value]
+    assert_equal "City", value[:args].first
+  end
+
+  test "tolower('string')" do
+    f = FunctionResolver.new('tolower', [{:type => :character, :value => "STRING"}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :character, value[:type]
+    assert_equal 'string', value[:value]
+  end
+
+  test "toupper(SomeField)" do
+    f = FunctionResolver.new('toupper', [{:type => :field, :value => "City"}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :function, value[:type]
+    assert_equal 'toupper', value[:value]
+    assert_equal "City", value[:args].first
+  end
+
+  test "toupper('string')" do
+    f = FunctionResolver.new('toupper', [{:type => :character, :value => "string"}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :character, value[:type]
+    assert_equal 'STRING', value[:value]
+  end
+
   test "now()" do
     start = Time.now
     f = FunctionResolver.new('now', [])

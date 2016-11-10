@@ -1,3 +1,7 @@
+v1.1.3, 2016-11-10 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.2...v1.1.3))
+-------------------
+  * [IMPROVEMENT] New functions: tolower() and toupper() 
+
 v1.1.2, 2016-11-08 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.1...v1.1.2))
 -------------------
   * [IMPROVEMENT] New functions: year(), month(), day(), hour(), minute(), second(), and

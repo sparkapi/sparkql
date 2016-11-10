@@ -34,6 +34,16 @@ class Sparkql::FunctionResolver
       }],
       :return_type => :character
     },
+    :tolower => {
+      :args => [[:field, :character]],
+      :resolve_for_type => true,
+      :return_type => :character
+    },
+    :toupper => {
+      :args => [[:field, :character]],
+      :resolve_for_type => true,
+      :return_type => :character
+    },
     :linestring => {
       :args => [:character],
       :return_type => :shape
@@ -41,7 +51,7 @@ class Sparkql::FunctionResolver
     :days => {
       :args => [:integer],
       :return_type => :datetime
-    }, 
+    },
     :months => {
       :args => [:integer],
       :return_type => :datetime
@@ -217,7 +227,36 @@ class Sparkql::FunctionResolver
       :value => regular_expression
     }
   end
-  
+
+  def tolower_character(string)
+    {
+      :type => :character,
+      :value => string.to_s.downcase
+    }
+  end
+
+  def tolower_field(arg) {
+      :type => :function,
+      :value => "tolower",
+      :args => [arg]
+    }
+  end
+
+  def toupper_character(string)
+    {
+      :type => :character,
+      :value => string.to_s.upcase
+    }
+  end
+
+  def toupper_field(arg)
+    {
+      :type => :function,
+      :value => "toupper",
+      :args => [arg]
+    }
+  end
+
   # Offset the current timestamp by a number of days
   def days(num)
     # date calculated as the offset from midnight tommorrow. Zero will provide values for all times 
