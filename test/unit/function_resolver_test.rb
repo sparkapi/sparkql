@@ -284,4 +284,20 @@ class FunctionResolverTest < Test::Unit::TestCase
     assert_equal 'date', value[:value]
     assert_equal "OriginalEntryTimestamp", value[:args].first
   end
+
+  test "startswith(), endswith() and contains()" do
+    [{'startswith' => "'far*'"}, 
+     {'endswith' => "'*far'"}, 
+     {'contains' => "'*far*'"}].each do |test_case|
+      function = test_case.keys.first
+      expected_value = test_case[function]
+
+      f = FunctionResolver.new(function, [{:type => :character, :value => "far"}])
+      f.validate
+      assert !f.errors?, "Errors #{f.errors.inspect}"
+      value = f.call
+      assert_equal :character, value[:type]
+      assert_equal expected_value, value[:value]
+    end
+  end
 end
