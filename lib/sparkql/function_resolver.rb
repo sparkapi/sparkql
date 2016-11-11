@@ -44,6 +44,18 @@ class Sparkql::FunctionResolver
       :resolve_for_type => true,
       :return_type => :character
     },
+    :startswith => {
+      :args => [:character],
+      :return_type => :startswith
+    },
+    :endswith => {
+      :args => [:character],
+      :return_type => :endswith
+    },
+    :contains => {
+      :args => [:character],
+      :return_type => :contains
+    },
     :linestring => {
       :args => [:character],
       :return_type => :shape
@@ -254,6 +266,54 @@ class Sparkql::FunctionResolver
       :type => :function,
       :value => "toupper",
       :args => [arg]
+    }
+  end
+
+  def startswith(string)
+    # Wrap this string in quotes, as we effectively translate
+    #   City Eq startswith('far')
+    # ...to...
+    #    City Eq 'far*'
+    #
+    # The string passed in will merely be "far", rather than
+    # the string literal "'far'".
+    new_value = "'#{string}*'"
+
+    {
+      :type => :character,
+      :value => new_value
+    }
+  end
+
+  def endswith(string)
+    # Wrap this string in quotes, as we effectively translate
+    #   City Eq endswith('far')
+    # ...to...
+    #    City Eq '*far'
+    #
+    # The string passed in will merely be "far", rather than
+    # the string literal "'far'".
+    new_value = "'*#{string}'"
+
+    {
+      :type => :character,
+      :value => new_value
+    }
+  end
+
+  def contains(string)
+    # Wrap this string in quotes, as we effectively translate
+    #   City Eq contains('far')
+    # ...to...
+    #    City Eq '*far*'
+    #
+    # The string passed in will merely be "far", rather than
+    # the string literal "'far'".
+    new_value = "'*#{string}*'"
+
+    {
+      :type => :character,
+      :value => new_value
     }
   end
 
