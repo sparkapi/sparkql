@@ -1,3 +1,7 @@
+v1.1.4, 2016-11-11 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.3...v1.1.4))
+-------------------
+  * [IMPROVEMENT] New functions: contains(), startswith(), endswith()
+
 v1.1.3, 2016-11-10 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.2...v1.1.3))
 -------------------
   * [IMPROVEMENT] New functions: tolower() and toupper() 
