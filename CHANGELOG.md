@@ -1,10 +1,14 @@
+v1.1.4, 2016-11-11 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.4...v1.1.5))
+-------------------
+  * [BUGFIX] Corrected levels for unary and conjunction elements of an expression
+
 v1.1.4, 2016-11-11 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.3...v1.1.4))
 -------------------
   * [IMPROVEMENT] New functions: contains(), startswith(), endswith()
 
 v1.1.3, 2016-11-10 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.2...v1.1.3))
 -------------------
-  * [IMPROVEMENT] New functions: tolower() and toupper() 
+  * [IMPROVEMENT] New functions: tolower() and toupper()
 
 v1.1.2, 2016-11-08 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.1...v1.1.2))
 -------------------
