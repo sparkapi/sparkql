@@ -494,10 +494,15 @@ class ParserTest < Test::Unit::TestCase
     e3 = expressions[2]
     e4 = expressions[3]
 
+    assert_equal 1, e1[:level]
     assert_equal "Not", e1[:unary]
+    assert_equal 1, e1[:unary_level]
     assert_equal "Not", e1[:conjunction]
+    assert_equal 0, e1[:conjunction_level]
     assert_equal "Not", e2[:unary]
+    assert_equal 1, e2[:unary_level]
     assert_equal "Not", e2[:conjunction]
+    assert_equal 0, e2[:conjunction_level]
     assert_equal "Not", e3[:unary]
     assert_equal "And", e3[:conjunction]
     assert_nil e4[:unary]
@@ -512,7 +517,42 @@ class ParserTest < Test::Unit::TestCase
     e1 = expressions.first
 
     assert_equal "Not", e1[:unary]
+    assert_equal 0, e1[:unary_level]
     assert_equal "And", e1[:conjunction]
+    assert_equal 0, e1[:conjunction_level]
+
+    filter = "(Not ListPrice Eq 1)"
+
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.inspect
+
+    e1 = expressions.first
+
+    assert_equal "Not", e1[:unary]
+    assert_equal 1, e1[:unary_level]
+    assert_equal "And", e1[:conjunction]
+    assert_equal 0, e1[:conjunction_level]
+
+    filter = "Not (Not ListPrice Eq 1 Not BathsTotal Eq 2)"
+
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.inspect
+
+    e1 = expressions.first
+    e2 = expressions[1]
+
+    assert_equal "Not", e1[:unary]
+    assert_equal 1, e1[:unary_level]
+    assert_equal "Not", e1[:conjunction]
+    assert_equal 0, e1[:conjunction_level]
+    assert_nil e2[:unary]
+    assert_nil e2[:unary_level]
+    assert_equal 1, e2[:level]
+    assert_equal "Not", e2[:conjunction]
+    assert_equal 1, e2[:conjunction_level]
+
   end
 
   def test_expression_conditions_attribute

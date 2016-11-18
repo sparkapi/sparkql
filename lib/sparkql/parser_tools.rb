@@ -40,8 +40,10 @@ module Sparkql::ParserTools
     end
     custom_field = field.start_with?('"')
     block_group = (@lexer.level == 0) ? 0 : @lexer.block_group_identifier
-    expression = {:field => field, :operator => operator, :conjunction => 'And', 
-      :level => @lexer.level, :block_group => block_group, :custom_field => custom_field}.merge!(field_args)
+    expression = {:field => field, :operator => operator, :conjunction => 'And',
+      :conjunction_level => 0, :level => @lexer.level,
+      :block_group => block_group, :custom_field => custom_field}.
+      merge!(field_args)
     expression = val.merge(expression) unless val.nil?
     expression[:condition] ||= expression[:value]
     validate_level_depth expression
@@ -63,13 +65,16 @@ module Sparkql::ParserTools
     # Handles the case when a SparkQL filter string
     # begins with a unary operator, and is nested, such as:
     #   Not (Not Field Eq 1)
-    # In this instance we treat the outer unary as a conjunction.
-    if @expression_count == 1 && @lexer.level > 0
-      exp.first[:conjunction] = conj
-      exp.first[:conjunction_level] = @lexer.level - 1
+    # In this instance we treat the outer unary as a conjunction. With any other
+    # expression this would be the case, so that should make processing 
+    # consistent.
+    if exp.first[:unary] && @lexer.level == 0
+      exp.first[:conjunction] =  conj
+      exp.first[:conjunction_level] = @lexer.level
+    else
+      exp.first[:unary] = conj
+      exp.first[:unary_level] = @lexer.level
     end
-    exp.first[:unary] = conj
-    exp.first[:unary_level] = @lexer.level
 
     exp
   end
