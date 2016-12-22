@@ -1,4 +1,8 @@
-v1.1.4, 2016-11-11 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.4...v1.1.5))
+v1.1.6, 2016-11-11 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.5...v1.1.6))
+-------------------
+  * [BUGFIX] Properly pad return strings from toupper/tolower with single quotes
+
+v1.1.5, 2016-11-11 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.4...v1.1.5))
 -------------------
   * [BUGFIX] Corrected levels for unary and conjunction elements of an expression
 

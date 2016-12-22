@@ -30,7 +30,7 @@ class FunctionResolverTest < Test::Unit::TestCase
     assert !f.errors?, "Errors #{f.errors.inspect}"
     value = f.call
     assert_equal :character, value[:type]
-    assert_equal 'string', value[:value]
+    assert_equal "'string'", value[:value]
   end
 
   test "toupper(SomeField)" do
@@ -49,7 +49,7 @@ class FunctionResolverTest < Test::Unit::TestCase
     assert !f.errors?, "Errors #{f.errors.inspect}"
     value = f.call
     assert_equal :character, value[:type]
-    assert_equal 'STRING', value[:value]
+    assert_equal "'STRING'", value[:value]
   end
 
   test "now()" do

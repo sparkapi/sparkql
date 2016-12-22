@@ -243,7 +243,7 @@ class Sparkql::FunctionResolver
   def tolower_character(string)
     {
       :type => :character,
-      :value => string.to_s.downcase
+      :value => "'#{string.to_s.downcase}'"
     }
   end
 
@@ -257,7 +257,7 @@ class Sparkql::FunctionResolver
   def toupper_character(string)
     {
       :type => :character,
-      :value => string.to_s.upcase
+      :value => "'#{string.to_s.upcase}'"
     }
   end
 
