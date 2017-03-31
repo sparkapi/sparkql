@@ -1,3 +1,5 @@
+require 'strscan'
+
 class Sparkql::Lexer < StringScanner
   include Sparkql::Token
   

@@ -1,3 +1,7 @@
+v1.1.7, 2017-03-31 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.6...v1.1.7))
+-------------------
+  * [BUGFIX] Add missing require for StringScanner
+
 v1.1.6, 2016-11-11 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.5...v1.1.6))
 -------------------
   * [BUGFIX] Properly pad return strings from toupper/tolower with single quotes
