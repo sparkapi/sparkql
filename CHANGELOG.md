@@ -1,3 +1,8 @@
+v1.1.7, 2017-11-30 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.7...v1.1.8))
+-------------------
+  * [BUGFIX] Properly coerce integer values to decimals when a function is used
+    prior to the operator
+
 v1.1.7, 2017-03-31 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.6...v1.1.7))
 -------------------
   * [BUGFIX] Add missing require for StringScanner
