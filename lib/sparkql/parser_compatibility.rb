@@ -223,6 +223,15 @@ module Sparkql::ParserCompatibility
     if expected == expression[:type] || check_function_type?(expression, expected) ||
       (supports_nulls && expression[:type] == :null)
       return true
+    # If the field will be passed into a function,
+    # check the type of the return value (:field_function_type),
+    # and coerce if necessary.
+    elsif expression[:field_function_type] &&
+          expression[:type] == :integer && 
+          expression[:field_function_type] == :decimal
+      expression[:type] = :decimal
+      expression[:cast] = :integer
+      return true
     elsif expected == :datetime && expression[:type] == :date
       expression[:type] = :datetime
       expression[:cast] = :date
@@ -259,6 +268,7 @@ module Sparkql::ParserCompatibility
     # Lookup the function arguments
     function = Sparkql::FunctionResolver::SUPPORTED_FUNCTIONS[expression[:field_function].to_sym]
     return false if function.nil?
+
     Array(function[:args].first).include?(expected)
   end
 

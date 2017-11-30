@@ -514,6 +514,13 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     assert_equal 100.0, parser.escape_value(expression)
   end
 
+  test "integer type coercion with function" do
+    parser = Parser.new
+    expression = parser.tokenize("fractionalseconds(SomeDate) Le 1").first
+    assert parser.send(:check_type!, expression, :date)
+    assert_equal 1.0, parser.escape_value(expression)
+  end
+
   test "datetime->date type coercion" do
     t = Time.now
     parser = Parser.new
