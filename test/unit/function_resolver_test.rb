@@ -164,7 +164,7 @@ class FunctionResolverTest < Test::Unit::TestCase
     f = FunctionResolver.new('radius', [{:type => :character, :value => "35.12,-68.33"},
                 {:type => :decimal, :value => 1.0}])
     f.validate
-    value = f.call
+    f.call
     assert f.errors?
   end
 
@@ -299,5 +299,24 @@ class FunctionResolverTest < Test::Unit::TestCase
       assert_equal :character, value[:type]
       assert_equal expected_value, value[:value]
     end
+  end
+
+  test 'wkt()' do
+    f = FunctionResolver.new('wkt',
+                             [{:type => :character,
+                               :value => "SRID=12345;POLYGON((-127.89734578345 45.234534534,-127.89734578345 45.234534534,-127.89734578345 45.234534534,-127.89734578345 45.234534534))"}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal GeoRuby::SimpleFeatures::Polygon, value[:value].class
+  end
+
+  test 'wkt() invalid params' do
+    f = FunctionResolver.new('wkt',
+                             [{:type => :character,
+                               :value => "POLYGON((45.234534534))"}])
+    f.validate
+    f.call
+    assert f.errors?
   end
 end
