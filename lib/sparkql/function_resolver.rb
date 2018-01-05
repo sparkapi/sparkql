@@ -124,6 +124,10 @@ class Sparkql::FunctionResolver
     :range => {
       :args => [:character, :character],
       :return_type => :character
+    },
+    :wkt => {
+      :args => [:character],
+      :return_type => :shape
     }
   }
   
@@ -474,6 +478,19 @@ class Sparkql::FunctionResolver
       :type => :shape,
       :value => shape
     }
+  end
+
+  def wkt(wkt_string)
+    shape = GeoRuby::SimpleFeatures::Geometry.from_ewkt(wkt_string)
+    {
+      :type => :shape,
+      :value => shape
+    }
+  rescue GeoRuby::SimpleFeatures::EWKTFormatError
+    @errors << Sparkql::ParserError.new(:token => wkt_string,
+      :message => "Function call 'wkt' requires a valid wkt string",
+      :status => :fatal )
+    return
   end
     
   def rectangle(coords)
