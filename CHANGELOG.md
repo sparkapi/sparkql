@@ -1,54 +1,58 @@
-v1.1.7, 2017-11-30 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.7...v1.1.8))
+v1.1.9, 2018-01-05
+-------------------
+  * [IMPROVEMENT] New function: wkt()
+
+v1.1.8, 2017-11-30
 -------------------
   * [BUGFIX] Properly coerce integer values to decimals when a function is used
     prior to the operator
 
-v1.1.7, 2017-03-31 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.6...v1.1.7))
+v1.1.7, 2017-03-31
 -------------------
   * [BUGFIX] Add missing require for StringScanner
 
-v1.1.6, 2016-11-11 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.5...v1.1.6))
+v1.1.6, 2016-11-11
 -------------------
   * [BUGFIX] Properly pad return strings from toupper/tolower with single quotes
 
-v1.1.5, 2016-11-11 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.4...v1.1.5))
+v1.1.5, 2016-11-11
 -------------------
   * [BUGFIX] Corrected levels for unary and conjunction elements of an expression
 
-v1.1.4, 2016-11-11 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.3...v1.1.4))
+v1.1.4, 2016-11-11
 -------------------
   * [IMPROVEMENT] New functions: contains(), startswith(), endswith()
 
-v1.1.3, 2016-11-10 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.2...v1.1.3))
+v1.1.3, 2016-11-10
 -------------------
   * [IMPROVEMENT] New functions: tolower() and toupper()
 
-v1.1.2, 2016-11-08 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.1...v1.1.2))
+v1.1.2, 2016-11-08
 -------------------
   * [IMPROVEMENT] New functions: year(), month(), day(), hour(), minute(), second(), and
     fractionalseconds().
 
-v1.1.1, 2016-09-09 ([changes](https://github.com/sparkapi/sparkql/compare/v1.1.0...v1.1.1))
+v1.1.1, 2016-09-09
 -------------------
   * [BUGFIX] Fix `Not` handling in the new Evaluation class
 
-v1.1.0, 2016-07-28 ([changes](https://github.com/sparkapi/sparkql/compare/v1.0.3...v1.1.0))
+v1.1.0, 2016-07-28
 -------------------
   * [IMPROVEMENT] Evaluation class for sparkql boolean algebra processing
 
-v1.0.3, 2016-06-06 ([changes](https://github.com/sparkapi/sparkql/compare/v1.0.2...v1.0.3))
+v1.0.3, 2016-06-06
 -------------------
   * [IMPROVEMENT] Expression limit lifted to 75 expressions
 
-v1.0.2, 2016-04-26 ([changes](https://github.com/sparkapi/sparkql/compare/v1.0.1...v1.0.2))
+v1.0.2, 2016-04-26
 -------------------
   * [IMPROVEMENT] Support for new range() function for character ranges
 
-v1.0.1, 2016-02-24 ([changes](https://github.com/sparkapi/sparkql/compare/v1.0.0...v1.0.1))
+v1.0.1, 2016-02-24
 -------------------
   * [IMPROVEMENT] Support scientific notation for floating point numbers
 
-v1.0.0, 2016-02-11 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.23...v1.0.0))
+v1.0.0, 2016-02-11
 -------------------
   * [IMPROVEMENT] function support for fields (delayed resolution). Backing systems must
     implement necessary function behaviour.
@@ -56,32 +60,32 @@ v1.0.0, 2016-02-11 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.2
     this drop allows us to pick up newer update allows us to stay in sync with
     that gems development
 
-v0.3.24, 2016-01-05 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.23...v0.3.24))
+v0.3.24, 2016-01-05
 -------------------
 
   * [BUGFIX] Support opening Not operator for "Not (Not ...)" expressions.
 
-v0.3.23, 2015-10-09 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.22...v0.3.23))
+v0.3.23, 2015-10-09
 -------------------
 
   * [IMPROVEMENT] Add regex function for character types
 
-v0.3.22, 2015-10-09 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.21...v0.3.22))
+v0.3.22, 2015-10-09
 -------------------
 
   * [IMPROVEMENT] Record sparkql and nested errors for fields that embed sparkql
 
-v0.3.21, 2015-09-24 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.20...v0.3.21))
+v0.3.21, 2015-09-24
 -------------------
 
   * [IMPROVEMENT] Record token index and current token in lexer, for error reporting
 
-v0.3.20, 2015-04-14 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.18...v0.3.20))
+v0.3.20, 2015-04-14
 -------------------
 
   * [BUGFIX] Allow seconds for ISO-8601
 
-v0.3.18, 2015-04-10 ([changes](https://github.com/sparkapi/sparkql/compare/v0.3.17...v0.3.18))
+v0.3.18, 2015-04-10
 -------------------
 
   * [BUGFIX] Better support for ISO-8601
