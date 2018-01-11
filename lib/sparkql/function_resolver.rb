@@ -24,7 +24,7 @@ class Sparkql::FunctionResolver
       :return_type => :shape
     }, 
     :radius => {
-      :args => [:character, :decimal],
+      :args => [:character, [:decimal, :integer]],
       :return_type => :shape
     },
     :regex => {
@@ -162,7 +162,7 @@ class Sparkql::FunctionResolver
         :status => :fatal )
       return
     end
-    
+
     count = 0
     @args.each do |arg|
       unless Array(total_args[count]).include?(arg[:type])

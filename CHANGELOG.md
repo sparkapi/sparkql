@@ -1,3 +1,7 @@
+v1.1.10, 2018-01-05
+-------------------
+  * [IMPROVEMENT] Allow radius to take integer
+
 v1.1.9, 2018-01-05
 -------------------
   * [IMPROVEMENT] New function: wkt()
