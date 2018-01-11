@@ -350,6 +350,16 @@ class ParserTest < Test::Unit::TestCase
     assert_equal 1.0, expressions.first[:value].radius, "#{expressions.first[:value].inspect} "
   end
 
+  test "Location Eq radius() accepts integer" do
+    filter = "Location Eq radius('35.12 -68.33',1)"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal :shape, expressions.first[:type]
+    assert_equal [-68.33, 35.12], expressions.first[:value].center.to_coordinates, "#{expressions.first[:value].inspect} "
+    assert_equal 1.0, expressions.first[:value].radius, "#{expressions.first[:value].inspect} "
+  end
+
   test "Location eq radius() error on invalid syntax" do
     filter = "Location Eq radius('35.12,-68.33',1.0)"
     @parser = Parser.new
