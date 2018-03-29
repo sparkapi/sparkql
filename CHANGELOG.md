@@ -1,3 +1,7 @@
+v1.1.11, 2018-03-30
+-------------------
+  * [BUGFIX] contains(), startswith(), endswith() are now case-sensitive
+
 v1.1.10, 2018-01-05
 -------------------
   * [IMPROVEMENT] Allow radius to take integer
