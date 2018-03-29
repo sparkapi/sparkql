@@ -286,9 +286,9 @@ class FunctionResolverTest < Test::Unit::TestCase
   end
 
   test "startswith(), endswith() and contains()" do
-    [{'startswith' => "'far*'"}, 
-     {'endswith' => "'*far'"}, 
-     {'contains' => "'*far*'"}].each do |test_case|
+    [{'startswith' => "^far"},
+     {'endswith' => "far$"},
+     {'contains' => "far"}].each do |test_case|
       function = test_case.keys.first
       expected_value = test_case[function]
 
@@ -298,6 +298,8 @@ class FunctionResolverTest < Test::Unit::TestCase
       value = f.call
       assert_equal :character, value[:type]
       assert_equal expected_value, value[:value]
+      assert_equal 'regex', value[:function_name]
+      assert_equal [value[:value], ''], value[:function_parameters]
     end
   end
 

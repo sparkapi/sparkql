@@ -209,7 +209,7 @@ class Sparkql::FunctionResolver
     end
     v = self.send(method, *real_vals)
 
-    unless v.nil?
+    unless v.nil? || v.key?(:function_name)
       v[:function_name] = @name
       v[:function_parameters] = real_vals
     end
@@ -232,7 +232,7 @@ class Sparkql::FunctionResolver
 
     begin
       Regexp.new(regular_expression)
-    rescue => e
+    rescue
       @errors << Sparkql::ParserError.new(:token => regular_expression,
         :message => "Invalid Regexp",
         :status => :fatal)
@@ -278,13 +278,16 @@ class Sparkql::FunctionResolver
     # Wrap this string in quotes, as we effectively translate
     #   City Eq startswith('far')
     # ...to...
-    #    City Eq 'far*'
+    #    City Eq '^far'
     #
     # The string passed in will merely be "far", rather than
     # the string literal "'far'".
-    new_value = "'#{string}*'"
+    string = Regexp.escape(string)
+    new_value = "^#{string}"
 
     {
+      :function_name => "regex",
+      :function_parameters => [new_value, ''],
       :type => :character,
       :value => new_value
     }
@@ -294,13 +297,16 @@ class Sparkql::FunctionResolver
     # Wrap this string in quotes, as we effectively translate
     #   City Eq endswith('far')
     # ...to...
-    #    City Eq '*far'
+    #    City Eq regex('far$')
     #
     # The string passed in will merely be "far", rather than
     # the string literal "'far'".
-    new_value = "'*#{string}'"
+    string = Regexp.escape(string)
+    new_value = "#{string}$"
 
     {
+      :function_name => "regex",
+      :function_parameters => [new_value, ''],
       :type => :character,
       :value => new_value
     }
@@ -310,13 +316,16 @@ class Sparkql::FunctionResolver
     # Wrap this string in quotes, as we effectively translate
     #   City Eq contains('far')
     # ...to...
-    #    City Eq '*far*'
+    #    City Eq regex('far')
     #
     # The string passed in will merely be "far", rather than
     # the string literal "'far'".
-    new_value = "'*#{string}*'"
+    string = Regexp.escape(string)
+    new_value = "#{string}"
 
     {
+      :function_name => "regex",
+      :function_parameters => [new_value, ''],
       :type => :character,
       :value => new_value
     }
@@ -575,7 +584,7 @@ class Sparkql::FunctionResolver
       term.strip.split(/\s+/).reverse.map { |i| i.to_f }
     end
     coords
-  rescue => e
+  rescue
     @errors << Sparkql::ParserError.new(:token => coord_string, 
       :message => "Unable to parse coordinate string.",
       :status => :fatal )
