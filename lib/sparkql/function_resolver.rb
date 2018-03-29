@@ -278,11 +278,12 @@ class Sparkql::FunctionResolver
     # Wrap this string in quotes, as we effectively translate
     #   City Eq startswith('far')
     # ...to...
-    #    City Eq 'far*'
+    #    City Eq '^far'
     #
     # The string passed in will merely be "far", rather than
     # the string literal "'far'".
-    new_value = "'#{string}*'"
+    string = Regexp.escape(string)
+    new_value = "regex('^#{string}')"
 
     {
       :type => :character,
@@ -294,11 +295,12 @@ class Sparkql::FunctionResolver
     # Wrap this string in quotes, as we effectively translate
     #   City Eq endswith('far')
     # ...to...
-    #    City Eq '*far'
+    #    City Eq regex('far$')
     #
     # The string passed in will merely be "far", rather than
     # the string literal "'far'".
-    new_value = "'*#{string}'"
+    string = Regexp.escape(string)
+    new_value = "regex('#{string}$')"
 
     {
       :type => :character,
@@ -310,11 +312,12 @@ class Sparkql::FunctionResolver
     # Wrap this string in quotes, as we effectively translate
     #   City Eq contains('far')
     # ...to...
-    #    City Eq '*far*'
+    #    City Eq regex('far')
     #
     # The string passed in will merely be "far", rather than
     # the string literal "'far'".
-    new_value = "'*#{string}*'"
+    string = Regexp.escape(string)
+    new_value = "regex('#{string}')"
 
     {
       :type => :character,

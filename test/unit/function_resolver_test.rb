@@ -286,9 +286,9 @@ class FunctionResolverTest < Test::Unit::TestCase
   end
 
   test "startswith(), endswith() and contains()" do
-    [{'startswith' => "'far*'"}, 
-     {'endswith' => "'*far'"}, 
-     {'contains' => "'*far*'"}].each do |test_case|
+    [{'startswith' => "regex('^far')"}, 
+     {'endswith' => "regex('far$')"}, 
+     {'contains' => "regex('far')"}].each do |test_case|
       function = test_case.keys.first
       expected_value = test_case[function]
 
