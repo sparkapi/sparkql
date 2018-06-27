@@ -1,3 +1,7 @@
+v1.1.13, 2018-06-27
+-------------------
+  * [IMPROVEMENT] New Functions: length(), mindatetime(), maxdatetime()
+
 v1.1.12, 2018-06-26
 -------------------
   * [IMPROVEMENT] New Function: indexof()
