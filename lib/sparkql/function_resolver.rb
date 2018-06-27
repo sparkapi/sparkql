@@ -14,6 +14,8 @@ class Sparkql::FunctionResolver
   STRFTIME_DATE_FORMAT = '%Y-%m-%d'
   STRFTIME_TIME_FORMAT = '%H:%M:%S.%N'
   VALID_REGEX_FLAGS = ["", "i"]
+  MIN_DATE_TIME = Time.new(1, 1, 1, 0, 0, 0, "+00:00").iso8601
+  MAX_DATE_TIME = Time.new(9999, 12, 31, 23, 59, 59, "+00:00").iso8601
   SUPPORTED_FUNCTIONS = {
     :polygon => {
       :args => [:character],
@@ -44,6 +46,11 @@ class Sparkql::FunctionResolver
       :args => [[:field, :character]],
       :resolve_for_type => true,
       :return_type => :character
+    },
+    :length => {
+      :args => [[:field, :character]],
+      :resolve_for_type => true,
+      :return_type => :integer
     },
     :indexof => {
       :args => [[:field, :character], :character],
@@ -77,7 +84,15 @@ class Sparkql::FunctionResolver
       :args => [:integer],
       :return_type => :datetime
     },
-    :now => { 
+    :now => {
+      :args => [],
+      :return_type => :datetime
+    },
+    :maxdatetime => {
+      :args => [],
+      :return_type => :datetime
+    },
+    :mindatetime => {
       :args => [],
       :return_type => :datetime
     },
@@ -278,6 +293,21 @@ class Sparkql::FunctionResolver
     }
   end
 
+  def length_character(string)
+    {
+      :type => :integer,
+      :value => "#{string.size}"
+    }
+  end
+
+  def length_field(arg)
+    {
+      :type => :function,
+      :value => "length",
+      :args => [arg]
+    }
+  end
+
   def startswith(string)
     # Wrap this string in quotes, as we effectively translate
     #   City Eq startswith('far')
@@ -351,6 +381,20 @@ class Sparkql::FunctionResolver
     {
       :type => :datetime,
       :value => Time.now.iso8601
+    }
+  end
+
+  def maxdatetime()
+    {
+      :type => :datetime,
+      :value => MAX_DATE_TIME
+    }
+  end
+
+  def mindatetime()
+    {
+      :type => :datetime,
+      :value => MIN_DATE_TIME
     }
   end
 

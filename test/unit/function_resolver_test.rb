@@ -52,6 +52,25 @@ class FunctionResolverTest < Test::Unit::TestCase
     assert_equal "'STRING'", value[:value]
   end
 
+  test "length(SomeField)" do
+    f = FunctionResolver.new('length', [{:type => :field, :value => "City"}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :function, value[:type]
+    assert_equal 'length', value[:value]
+    assert_equal "City", value[:args].first
+  end
+
+  test "length('string')" do
+    f = FunctionResolver.new('length', [{:type => :character, :value => "string"}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :integer, value[:type]
+    assert_equal '6', value[:value]
+  end
+
   test "now()" do
     start = Time.now
     f = FunctionResolver.new('now', [])
@@ -62,7 +81,27 @@ class FunctionResolverTest < Test::Unit::TestCase
     test_time = Time.parse(value[:value])
     assert (-5 < test_time - start && 5 > test_time - start), "Time range off by more than five seconds #{test_time - start} '#{test_time} - #{start}'"
   end
-  
+
+  test "mindatetime()" do
+    f = FunctionResolver.new('mindatetime', [])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :datetime, value[:type]
+
+    assert_equal '0001-01-01T00:00:00+00:00', value[:value]
+  end
+
+  test "maxdatetime()" do
+    f = FunctionResolver.new('maxdatetime', [])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :datetime, value[:type]
+
+    assert_equal '9999-12-31T23:59:59+00:00', value[:value]
+  end
+
   test "days()" do
     d = Date.new(2012,10,20)
     Date.expects(:today).returns(d)
