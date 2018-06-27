@@ -32,6 +32,7 @@ module Sparkql::ParserTools
       if !function.nil?
         field_args[:field_function] = field[:value]
         field_args[:field_function_type] = function[:return_type]
+        field_args[:args] = field[:args]
       else
         tokenizer_error(:token => field[:value], 
           :message => "Unsupported function type", :status => :fatal )
@@ -148,7 +149,7 @@ module Sparkql::ParserTools
       return nil
     else
       result = resolver.call()
-      return result.nil? ? result : result.merge(:condition => "#{name}(#{condition_list.join(',')})")
+      result.nil? ? result : result.merge(:condition => "#{name}(#{condition_list.join(',')})")
     end
   end
   

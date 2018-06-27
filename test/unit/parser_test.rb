@@ -174,7 +174,6 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_function_range
-    start = Time.now
     filter = "MapCoordinates Eq range('M01','M04')"
     @parser = Parser.new
     expressions = @parser.parse(filter)
@@ -182,6 +181,16 @@ class ParserTest < Test::Unit::TestCase
     assert_equal "range('M01','M04')", expressions.first[:condition]
     assert_equal 'M01', expressions.first[:value].first
     assert_equal 'M04', expressions.first[:value][1]
+  end
+
+  test 'indexof with field' do
+    filter = "indexof(City, '4131800000000') Eq 13"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
+    assert_equal 'City', expression[:field]
+    assert_equal '13', expression[:value]
+    assert_equal '4131800000000', expression[:args].last
   end
 
   test "function data preserved in expression" do

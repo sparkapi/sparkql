@@ -45,6 +45,10 @@ class Sparkql::FunctionResolver
       :resolve_for_type => true,
       :return_type => :character
     },
+    :indexof => {
+      :args => [[:field, :character], :character],
+      :return_type => :integer
+    },
     :startswith => {
       :args => [:character],
       :return_type => :startswith
@@ -349,7 +353,15 @@ class Sparkql::FunctionResolver
       :value => Time.now.iso8601
     }
   end
-  
+
+  def indexof(arg1, arg2)
+    {
+      :type => :function,
+      :value => "indexof",
+      :args => [arg1, arg2]
+    }
+  end
+
   def date_field(arg)
     {
       :type => :function,

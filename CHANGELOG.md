@@ -1,3 +1,7 @@
+v1.1.12, 2018-06-26
+-------------------
+  * [IMPROVEMENT] New Function: indexof()
+
 v1.1.11, 2018-03-30
 -------------------
   * [BUGFIX] contains(), startswith(), endswith() are now case-sensitive
