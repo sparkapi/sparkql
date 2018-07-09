@@ -55,16 +55,6 @@ module Sparkql::ParserCompatibility
     process_errors.recovered_errors?
   end
 
-  # Returns the rule hash for a given type
-  def rules_for_type( type )
-    RULES[type]
-  end
-
-  # true if a given type supports multiple values
-  def supports_multiple?( type )
-    rules_for_type(type).include?( :multiple )
-  end
-
   # Maximum supported nesting level for the parser filters
   def max_level_depth
     MAXIMUM_LEVEL_DEPTH
@@ -144,37 +134,6 @@ module Sparkql::ParserCompatibility
     Array(function[:args].first).include?(expected)
   end
 
-  # Builds the correct operator based on the type and the value.
-  # default should be the operator provided in the actual filter string
-  def get_operator(expression, default )
-    f = rules_for_type(expression[:type])
-    if f[:operators].include?(default)
-      if f[:multiple] && range?(expression[:value]) && default == 'Bt'
-        return "Bt"
-      elsif f[:multiple] && multiple_values?(expression[:value])
-        return nil unless operator_supports_multiples?(default)
-        return default == "Ne" ? "Not In" : "In"
-      elsif default == "Ne"
-        return "Not Eq"
-      end
-      return default
-    else
-      return nil
-    end
-  end
-
-  def multiple_values?(value)
-    Array(value).size > 1
-  end
-
-  def range?(value)
-    Array(value).size == 2
-  end
-
-  def operator_supports_multiples?(operator)
-    OPERATORS_SUPPORTING_MULTIPLES.include?(operator)
-  end
-  
   def coerce_datetime datetime
     if datestr = datetime.match(/^(\d{4}-\d{2}-\d{2})/)
       datestr[0]
