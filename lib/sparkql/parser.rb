@@ -16,68 +16,68 @@ module Sparkql
 ##### State transition tables begin ###
 
 racc_action_table = [
-    48,    10,    11,    14,    54,    31,    32,    33,    34,    35,
+    48,    10,    11,    14,   -28,    31,    32,    33,    34,    35,
     36,    37,    38,    10,    11,    14,    55,    31,    32,    33,
-    34,    35,    36,    37,    38,    14,   -28,    31,    32,    33,
+    34,    35,    36,    37,    38,    14,    54,    31,    32,    33,
     34,    35,    36,    37,    38,    14,    23,    41,    42,    22,
     43,    44,    45,    14,    15,    41,    42,   nil,    43,    44,
     45,     8,   nil,     9,   nil,    10,    11,    14,     8,   nil,
      9,   nil,    10,    11,    14,     9,   nil,    10,    11,    14,
-     9,   nil,    10,    11,    14,     9,    56,    10,    11,    14,
-    57,    14,   nil,    31,    32,    33,    17,    16,   nil,    47,
+     9,    56,    10,    11,    14,    57,    14,   nil,    31,    32,
+    33,     9,   nil,    10,    11,    14,    17,    16,   nil,    47,
     18,    19,    17,    16 ]
 
 racc_action_check = [
     22,    22,    22,    22,    29,    22,    22,    22,    22,    22,
     22,    22,    22,    57,    57,    57,    40,    57,    57,    57,
-    57,    57,    57,    57,    57,    18,    28,    18,    18,    18,
-    18,    18,    18,    18,    18,    19,    15,    19,    19,    13,
-    19,    19,    19,    55,     1,    55,    55,   nil,    55,    55,
-    55,     9,   nil,     9,   nil,     9,     9,     9,     0,   nil,
-     0,   nil,     0,     0,     0,     8,   nil,     8,     8,     8,
-    16,   nil,    16,    16,    16,    17,    49,    17,    17,    17,
-    49,    54,   nil,    54,    54,    54,    21,    21,   nil,    21,
+    57,    57,    57,    57,    57,    18,    27,    18,    18,    18,
+    18,    18,    18,    18,    18,    55,    15,    55,    55,    13,
+    55,    55,    55,    19,     1,    19,    19,   nil,    19,    19,
+    19,     9,   nil,     9,   nil,     9,     9,     9,     0,   nil,
+     0,   nil,     0,     0,     0,    17,   nil,    17,    17,    17,
+     8,    49,     8,     8,     8,    49,    54,   nil,    54,    54,
+    54,    16,   nil,    16,    16,    16,    21,    21,   nil,    21,
      6,     6,     2,     2 ]
 
 racc_action_pointer = [
-    53,    44,    87,   nil,   nil,   nil,    87,   nil,    58,    46,
-   nil,   nil,   nil,    32,   nil,    36,    63,    68,    14,    24,
-   nil,    81,    -8,   nil,   nil,   nil,   nil,   nil,    14,    -8,
+    53,    44,    87,   nil,   nil,   nil,    87,   nil,    63,    46,
+   nil,   nil,   nil,    32,   nil,    36,    74,    58,    14,    32,
+   nil,    81,    -8,   nil,   nil,   nil,   nil,    14,   nil,    -8,
    nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
-     4,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,    68,
-   nil,   nil,   nil,   nil,    70,    32,   nil,     4,   nil,   nil,
+     4,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,    63,
+   nil,   nil,   nil,   nil,    65,    24,   nil,     4,   nil,   nil,
    nil,   nil ]
 
 racc_action_default = [
-    -2,   -46,    -1,    -3,    -4,    -5,   -46,    -8,   -46,   -46,
-   -13,   -14,   -15,   -46,   -21,   -46,   -46,   -46,   -46,   -46,
-    -9,   -46,   -46,    62,   -10,   -11,    -6,   -16,   -17,   -18,
-   -27,   -32,   -33,   -34,   -35,   -36,   -37,   -38,   -39,    -7,
-   -46,   -40,   -41,   -42,   -43,   -44,   -45,   -12,   -19,   -46,
+    -2,   -46,    -1,    -3,    -4,    -5,   -46,    -9,   -46,   -46,
+   -14,   -15,   -16,   -46,   -21,   -46,   -46,   -46,   -46,   -46,
+   -10,   -46,   -46,    62,   -11,   -12,    -6,    -7,   -17,   -18,
+   -27,   -32,   -33,   -34,   -35,   -36,   -37,   -38,   -39,    -8,
+   -46,   -40,   -41,   -42,   -43,   -44,   -45,   -13,   -19,   -46,
    -22,   -24,   -25,   -26,   -46,   -46,   -20,   -46,   -29,   -30,
    -31,   -23 ]
 
 racc_goto_table = [
-    28,    46,    30,    40,     2,    53,    50,    20,    29,    27,
-    49,    39,    26,    21,     1,    24,    25,   nil,   nil,   nil,
+    29,    46,    30,    40,     2,    50,    53,    20,    39,    26,
+    27,     1,    28,    21,    49,    24,    25,   nil,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,    59,    46,    58,    60,
-    53,    61 ]
+    61,    53 ]
 
 racc_goto_check = [
-    10,    10,    16,    17,     2,     6,    15,     3,    12,    11,
-    14,     8,     7,     2,     1,     3,     3,   nil,   nil,   nil,
+    11,    11,    16,    17,     2,    15,     6,     3,     9,     7,
+     8,     1,    12,     2,    14,     3,     3,   nil,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
-   nil,   nil,   nil,   nil,   nil,   nil,    10,    10,    16,    17,
-     6,    15 ]
+   nil,   nil,   nil,   nil,   nil,   nil,    11,    11,    16,    17,
+    15,     6 ]
 
 racc_goto_pointer = [
-   nil,    14,     4,    -1,   nil,   nil,   -17,    -6,    -8,   nil,
-   -18,    -9,   -10,   nil,   -12,   -16,   -16,   -16 ]
+   nil,    11,     4,    -1,   nil,   nil,   -16,    -9,    -8,   -11,
+   nil,   -18,    -6,   nil,    -8,   -17,   -16,   -16 ]
 
 racc_goto_default = [
-   nil,   nil,   nil,     3,     4,     5,     6,   nil,   nil,     7,
-    12,    51,   nil,    13,   nil,   nil,    52,   nil ]
+   nil,   nil,   nil,     3,     4,     5,     6,   nil,   nil,   nil,
+     7,    12,    51,    13,   nil,   nil,    52,   nil ]
 
 racc_reduce_table = [
   0, 0, :racc_error,
@@ -88,38 +88,38 @@ racc_reduce_table = [
   1, 23, :_reduce_none,
   3, 24, :_reduce_6,
   3, 24, :_reduce_7,
+  3, 24, :_reduce_8,
   1, 24, :_reduce_none,
-  2, 26, :_reduce_9,
-  3, 25, :_reduce_10,
+  2, 26, :_reduce_10,
   3, 25, :_reduce_11,
-  3, 30, :_reduce_12,
+  3, 25, :_reduce_12,
+  3, 31, :_reduce_13,
   1, 27, :_reduce_none,
   1, 27, :_reduce_none,
   1, 27, :_reduce_none,
   1, 28, :_reduce_none,
   1, 28, :_reduce_none,
-  1, 28, :_reduce_18,
-  3, 31, :_reduce_19,
-  4, 31, :_reduce_20,
+  3, 32, :_reduce_19,
+  4, 32, :_reduce_20,
   1, 34, :_reduce_none,
   1, 35, :_reduce_none,
   3, 35, :_reduce_23,
   1, 36, :_reduce_none,
   1, 36, :_reduce_none,
-  1, 36, :_reduce_26,
+  1, 36, :_reduce_none,
+  1, 29, :_reduce_27,
+  1, 29, :_reduce_28,
+  3, 29, :_reduce_29,
+  3, 29, :_reduce_30,
+  3, 30, :_reduce_31,
+  1, 37, :_reduce_none,
+  1, 37, :_reduce_none,
+  1, 37, :_reduce_none,
   1, 33, :_reduce_none,
   1, 33, :_reduce_none,
-  3, 33, :_reduce_29,
-  3, 33, :_reduce_30,
-  3, 29, :_reduce_31,
-  1, 37, :_reduce_none,
-  1, 37, :_reduce_none,
-  1, 37, :_reduce_none,
-  1, 32, :_reduce_none,
-  1, 32, :_reduce_none,
-  1, 32, :_reduce_none,
-  1, 32, :_reduce_none,
-  1, 32, :_reduce_none,
+  1, 33, :_reduce_none,
+  1, 33, :_reduce_none,
+  1, 33, :_reduce_none,
   1, 38, :_reduce_none,
   1, 38, :_reduce_none,
   1, 38, :_reduce_none,
@@ -204,11 +204,11 @@ Racc_token_to_s_table = [
   "unary_conjunction",
   "field",
   "condition",
+  "literal_list",
   "range",
   "group",
   "function",
   "literal",
-  "literal_list",
   "function_name",
   "function_args",
   "function_arg",
@@ -235,24 +235,24 @@ end
 # reduce 5 omitted
 
 def _reduce_6(val, _values, result)
- result = tokenize_expression(val[0], val[1],val[2]) 
+ result = tokenize_operator(val[0], val[1],val[2]) 
     result
 end
 
 def _reduce_7(val, _values, result)
- result = tokenize_expression(val[0], val[1], val[2]) 
+ result = tokenize_list_operator(val[0], val[1],val[2]) 
     result
 end
 
-# reduce 8 omitted
-
-def _reduce_9(val, _values, result)
- result = tokenize_unary_conjunction(val[0], val[1]) 
+def _reduce_8(val, _values, result)
+ result = tokenize_operator(val[0], val[1],val[2]) 
     result
 end
+
+# reduce 9 omitted
 
 def _reduce_10(val, _values, result)
- result = tokenize_conjunction(val[0], val[1],val[2]) 
+ result = tokenize_unary_conjunction(val[0], val[1]) 
     result
 end
 
@@ -262,11 +262,14 @@ def _reduce_11(val, _values, result)
 end
 
 def _reduce_12(val, _values, result)
- result = tokenize_group(val[1]) 
+ result = tokenize_conjunction(val[0], val[1],val[2]) 
     result
 end
 
-# reduce 13 omitted
+def _reduce_13(val, _values, result)
+ result = tokenize_group(val[1]) 
+    result
+end
 
 # reduce 14 omitted
 
@@ -276,10 +279,7 @@ end
 
 # reduce 17 omitted
 
-def _reduce_18(val, _values, result)
- result = tokenize_list(val[0]) 
-    result
-end
+# reduce 18 omitted
 
 def _reduce_19(val, _values, result)
  result = tokenize_function(val[0], []) 
@@ -304,27 +304,30 @@ end
 
 # reduce 25 omitted
 
-def _reduce_26(val, _values, result)
- result = tokenize_field_arg(val[0]) 
+# reduce 26 omitted
+
+def _reduce_27(val, _values, result)
+ result = val 
     result
 end
 
-# reduce 27 omitted
-
-# reduce 28 omitted
+def _reduce_28(val, _values, result)
+ result = val 
+    result
+end
 
 def _reduce_29(val, _values, result)
- result = tokenize_multiple(val[0], val[2]) 
+ result.push(val[2]) 
     result
 end
 
 def _reduce_30(val, _values, result)
- result = tokenize_multiple(val[0], val[2]) 
+ result.push(val[2]) 
     result
 end
 
 def _reduce_31(val, _values, result)
- result = tokenize_multiple(val[0], val[2]) 
+ result = [val[0], val[2]] 
     result
 end
 

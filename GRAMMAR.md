@@ -3,8 +3,8 @@ This document explains the rules for the Spark API filter language syntax and
 is a living document generated from the reference implementation at 
 https://github.com/sparkapi/sparkql.
 ### Precedence Rules
-Unless otherwise specified, SparkQL follows SQL precendence conventions for 
-operators and conjunctions.
+SparkQL And and Or both have the same precedence. Unless otherwise specified,
+SparkQL follows SQL precendence conventions for other operators and conjunctions.
 Unary minus is always tied to value, such as for negative numbers.
 
 
@@ -48,6 +48,7 @@ false for matching the criteria.
 ```
      expression
        : field OPERATOR condition 
+       | field OPERATOR literal_list 
        | field RANGE_OPERATOR range 
        | group
        ;
@@ -75,7 +76,6 @@ Two expressions joined together using a supported conjunction
 ```
 
 #### Group
-One or more expressions encased in parenthesis. There are limitations on nesting depth at the time of this writing.
 
 
 ```
@@ -109,7 +109,6 @@ on filtering values
      condition
        : literal
        | function
-       | literal_list 
        ;
 ```
 
@@ -141,7 +140,7 @@ Functions may optionally have a comma delimited list of parameters.
      function_arg
        : literal
        | literals
-       | field 
+       | field
        ;
 ```
 
@@ -151,8 +150,8 @@ A comma delimited list of functions and values.
 
 ```
      literal_list
-       : literals
-       | function
+       : literals 
+       | function 
        | literal_list COMMA literals 
        | literal_list COMMA function 
        ;

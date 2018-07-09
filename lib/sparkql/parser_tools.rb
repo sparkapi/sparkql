@@ -22,44 +22,17 @@ module Sparkql::ParserTools
     t
   end
   
-  def tokenize_expression(field, op, val)
-    operator = get_operator(val,op) unless val.nil?
-    field_args = {}
-    # Function support for fields is stapled in here. The function information
-    # is remapped to the expression
-    if field.is_a?(Hash) && field[:type] == :function
-      function = Sparkql::FunctionResolver::SUPPORTED_FUNCTIONS[field[:value].to_sym]
-      if !function.nil?
-        field_args[:field_function] = field[:value]
-        field_args[:field_function_type] = function[:return_type]
-        field_args[:args] = field[:args]
-      else
-        tokenizer_error(:token => field[:value], 
-          :message => "Unsupported function type", :status => :fatal )
-      end
-      field = field[:args].first
-    end
-    custom_field = field.start_with?('"')
-    block_group = (@lexer.level == 0) ? 0 : @lexer.block_group_identifier
-    expression = {:field => field, :operator => operator, :conjunction => 'And',
-      :conjunction_level => 0, :level => @lexer.level,
-      :block_group => block_group, :custom_field => custom_field}.
-      merge!(field_args)
-    expression = val.merge(expression) unless val.nil?
-    expression[:condition] ||= expression[:value]
-    validate_level_depth expression
-    if operator.nil?
-      tokenizer_error(:token => op, :expression => expression,
-        :message => "Operator not supported for this type and value string", :status => :fatal )
-    end
-    @expression_count += 1
-    [expression]
-  end
-  
   def tokenize_conjunction(exp1, conj, exp2)
-    exp2.first[:conjunction] = conj
-    exp2.first[:conjunction_level] = @lexer.level
-    exp1 + exp2
+    case conj
+    when 'And'
+      Sparkql::Nodes::And.new(exp1, exp2)
+    when 'Or'
+      Sparkql::Nodes::Or.new(exp1, exp2)
+    when 'Not'
+      Sparkql::Nodes::And.new(exp1, Sparkql::Nodes::Not.new(exp2))
+    else
+      raise "#{conj} is not supported"
+    end
   end
 
   def tokenize_unary_conjunction(conj, exp)
@@ -80,40 +53,53 @@ module Sparkql::ParserTools
     exp
   end
     
-  def tokenize_group(expressions)
-    @lexer.leveldown
-    expressions
+  def tokenize_group(expression)
+    Sparkql::Nodes::Group.new(expression)
   end
 
-  def tokenize_list(list)
-    validate_multiple_values list[:value]
-    list[:condition] ||= list[:value]
-    list
-  end
-
-  def tokenize_multiple(lit1, lit2)
-    final_type = lit1[:type]
-    if lit1[:type] != lit2[:type]
-      final_type = coercible_types(lit1[:type],lit2[:type])
-      if final_type.nil?
-        final_type = lit1[:type]
-        tokenizer_error(:token => @lexer.last_field, 
-                        :message => "Type mismatch in field list.",
-                        :status => :fatal, 
-                        :syntax => true)
-      end
+  def tokenize_operator(field, operator, value)
+    operator_class = case operator
+    when 'Eq'
+      Sparkql::Nodes::Equal
+    when 'Gt'
+      Sparkql::Nodes::GreaterThan
+    when 'Ge'
+      Sparkql::Nodes::GreaterThanOrEqualTo
+    when 'Lt'
+      Sparkql::Nodes::LessThan
+    when 'Le'
+      Sparkql::Nodes::LessThanOrEqualTo
+    when 'Ne'
+      Sparkql::Nodes::NotEqual
+    when 'Bt'
+      Sparkql::Nodes::Between
+    else
+      # TODO: Make cuter
+      raise operator
     end
-    array = Array(lit1[:value])
-    condition = lit1[:condition] || lit1[:value] 
-    array << lit2[:value]
-    {
-      :type => final_type ,
-      :value => array,
-      :multiple => "true",
-      :condition => condition + "," + (lit2[:condition] || lit2[:value])
-    }
+
+    operator_class.new(field, value)
   end
-  
+
+  # TODO Decide if this should use In logic instead of nested Ors
+  def tokenize_list_operator(field, operator, values)
+    if values.size == 1
+      tokenize_operator(field, operator, values.first)
+    else
+      new_values = values.map do |literal|
+        tokenize_operator(field, operator, literal)
+      end
+
+      data = Sparkql::Nodes::Or.new(new_values.pop, new_values.pop)
+
+      new_values.each do |val|
+        data = Sparkql::Nodes::Or.new(data, val)
+      end
+
+      data
+    end
+  end
+
   def tokenize_function_args(lit1, lit2)
     array = lit1.kind_of?(Array) ? lit1 : [lit1]
     array << lit2
@@ -121,47 +107,21 @@ module Sparkql::ParserTools
   end
   
   def tokenize_field_arg(field)
-    {
-      :type => :field,
-      :value => field,
-    }
+    Sparkql::Nodes::Identifier.new(field)
   end
   
   def tokenize_function(name, f_args)
-    @lexer.leveldown
-    @lexer.block_group_identifier -= 1
-
-    args = f_args.instance_of?(Array) ? f_args : [f_args]
-    validate_multiple_arguments args
-    condition_list = []
-    args.each do |arg|
-      condition_list << arg[:value] # Needs to be pure string value
-      arg[:value] = escape_value(arg)
-    end
-    resolver = Sparkql::FunctionResolver.new(name, args)
-    
-    resolver.validate
-    if(resolver.errors?)
-      tokenizer_error(:token => @lexer.last_field, 
-                      :message => "Error parsing function #{resolver.errors.join(',')}",
-                      :status => :fatal, 
-                      :syntax => true)    
-      return nil
-    else
-      result = resolver.call()
-      result.nil? ? result : result.merge(:condition => "#{name}(#{condition_list.join(',')})")
-    end
+    Sparkql::Nodes::Function.new(name, f_args)
   end
   
   def on_error(error_token_id, error_value, value_stack)
     token_name = token_to_str(error_token_id)
     token_name.downcase!
-    token = error_value.to_s.inspect
     tokenizer_error(:token => @lexer.current_token_value, 
                     :message => "Error parsing token #{token_name}",
                     :status => :fatal, 
                     :syntax => true)    
-  end  
+  end
 
   def validate_level_depth expression
     if @lexer.level > max_level_depth
@@ -172,7 +132,7 @@ module Sparkql::ParserTools
   end
   
   def validate_expressions results
-    if results.size > max_expressions 
+    if false
       compile_error(:token => results[max_expressions][:field], :expression => results[max_expressions],
             :message => "You have exceeded the maximum expression count.  Please limit to no more than #{max_expressions} expressions in a filter.",
             :status => :fatal, :syntax => false, :constraint => true )

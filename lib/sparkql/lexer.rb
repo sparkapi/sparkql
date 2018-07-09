@@ -54,7 +54,7 @@ class Sparkql::Lexer < StringScanner
       when @current_token_value = scan(KEYWORD)
         check_keywords(@current_token_value)
       when @current_token_value = scan(CUSTOM_FIELD)
-        [:CUSTOM_FIELD,@current_token_value]
+        [:CUSTOM_FIELD, Sparkql::Nodes::Identifier.new(@current_token_value)]
       when eos?
         [false, false] # end of file, \Z don't work with StringScanner
       else
@@ -83,7 +83,7 @@ class Sparkql::Lexer < StringScanner
     result = check_reserved_words(value)
     if result.first == :UNKNOWN
       @last_field = value
-      result = [:STANDARD_FIELD,value]
+      result = [:STANDARD_FIELD, Sparkql::Nodes::Identifier.new(value)]
     end
     result
   end
@@ -106,11 +106,7 @@ class Sparkql::Lexer < StringScanner
   end
   
   def literal(symbol, value)
-    node = {
-      :type => symbol.to_s.downcase.to_sym,
-      :value => value
-    }
-    [symbol, node]
+    [symbol, Sparkql::Nodes::Literal.new(symbol.to_s.downcase.to_sym, value)]
   end
   
 end

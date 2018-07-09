@@ -21,10 +21,10 @@ class Sparkql::Parser
 # https://github.com/sparkapi/sparkql.
 
 #### Precedence Rules
-# 
-# Unless otherwise specified, SparkQL follows SQL precendence conventions for 
-# operators and conjunctions.
-# 
+#
+# SparkQL And and Or both have the same precedence. Unless otherwise specified,
+# SparkQL follows SQL precendence conventions for other operators and conjunctions.
+#
 # Unary minus is always tied to value, such as for negative numbers.
 prechigh
   nonassoc UMINUS
@@ -56,8 +56,9 @@ rule
 # condition. The result of evaluating the expression on a resource is a true of 
 # false for matching the criteria.
   expression
-    : field OPERATOR condition { result = tokenize_expression(val[0], val[1],val[2]) }
-    | field RANGE_OPERATOR range { result = tokenize_expression(val[0], val[1], val[2]) }
+    : field OPERATOR condition { result = tokenize_operator(val[0], val[1],val[2]) }
+    | field OPERATOR literal_list { result = tokenize_list_operator(val[0], val[1],val[2]) }
+    | field RANGE_OPERATOR range { result = tokenize_operator(val[0], val[1],val[2]) }
     | group
     ;
   
@@ -77,8 +78,6 @@ rule
     ;
   
 ##### Group
-# 
-# One or more expressions encased in parenthesis. There are limitations on nesting depth at the time of this writing.
   group
   	: LPAREN expressions RPAREN { result = tokenize_group(val[1]) }
   	;
@@ -103,7 +102,6 @@ rule
   condition
     : literal
     | function
-    | literal_list { result = tokenize_list(val[0]) }
     ;
     
 ##### Function
@@ -131,17 +129,17 @@ rule
   function_arg
     : literal
     | literals
-    | field { result = tokenize_field_arg(val[0]) }
+    | field
     ;
     
 ##### Literal List
 # 
 # A comma delimited list of functions and values.
   literal_list
-    : literals
-    | function
-    | literal_list COMMA literals { result = tokenize_multiple(val[0], val[2]) }
-    | literal_list COMMA function { result = tokenize_multiple(val[0], val[2]) }
+    : literals { result = val }
+    | function { result = val }
+    | literal_list COMMA literals { result.push(val[2]) }
+    | literal_list COMMA function { result.push(val[2]) }
     ;
     
 ##### Range List
@@ -149,7 +147,7 @@ rule
 # A comma delimited list of values that support ranges for the Between operator 
 # (see rangeable).
   range                                                                             
-    : rangeable COMMA rangeable { result = tokenize_multiple(val[0], val[2]) }
+    : rangeable COMMA rangeable { result = [val[0], val[2]] }
     ;
 
 ##### Literals

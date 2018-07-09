@@ -5,64 +5,6 @@ module Sparkql::ParserCompatibility
   MAXIMUM_EXPRESSIONS = 75
   MAXIMUM_LEVEL_DEPTH = 2
 
-  # TODO I Really don't think this is required anymore
-  # Ordered by precedence.
-  FILTER_VALUES = [
-    {
-      :type => :datetime,
-      :regex => /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}T[0-9]{2}\:[0-9]{2}\:[0-9]{2}\.[0-9]{6}$/,
-      :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
-    },
-    {
-      :type => :date,
-      :regex => /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/,
-      :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
-    },
-    {
-      :type => :time,
-      :regex => /^[0-9]{2}\:[0-9]{2}(\:[0-9]{2})?(\.[0-9]{6)$/,
-      :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
-    },
-    {
-      :type => :character,
-      :regex => /^'([^'\\]*(\\.[^'\\]*)*)'$/, # Strings must be single quoted.  Any inside single quotes must be escaped.
-      :multiple => /^'([^'\\]*(\\.[^'\\]*)*)'/,
-      :operators => Sparkql::Token::EQUALITY_OPERATORS
-    },
-    {
-      :type => :integer,
-      :regex => /^\-?[0-9]+$/,
-      :multiple => /^\-?[0-9]+/,
-      :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
-    },
-    {
-      :type => :decimal,
-      :regex => /^\-?[0-9]+\.[0-9]+$/,
-      :multiple => /^\-?[0-9]+\.[0-9]+/,
-      :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
-    },
-    {
-      :type => :shape,
-      # This type is not parseable, so no regex
-      :operators => Sparkql::Token::EQUALITY_OPERATORS
-    },
-    {
-      :type => :boolean,
-      :regex => /^true|false$/,
-      :operators => Sparkql::Token::EQUALITY_OPERATORS
-    },
-    {
-      :type => :null,
-      :regex => /^NULL|Null|null$/,
-      :operators => Sparkql::Token::EQUALITY_OPERATORS
-    },
-    {
-      :type => :function,
-      # This type is not parseable, so no regex
-      :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
-    }
-  ]
-
   OPERATORS_SUPPORTING_MULTIPLES = ["Eq","Ne"]
 
   # To be implemented by child class.
@@ -182,10 +124,7 @@ module Sparkql::ParserCompatibility
 
   # Returns the rule hash for a given type
   def rules_for_type( type )
-    FILTER_VALUES.each do |rule|
-      return rule if rule[:type] == type
-    end
-    nil
+    RULES[type]
   end
 
   # true if a given type supports multiple values
