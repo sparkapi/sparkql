@@ -17,18 +17,18 @@ class Parser2Test < Test::Unit::TestCase
 
   def test_conjunction
     expression = @parser.parse('Test Eq 10 And Test Ne 11')
-    assert_equal 10.to_s, expression.left.right.value
-    assert_equal 11.to_s, expression.right.right.value
+    assert_equal 10, expression.left.right.value
+    assert_equal 11, expression.right.right.value
     assert_equal Sparkql::Nodes::And, expression.class
 
     expression = @parser.parse('Test Eq 10 Or Test Ne 11')
-    assert_equal 10.to_s, expression.left.right.value
-    assert_equal 11.to_s, expression.right.right.value
+    assert_equal 10, expression.left.right.value
+    assert_equal 11, expression.right.right.value
     assert_equal Sparkql::Nodes::Or, expression.class
 
     expression = @parser.parse('Test Eq 10 Not Test Ne 11')
-    assert_equal 10.to_s, expression.left.right.value
-    assert_equal 11.to_s, expression.right.value.right.value
+    assert_equal 10, expression.left.right.value
+    assert_equal 11, expression.right.value.right.value
     assert_equal Sparkql::Nodes::And, expression.class
     assert_equal Sparkql::Nodes::Not, expression.right.class
   end
@@ -40,22 +40,22 @@ class Parser2Test < Test::Unit::TestCase
 
     assert_equal Sparkql::Nodes::And, and_expr.class
     assert_equal Sparkql::Nodes::Or, or_expr.class
-    assert_equal '10', or_expr.left.right.value
-    assert_equal '11', or_expr.right.right.value
+    assert_equal 10, or_expr.left.right.value
+    assert_equal 11, or_expr.right.right.value
   end
 
   def test_grouping
     expression = @parser.parse('(Test Eq 10)')
-    assert_equal 10.to_s, expression.value.right.value
+    assert_equal 10, expression.value.right.value
 
     expression = @parser.parse('(Test Eq 10 Or Test Ne 11)')
-    assert_equal 10.to_s, expression.value.left.right.value
-    assert_equal 11.to_s, expression.value.right.right.value
+    assert_equal 10, expression.value.left.right.value
+    assert_equal 11, expression.value.right.right.value
     assert_equal Sparkql::Nodes::Or, expression.value.class
 
     expression = @parser.parse('(Test Eq 10 Or (Test Ne 11))')
-    assert_equal 10.to_s, expression.value.left.right.value
-    assert_equal 11.to_s, expression.value.right.value.right.value
+    assert_equal 10, expression.value.left.right.value
+    assert_equal 11, expression.value.right.value.right.value
     assert_equal Sparkql::Nodes::Or, expression.value.class
   end
 
@@ -64,13 +64,13 @@ class Parser2Test < Test::Unit::TestCase
     assert_equal Sparkql::Nodes::Or, expression.class
     assert_equal Sparkql::Nodes::Or, expression.left.class
     assert_equal 'Test', expression.right.left.value
-    assert_equal '10', expression.right.right.value
+    assert_equal 10, expression.right.right.value
 
     assert_equal 'Test', expression.left.right.left.value
-    assert_equal '11', expression.left.right.right.value
+    assert_equal 11, expression.left.right.right.value
 
     assert_equal 'Test', expression.left.left.left.value
-    assert_equal '12', expression.left.left.right.value
+    assert_equal 12, expression.left.left.right.value
   end
 
   def test_invalid_syntax
@@ -91,7 +91,7 @@ class Parser2Test < Test::Unit::TestCase
 
     baths_1_or_2 = expression.left.left.right
     assert_equal Sparkql::Nodes::Group, baths_1_or_2.class
-    assert_equal '1', baths_1_or_2.value.left.right.value
+    assert_equal 1, baths_1_or_2.value.left.right.value
   end
 
   def test_multilevel_nesting
@@ -116,7 +116,7 @@ class Parser2Test < Test::Unit::TestCase
 
     assert_equal Sparkql::Nodes::Function, expressions.right.class
     assert_equal 'months', expressions.right.name
-    assert_equal '-3', expressions.right.args.value
+    assert_equal(-3, expressions.right.args.value)
   end
 
   def test_function_years
@@ -125,7 +125,7 @@ class Parser2Test < Test::Unit::TestCase
 
     assert_equal Sparkql::Nodes::Function, expressions.right.class
     assert_equal 'years', expressions.right.name
-    assert_equal '2', expressions.right.args.value
+    assert_equal 2, expressions.right.args.value
   end
 
   def test_function_days
@@ -135,7 +135,7 @@ class Parser2Test < Test::Unit::TestCase
 
     assert_equal Sparkql::Nodes::Function, expressions.right.class
     assert_equal 'days', expressions.right.name
-    assert_equal '-7', expressions.right.args.value
+    assert_equal(-7, expressions.right.args.value)
   end
 
   def test_function_now
@@ -156,7 +156,7 @@ class Parser2Test < Test::Unit::TestCase
 
     assert_equal Sparkql::Nodes::Function, expressions.right.class
     assert_equal 'range', expressions.right.name
-    assert_equal ["'M01'","'M04'"], expressions.right.args.map(&:value)
+    assert_equal ["M01","M04"], expressions.right.args.map(&:value)
   end
 
   test 'indexof with field' do
@@ -176,8 +176,8 @@ class Parser2Test < Test::Unit::TestCase
 
     assert_equal Sparkql::Nodes::Between, expressions.class
     assert_equal Array, expressions.right.class
-    assert_equal '-7', expressions.right.first.args.value
-    assert_equal '-1', expressions.right.last.args.value
+    assert_equal(-7, expressions.right.first.args.value)
+    assert_equal(-1, expressions.right.last.args.value)
   end
 
   test "mixed rangeable " do
@@ -186,8 +186,8 @@ class Parser2Test < Test::Unit::TestCase
 
     assert_equal Sparkql::Nodes::Between, expressions.class
     assert_equal Array, expressions.right.class
-    assert_equal '-7', expressions.right.first.args.value
-    assert_equal '2013-07-26', expressions.right.last.value
+    assert_equal(-7, expressions.right.first.args.value)
+    assert_equal(Date.parse('2013-07-26'), expressions.right.last.value)
   end
 
   test "multiple function list" do
@@ -198,13 +198,13 @@ class Parser2Test < Test::Unit::TestCase
     assert_equal Sparkql::Nodes::Or, expression.left.class
 
     assert_equal 'OriginalEntryTimestamp', expression.right.left.value
-    assert_equal '-1', expression.right.right.args.value
+    assert_equal(-1, expression.right.right.args.value)
 
     assert_equal 'OriginalEntryTimestamp', expression.left.right.left.value
-    assert_equal '-7', expression.left.right.right.args.value
+    assert_equal(-7, expression.left.right.right.args.value)
 
     assert_equal 'OriginalEntryTimestamp', expression.left.left.left.value
-    assert_equal '-30', expression.left.left.right.args.value
+    assert_equal(-30, expression.left.left.right.args.value)
   end
 
   def test_function_date
@@ -225,7 +225,7 @@ class Parser2Test < Test::Unit::TestCase
 
     assert_equal Sparkql::Nodes::Function, expressions.right.class
     assert_equal 'date', expressions.right.name
-    assert_equal '2013-07-26T10:22:15.111-0100', expressions.right.args.value
+    assert_equal DateTime.parse('2013-07-26T10:22:15.111-0100'), expressions.right.args.value
 
     # And the grand finale: run on both sides
     filter = "date(OriginalEntryTimestamp) Eq date(2013-07-26T10:22:15.111-0100)"
@@ -235,7 +235,7 @@ class Parser2Test < Test::Unit::TestCase
 
     assert_equal Sparkql::Nodes::Function, expressions.right.class
     assert_equal 'date', expressions.right.name
-    assert_equal '2013-07-26T10:22:15.111-0100', expressions.right.args.value
+    assert_equal DateTime.parse('2013-07-26T10:22:15.111-0100'), expressions.right.args.value
 
     assert_equal Sparkql::Nodes::Function, expressions.left.class
     assert_equal 'date', expressions.left.name
@@ -248,7 +248,7 @@ class Parser2Test < Test::Unit::TestCase
 
     assert_equal Sparkql::Nodes::Function, expression.right.class
     assert_equal 'regex', expression.right.name
-    assert_equal "'^[0-9]{3}-[0-9]{2}-[0-9]{3}$'", expression.right.args.value
+    assert_equal "^[0-9]{3}-[0-9]{2}-[0-9]{3}$", expression.right.args.value
   end
 
   test "regex function parses with case-insensitive flag" do
@@ -257,7 +257,7 @@ class Parser2Test < Test::Unit::TestCase
 
     assert_equal Sparkql::Nodes::Function, expression.right.class
     assert_equal 'regex', expression.right.name
-    assert_equal ["'^[0-9]{3}-[0-9]{2}-[0-9]{3}$'","'i'"], expression.right.args.map(&:value)
+    assert_equal ["^[0-9]{3}-[0-9]{2}-[0-9]{3}$","i"], expression.right.args.map(&:value)
   end
 
 =begin
@@ -293,7 +293,7 @@ TODO: validate function parameters
       expressions = @parser.parse(filter)
       assert !@parser.errors?, "errors #{@parser.errors.inspect}"
       assert_not_nil expressions, "#{value} failed"
-      assert_equal value, expressions.right.value, "#{value} failed"
+      assert_equal DateTime.parse(value), expressions.right.value, "#{value} failed"
     end
   end
 
@@ -304,7 +304,7 @@ TODO: validate function parameters
 
     assert_equal Sparkql::Nodes::Function, expressions.right.class
     assert_equal 'polygon', expressions.right.name
-    assert_equal "'35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32'", expressions.right.args.value
+    assert_equal "35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32", expressions.right.args.value
   end
 
   test "function linestring" do
@@ -315,7 +315,7 @@ TODO: validate function parameters
 
     assert_equal Sparkql::Nodes::Function, expressions.right.class
     assert_equal 'linestring', expressions.right.name
-    assert_equal "'35.12 -68.33, 35.13 -68.33'", expressions.right.args.value
+    assert_equal "35.12 -68.33, 35.13 -68.33", expressions.right.args.value
   end
 
   test "function rectangle" do
@@ -325,7 +325,7 @@ TODO: validate function parameters
 
     assert_equal Sparkql::Nodes::Function, expressions.right.class
     assert_equal 'rectangle', expressions.right.name
-    assert_equal "'35.12 -68.33, 35.13 -68.32'", expressions.right.args.value
+    assert_equal "35.12 -68.33, 35.13 -68.32", expressions.right.args.value
   end
 
   test "function radius" do
@@ -335,7 +335,7 @@ TODO: validate function parameters
 
     assert_equal Sparkql::Nodes::Function, expressions.right.class
     assert_equal 'radius', expressions.right.name
-    assert_equal ["'35.12 -68.33'",'1.0'], expressions.right.args.map(&:value)
+    assert_equal ["35.12 -68.33",1.0], expressions.right.args.map(&:value)
   end
 
   test "function radius accepts integer" do
@@ -345,7 +345,7 @@ TODO: validate function parameters
 
     assert_equal Sparkql::Nodes::Function, expressions.right.class
     assert_equal 'radius', expressions.right.name
-    assert_equal ["'35.12 -68.33'",'1'], expressions.right.args.map(&:value)
+    assert_equal ["35.12 -68.33",1], expressions.right.args.map(&:value)
   end
 
 =begin
@@ -416,7 +416,8 @@ TODO: validate function parameters
 
   def test_null
     expressions = parse('Test Eq NULL')
-    assert_equal 'NULL', expressions.right.value
+    assert_equal nil, expressions.right.value
+    assert_equal :null, expressions.right.type
   end
 
 =begin

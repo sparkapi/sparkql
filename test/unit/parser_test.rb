@@ -2,8 +2,7 @@ require 'test_helper'
 
 class ParserTest < Test::Unit::TestCase
   include Sparkql
-  
-  
+
   def test_not_expression
     @parser = Parser.new
     expressions = @parser.parse('Test Lt 10 Not Test Eq 2')
