@@ -1,7 +1,8 @@
 module Sparkql
   module Nodes
     class Literal < Node
-      attr_accessor :type, :value
+      attr_reader :type, :value
+
       def initialize(type, value)
         @type = type
         @value = Literal.escape_value(type, value)

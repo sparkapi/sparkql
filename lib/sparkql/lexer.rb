@@ -2,23 +2,14 @@ require 'strscan'
 
 class Sparkql::Lexer < StringScanner
   include Sparkql::Token
-  
-  attr_accessor :level, :block_group_identifier
-  
+
   attr_reader :last_field, :current_token_value, :token_index
 
   def initialize(str)
     str.freeze
     super(str, false) # DO NOT dup str
-    @level = 0
-    @block_group_identifier = 0
-    @expression_count = 0
   end
-  
-  # Lookup the next matching token
-  # 
-  # TODO the old implementation did value type detection conversion at a later date, we can perform
-  # this at parse time if we want!!!!
+
   def shift
     @token_index = self.pos
 
@@ -26,10 +17,8 @@ class Sparkql::Lexer < StringScanner
       when @current_token_value = scan(SPACE)
         [:SPACE, @current_token_value]
       when @current_token_value = scan(LPAREN)
-        levelup
         [:LPAREN, @current_token_value]
       when @current_token_value = scan(RPAREN)
-        # leveldown: do this after parsing group
         [:RPAREN, @current_token_value]
       when @current_token_value = scan(/\,/)
         [:COMMA,@current_token_value]
@@ -63,7 +52,7 @@ class Sparkql::Lexer < StringScanner
 
     token.freeze
   end
-  
+
   def check_reserved_words(value)
     u_value = value.capitalize
     if OPERATORS.include?(u_value)
@@ -78,7 +67,7 @@ class Sparkql::Lexer < StringScanner
       [:UNKNOWN, "ERROR: '#{self.string}'"]
     end
   end
-  
+
   def check_standard_fields(value)
     result = check_reserved_words(value)
     if result.first == :UNKNOWN
@@ -95,18 +84,8 @@ class Sparkql::Lexer < StringScanner
     end
     result
   end
-  
-  def levelup
-    @level += 1
-    @block_group_identifier += 1
-  end
-  
-  def leveldown
-    @level -= 1
-  end
-  
+
   def literal(symbol, value)
     [symbol, Sparkql::Nodes::Literal.new(symbol.to_s.downcase.to_sym, value)]
   end
-  
 end

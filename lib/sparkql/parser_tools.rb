@@ -21,7 +21,7 @@ module Sparkql::ParserTools
     end
     t
   end
-  
+
   def tokenize_conjunction(exp1, conj, exp2)
     case conj
     when 'And'
@@ -36,23 +36,9 @@ module Sparkql::ParserTools
   end
 
   def tokenize_unary_conjunction(conj, exp)
-    # Handles the case when a SparkQL filter string
-    # begins with a unary operator, and is nested, such as:
-    #   Not (Not Field Eq 1)
-    # In this instance we treat the outer unary as a conjunction. With any other
-    # expression this would be the case, so that should make processing 
-    # consistent.
-    if exp.first[:unary] && @lexer.level == 0
-      exp.first[:conjunction] =  conj
-      exp.first[:conjunction_level] = @lexer.level
-    else
-      exp.first[:unary] = conj
-      exp.first[:unary_level] = @lexer.level
-    end
-
-    exp
+    Sparkql::Nodes::Not.new(exp)
   end
-    
+
   def tokenize_group(expression)
     Sparkql::Nodes::Group.new(expression)
   end
