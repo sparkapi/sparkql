@@ -56,13 +56,6 @@ class ParserTest < Test::Unit::TestCase
     assert_equal '10,11,12', expression[:condition]
   end
     
-  def parse(q,v)
-    expressions = @parser.parse(q)
-    assert !@parser.errors?, "Unexpected error parsing #{q} #{@parser.errors.inspect}"
-    assert_equal v, expressions.first[:value], "Expression #{expressions.inspect}"
-    assert !expressions.first[:custom_field], "Unexepected custom field #{expressions.inspect}"
-  end
-
   def test_invalid_syntax
     @parser = Parser.new
     expression = @parser.parse('Test Eq DERP')
@@ -103,20 +96,6 @@ class ParserTest < Test::Unit::TestCase
     )
   end
   
-  # verify each expression in the query is at the right nesting level and group
-  def assert_nesting(sparkql, levels=[], block_groups=nil)
-    block_groups = levels.clone if block_groups.nil?
-    parser = Parser.new
-    expressions = parser.parse(sparkql)
-    assert !parser.errors?, "Unexpected error parsing #{sparkql}: #{parser.errors.inspect}"
-    count = 0
-    expressions.each do |ex|
-      assert_equal levels[count],  ex[:level], "Nesting level wrong for #{ex.inspect}"
-      assert_equal(block_groups[count],  ex[:block_group], "Nesting block group wrong for #{ex.inspect}")
-      count +=1
-    end
-  end    
-
   def test_bad_queries
     filter = "City IsLikeA 'Town'"
     @parser = Parser.new
@@ -629,11 +608,119 @@ class ParserTest < Test::Unit::TestCase
     assert_nil @parser.coercible_types(:integer, :date)
   end
 
+  def test_literal_group
+    filter = "ListPrice Gt (5)"
+    @parser = Parser.new
+    @parser.parse(filter)
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+  end
+
+  def test_integer_negation
+    filter = "ListPrice Gt -(5)"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    assert_equal :integer, expression[:type]
+    assert_equal '-5', expression[:value]
+  end
+
+  def test_decimal_negation
+    filter = "ListPrice Gt -(5.1)"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    expression = expressions.first
+    assert_equal :decimal, expression[:type]
+    assert_equal '-5.1', expression[:value]
+  end
+
+  def test_nested_negation
+    filter = "ListPrice Gt -(-5)"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    assert_equal :integer, expression[:type]
+    assert_equal '5', expression[:value]
+
+    filter = "ListPrice Gt --5"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    assert_equal :integer, expression[:type]
+    assert_equal '5', expression[:value]
+  end
+
+  def test_string_negation_does_not_parse
+    parser_errors("Field Eq -'Stringval'")
+  end
+
+  def test_substring
+    filter = "Name Eq substring('Andy', 1)"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+    assert_equal 'ndy', expression[:value]
+  end
+
+  def test_round_with_literal
+    filter = "ListPrice Eq round(0.5)"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    assert_equal :integer, expression[:type]
+    assert_equal "1", expression[:value]
+
+    filter = "ListPrice Eq round(-0.5)"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    assert_equal :integer, expression[:type]
+    assert_equal "-1", expression[:value]
+  end
+
+  def test_round_with_field
+    filter = "ListPrice Eq round(FieldName)"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    assert_equal 'round', expression[:function_name]
+    assert_equal 'round(FieldName)', expression[:condition]
+    assert_equal(["FieldName"], expression[:function_parameters])
+  end
+
+  private
 
   def parser_errors(filter)  
     @parser = Parser.new
     expression = @parser.parse(filter)
     assert @parser.errors?, "Should find errors for '#{filter}': #{expression}"
   end
-    
+
+  def parse(q,v)
+    expressions = @parser.parse(q)
+    assert !@parser.errors?, "Unexpected error parsing #{q} #{@parser.errors.inspect}"
+    assert_equal v, expressions.first[:value], "Expression #{expressions.inspect}"
+    assert !expressions.first[:custom_field], "Unexepected custom field #{expressions.inspect}"
+  end
+
+  # verify each expression in the query is at the right nesting level and group
+  def assert_nesting(sparkql, levels=[], block_groups=nil)
+    block_groups = levels.clone if block_groups.nil?
+    parser = Parser.new
+    expressions = parser.parse(sparkql)
+    assert !parser.errors?, "Unexpected error parsing #{sparkql}: #{parser.errors.inspect}"
+    count = 0
+    expressions.each do |ex|
+      assert_equal levels[count],  ex[:level], "Nesting level wrong for #{ex.inspect}"
+      assert_equal(block_groups[count],  ex[:block_group], "Nesting block group wrong for #{ex.inspect}")
+      count +=1
+    end
+  end
 end

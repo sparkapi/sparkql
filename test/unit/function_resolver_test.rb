@@ -14,14 +14,151 @@ class FunctionResolverTest < Test::Unit::TestCase
     assert_equal(["35.12 -68.33", 1.0], value[:function_parameters])
   end
 
-  test "tolower(SomeField)" do
-    f = FunctionResolver.new('tolower', [{:type => :field, :value => "City"}])
+  test "round(float)" do
+    f = FunctionResolver.new('round', [{:type => :decimal, :value => 0.5}])
     f.validate
     assert !f.errors?, "Errors #{f.errors.inspect}"
     value = f.call
+    assert_equal :integer, value[:type]
+    assert_equal '1', value[:value]
+  end
+
+  test "round(Field)" do
+    f = FunctionResolver.new('round', [{:type => :field, :value => 'ListPrice'}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
     assert_equal :function, value[:type]
-    assert_equal 'tolower', value[:value]
-    assert_equal "City", value[:args].first
+    assert_equal 'round', value[:value]
+    assert_equal "ListPrice", value[:args].first
+  end
+
+  test "substring character one index" do
+    f = FunctionResolver.new('substring', [
+      {:type => :character, :value => 'ListPrice'},
+      {:type => :integer, :value => 1}
+    ])
+
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :character, value[:type]
+    assert_equal 'istPrice', value[:value]
+  end
+
+  test "substring character two indexes" do
+    f = FunctionResolver.new('substring', [
+      {:type => :character, :value => 'alfb'},
+      {:type => :integer, :value => 1},
+      {:type => :integer, :value => 2}
+    ])
+
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :character, value[:type]
+    assert_equal "lf", value[:value]
+  end
+
+  test "substring character large first index" do
+    f = FunctionResolver.new('substring', [
+      {:type => :character, :value => 'ListPrice'},
+      {:type => :integer, :value => 10}
+    ])
+
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :character, value[:type]
+    assert_equal '', value[:value]
+  end
+
+  test "substring field one index" do
+    f = FunctionResolver.new('substring', [
+      {:type => :field, :value => 'ListPrice'},
+      {:type => :integer, :value => 1}
+    ])
+
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :function, value[:type]
+    assert_equal 'substring', value[:value]
+    assert_equal "ListPrice", value[:args].first
+    assert_nil value[:args].last
+  end
+
+  test "substring field two indexes" do
+    f = FunctionResolver.new('substring', [
+      {:type => :field, :value => 'ListPrice'},
+      {:type => :integer, :value => 1},
+      {:type => :integer, :value => 2}
+    ])
+
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :function, value[:type]
+    assert_equal 'substring', value[:value]
+    assert_equal "ListPrice", value[:args].first
+    assert_equal 2, value[:args].last
+  end
+
+  test "substring with negative M is a parse error" do
+    f = FunctionResolver.new('substring', [
+      {:type => :field, :value => 'ListPrice'},
+      {:type => :integer, :value => 1},
+      {:type => :integer, :value => -5}
+    ])
+
+    f.validate
+    f.call
+    assert f.errors?
+  end
+
+  test "character substring with negative M is a parse error" do
+    f = FunctionResolver.new('substring', [
+      {:type => :character, :value => 'ListPrice'},
+      {:type => :integer, :value => 1},
+      {:type => :integer, :value => -5}
+    ])
+
+    f.validate
+    f.call
+    assert f.errors?
+  end
+
+  test 'trim with field' do
+    f = FunctionResolver.new('trim', [
+      {:type => :field, :value => 'Name'}
+    ])
+
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :function, value[:type]
+    assert_equal 'trim', value[:value]
+    assert_equal "Name", value[:args].first
+  end
+
+  test 'trim with character' do
+    f = FunctionResolver.new('trim', [
+      {:type => :character, :value => ' val '}
+    ])
+
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :character, value[:type]
+    assert_equal 'val', value[:value]
   end
 
   test "tolower('string')" do

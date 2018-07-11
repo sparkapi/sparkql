@@ -60,7 +60,7 @@ module Sparkql::ParserCompatibility
       :type => :function,
       # This type is not parseable, so no regex
       :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
-    }
+    },
   ]
 
   OPERATORS_SUPPORTING_MULTIPLES = ["Eq","Ne"]

@@ -14,7 +14,7 @@ class Sparkql::FunctionResolver
   STRFTIME_DATE_FORMAT = '%Y-%m-%d'
   STRFTIME_TIME_FORMAT = '%H:%M:%S.%N'
   VALID_REGEX_FLAGS = ["", "i"]
-  MIN_DATE_TIME = Time.new(1, 1, 1, 0, 0, 0, "+00:00").iso8601
+  MIN_DATE_TIME = Time.new(1970, 1, 1, 0, 0, 0, "+00:00").iso8601
   MAX_DATE_TIME = Time.new(9999, 12, 31, 23, 59, 59, "+00:00").iso8601
   SUPPORTED_FUNCTIONS = {
     :polygon => {
@@ -37,6 +37,19 @@ class Sparkql::FunctionResolver
       }],
       :return_type => :character
     },
+    :substring => {
+      :args => [[:field, :character], :integer],
+      :opt_args => [{
+        :type => :integer
+      }],
+      :resolve_for_type => true,
+      :return_type => :character
+    },
+    :trim => {
+      :args => [[:field, :character]],
+      :resolve_for_type => true,
+      :return_type => :character
+    },
     :tolower => {
       :args => [[:field, :character]],
       :resolve_for_type => true,
@@ -54,6 +67,11 @@ class Sparkql::FunctionResolver
     },
     :indexof => {
       :args => [[:field, :character], :character],
+      :return_type => :integer
+    },
+    :round => {
+      :args => [[:field, :decimal]],
+      :resolve_for_type => true,
       :return_type => :integer
     },
     :startswith => {
@@ -264,6 +282,57 @@ class Sparkql::FunctionResolver
     }
   end
 
+  def trim_field(arg)
+    {
+      :type => :function,
+      :value => "trim",
+      :args => [arg]
+    }
+  end
+
+  def trim_character(arg)
+    {
+      :type => :character,
+      :value => arg.strip
+    }
+  end
+
+  def substring_field(field, first_index, number_chars)
+    return if substring_index_error?(number_chars)
+    {
+      :type => :function,
+      :value => "substring",
+      :args => [field, first_index, number_chars]
+    }
+  end
+
+  def substring_character(character, first_index, number_chars)
+    return if substring_index_error?(number_chars)
+
+    second_index = if number_chars.nil?
+      -1
+    else
+      number_chars + first_index - 1
+    end
+
+    new_string = character[first_index..second_index].to_s
+
+    {
+      :type => :character,
+      :value => new_string
+    }
+  end
+
+  def substring_index_error?(second_index)
+    if second_index.to_i < 0
+      @errors << Sparkql::ParserError.new(:token => second_index,
+        :message => "Function call 'substring' may not have a negative integer for its second parameter",
+        :status => :fatal)
+      true
+    end
+    false
+  end
+
   def tolower_character(string)
     {
       :type => :character,
@@ -271,7 +340,8 @@ class Sparkql::FunctionResolver
     }
   end
 
-  def tolower_field(arg) {
+  def tolower_field(arg)
+    {
       :type => :function,
       :value => "tolower",
       :args => [arg]
@@ -395,6 +465,21 @@ class Sparkql::FunctionResolver
     {
       :type => :datetime,
       :value => MIN_DATE_TIME
+    }
+  end
+
+  def round_decimal(arg)
+    {
+      :type => :integer,
+      :value => arg.round.to_s
+    }
+  end
+
+  def round_field(arg)
+    {
+      :type => :function,
+      :value => "round",
+      :args => [arg]
     }
   end
 
