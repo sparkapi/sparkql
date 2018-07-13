@@ -1,3 +1,9 @@
+v1.1.14, 2018-07-12
+-------------------
+  * [IMPROVEMENT] Allow Negation for integer and decimal literals
+  * [IMPROVEMENT] New Functions: round(), substring(), trim()
+  * [BUGFIX] `MIN_DATE_TIME` was increased to 1970
+
 v1.1.13, 2018-06-27
 -------------------
   * [IMPROVEMENT] New Functions: length(), mindatetime(), maxdatetime()

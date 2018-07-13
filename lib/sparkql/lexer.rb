@@ -47,6 +47,8 @@ class Sparkql::Lexer < StringScanner
         literal :DECIMAL, @current_token_value
       when @current_token_value = scan(INTEGER)
         literal :INTEGER, @current_token_value
+      when @current_token_value = scan(/\-/)
+        [:UMINUS, @current_token_value]
       when @current_token_value = scan(CHARACTER)
         literal :CHARACTER, @current_token_value
       when @current_token_value = scan(BOOLEAN)

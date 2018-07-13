@@ -91,6 +91,25 @@ module Sparkql::ParserTools
     list
   end
 
+  def tokenize_literal_negation(number_token)
+    old_val = case number_token[:type]
+    when :integer
+      number_token[:value].to_i
+    when :decimal
+      number_token[:value].to_f
+    else
+      tokenizer_error(:token => @lexer.current_token_value,
+                      :expression => number_token,
+                      :message => "Negation is only allowed for integer and floats",
+                      :status => :fatal,
+                      :syntax => true)
+      return number_token
+    end
+    number_token[:value] = (-1 * old_val).to_s
+
+    number_token
+  end
+
   def tokenize_multiple(lit1, lit2)
     final_type = lit1[:type]
     if lit1[:type] != lit2[:type]

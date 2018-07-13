@@ -178,6 +178,8 @@ Literals that support multiple values in a list for a condition
        : INTEGER
        | DECIMAL
        | CHARACTER
+       | LPAREN literals RPAREN 
+       | UMINUS literals 
        ;
 ```
 

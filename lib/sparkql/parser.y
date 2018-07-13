@@ -159,6 +159,8 @@ rule
     : INTEGER
     | DECIMAL
     | CHARACTER
+    | LPAREN literals RPAREN { result = val[1] }
+    | UMINUS literals { result = tokenize_literal_negation(val[1]) }
     ;
   
 ##### Literal
