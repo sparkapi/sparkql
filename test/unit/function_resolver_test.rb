@@ -226,7 +226,7 @@ class FunctionResolverTest < Test::Unit::TestCase
     value = f.call
     assert_equal :datetime, value[:type]
 
-    assert_equal '0001-01-01T00:00:00+00:00', value[:value]
+    assert_equal '1970-01-01T00:00:00+00:00', value[:value]
   end
 
   test "maxdatetime()" do
