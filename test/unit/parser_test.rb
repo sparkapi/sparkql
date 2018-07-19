@@ -695,6 +695,64 @@ class ParserTest < Test::Unit::TestCase
     assert_equal(["FieldName"], expression[:function_parameters])
   end
 
+  def test_ceiling_with_literal
+    filter = "ListPrice Eq ceiling(0.5)"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    assert_equal :integer, expression[:type]
+    assert_equal "1", expression[:value]
+
+    filter = "ListPrice Eq ceiling(-0.5)"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    assert_equal :integer, expression[:type]
+    assert_equal "0", expression[:value]
+  end
+
+  def test_ceiling_with_field
+    filter = "ListPrice Eq ceiling(FieldName)"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    assert_equal 'ceiling', expression[:function_name]
+    assert_equal 'ceiling(FieldName)', expression[:condition]
+    assert_equal(["FieldName"], expression[:function_parameters])
+  end
+
+  def test_floor_with_literal
+    filter = "ListPrice Eq floor(0.5)"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    assert_equal :integer, expression[:type]
+    assert_equal "0", expression[:value]
+
+    filter = "ListPrice Eq floor(-0.5)"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    assert_equal :integer, expression[:type]
+    assert_equal "-1", expression[:value]
+  end
+
+  def test_floor_with_field
+    filter = "ListPrice Eq floor(FieldName)"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    assert_equal 'floor', expression[:function_name]
+    assert_equal 'floor(FieldName)', expression[:condition]
+    assert_equal(["FieldName"], expression[:function_parameters])
+  end
+
   private
 
   def parser_errors(filter)  
