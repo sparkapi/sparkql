@@ -1,3 +1,7 @@
+v1.1.15, 2018-07-12
+-------------------
+  * [IMPROVEMENT] New Functions: ceiling(), floor()
+
 v1.1.14, 2018-07-12
 -------------------
   * [IMPROVEMENT] Allow Negation for integer and decimal literals

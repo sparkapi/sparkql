@@ -74,6 +74,16 @@ class Sparkql::FunctionResolver
       :resolve_for_type => true,
       :return_type => :integer
     },
+    :ceiling => {
+      :args => [[:field, :decimal]],
+      :resolve_for_type => true,
+      :return_type => :integer
+    },
+    :floor => {
+      :args => [[:field, :decimal]],
+      :resolve_for_type => true,
+      :return_type => :integer
+    },
     :startswith => {
       :args => [:character],
       :return_type => :startswith
@@ -465,6 +475,36 @@ class Sparkql::FunctionResolver
     {
       :type => :datetime,
       :value => MIN_DATE_TIME
+    }
+  end
+
+  def floor_decimal(arg)
+    {
+      :type => :integer,
+      :value => arg.floor.to_s
+    }
+  end
+
+  def floor_field(arg)
+    {
+      :type => :function,
+      :value => "floor",
+      :args => [arg]
+    }
+  end
+
+  def ceiling_decimal(arg)
+    {
+      :type => :integer,
+      :value => arg.ceil.to_s
+    }
+  end
+
+  def ceiling_field(arg)
+    {
+      :type => :function,
+      :value => "ceiling",
+      :args => [arg]
     }
   end
 

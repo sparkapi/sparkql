@@ -239,6 +239,46 @@ class FunctionResolverTest < Test::Unit::TestCase
     assert_equal '9999-12-31T23:59:59+00:00', value[:value]
   end
 
+  test "floor(float)" do
+    f = FunctionResolver.new('floor', [{:type => :decimal, :value => 0.5}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :integer, value[:type]
+    assert_equal '0', value[:value]
+  end
+
+  test "floor(Field)" do
+    f = FunctionResolver.new('floor', [{:type => :field, :value => 'ListPrice'}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :function, value[:type]
+    assert_equal 'floor', value[:value]
+    assert_equal "ListPrice", value[:args].first
+  end
+
+  test "ceiling(float)" do
+    f = FunctionResolver.new('ceiling', [{:type => :decimal, :value => 0.5}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+    assert_equal :integer, value[:type]
+    assert_equal '1', value[:value]
+  end
+
+  test "ceiling(Field)" do
+    f = FunctionResolver.new('ceiling', [{:type => :field, :value => 'ListPrice'}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :function, value[:type]
+    assert_equal 'ceiling', value[:value]
+    assert_equal "ListPrice", value[:args].first
+  end
+
   test "days()" do
     d = Date.new(2012,10,20)
     Date.expects(:today).returns(d)
