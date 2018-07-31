@@ -31,15 +31,20 @@ module Sparkql::ParserTools
       function = Sparkql::FunctionResolver::SUPPORTED_FUNCTIONS[field[:value].to_sym]
       if !function.nil?
         field_args[:field_function] = field[:value]
-        field_args[:field_function_type] = function[:return_type]
         field_args[:args] = field[:args]
+
+        if field_args[:field_function] == 'cast'
+          field_args[:field_function_type] = field[:args].last.to_sym
+        else
+          field_args[:field_function_type] = function[:return_type]
+        end
       else
         tokenizer_error(:token => field[:value], 
           :message => "Unsupported function type", :status => :fatal )
       end
       field = field[:args].first
     end
-    custom_field = field.start_with?('"')
+    custom_field = !field.nil? && field.start_with?('"')
     block_group = (@lexer.level == 0) ? 0 : @lexer.block_group_identifier
     expression = {:field => field, :operator => operator, :conjunction => 'And',
       :conjunction_level => 0, :level => @lexer.level,

@@ -753,6 +753,22 @@ class ParserTest < Test::Unit::TestCase
     assert_equal(["FieldName"], expression[:function_parameters])
   end
 
+  def test_cast_with_field
+    filter = "cast(ListPrice, 'character') Eq '100000'"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    assert_equal 'cast', expression[:field_function]
+    assert_equal "'100000'", expression[:condition]
+    assert_equal(:character, expression[:field_function_type])
+  end
+
+  def test_cast_with_invalid_type
+    parser_errors("cast(ListPrice, 'bogus') Eq '10'")
+    parser_errors("ListPrice Eq cast('10', 'bogus')")
+  end
+
   private
 
   def parser_errors(filter)  
