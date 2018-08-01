@@ -71,6 +71,11 @@ class Sparkql::FunctionResolver
       :args => [[:field, :character], :character],
       :return_type => :integer
     },
+    :concat => {
+      :args => [[:field, :character], :character],
+      :resolve_for_type => true,
+      :return_type => :character
+    },
     :cast => {
       :args => [[:field, :character, :decimal, :integer, :null], :character],
       :resolve_for_type => true,
@@ -549,6 +554,21 @@ class Sparkql::FunctionResolver
     {
       :type => :function,
       :value => "indexof",
+      :args => [arg1, arg2]
+    }
+  end
+
+  def concat_character(arg1, arg2)
+    {
+      :type => :character,
+      :value => "'#{arg1}#{arg2}'"
+    }
+  end
+
+  def concat_field(arg1, arg2)
+    {
+      :type => :function,
+      :value => 'concat',
       :args => [arg1, arg2]
     }
   end
