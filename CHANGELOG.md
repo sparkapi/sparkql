@@ -1,3 +1,7 @@
+v1.1.16, 2018-07-26
+-------------------
+  * [IMPROVEMENT] New Function: cast()
+
 v1.1.15, 2018-07-12
 -------------------
   * [IMPROVEMENT] New Functions: ceiling(), floor()

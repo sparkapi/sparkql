@@ -451,7 +451,112 @@ class FunctionResolverTest < Test::Unit::TestCase
         :value => 1.0}])
     assert_equal :shape, f.return_type
   end
-  
+
+  test 'return_type for cast()' do
+    f = FunctionResolver.new('cast', [{:type => :character, 
+        :value => "1"},{:type => :character, 
+        :value => 'decimal'}])
+
+    assert_equal :decimal, f.return_type
+
+    f = FunctionResolver.new('cast', [{:type => :character, 
+        :value => "1"},{:type => :character, 
+        :value => 'integer'}])
+
+    assert_equal :integer, f.return_type
+  end
+
+  test "cast() decimal to integer" do
+    f = FunctionResolver.new('cast', [{:type => :decimal, :value => '1.2'}, {type: :character, :value => 'integer'}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :integer, value[:type]
+    assert_equal '1', value[:value]
+  end
+
+  test "cast() integer to decimal" do
+    f = FunctionResolver.new('cast', [{:type => :decimal, :value => '1'}, {type: :character, :value => 'decimal'}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :decimal, value[:type]
+    assert_equal '1.0', value[:value]
+  end
+
+  test "cast() nil to integer" do
+    f = FunctionResolver.new('cast', [{:type => :null, :value => 'NULL'}, {type: :character, :value => 'integer'}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :integer, value[:type]
+    assert_equal '0', value[:value]
+  end
+
+  test "cast() nil to decimal" do
+    f = FunctionResolver.new('cast', [{:type => :null, :value => 'NULL'}, {type: :character, :value => 'decimal'}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :decimal, value[:type]
+    assert_equal '0.0', value[:value]
+  end
+
+  test "cast() nil to character" do
+    f = FunctionResolver.new('cast', [{:type => :null, :value => 'NULL'}, {type: :character, :value => 'character'}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :character, value[:type]
+    assert_equal "''", value[:value]
+  end
+
+  test "cast() character to decimal" do
+    f = FunctionResolver.new('cast', [{:type => :character, :value => "1.1"}, {type: :character, :value => 'decimal'}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :decimal, value[:type]
+    assert_equal "1.1", value[:value]
+  end
+
+  test "cast() character to integer" do
+    f = FunctionResolver.new('cast', [{:type => :character, :value => "1"}, {type: :character, :value => 'integer'}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :integer, value[:type]
+    assert_equal "1", value[:value]
+  end
+
+  test "cast() Field" do
+    f = FunctionResolver.new('cast', [{:type => :field, :value => 'Bedrooms'}, {type: :character, :value => 'character'}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :function, value[:type]
+    assert_equal 'cast', value[:value]
+    assert_equal ['Bedrooms', 'character'], value[:args]
+  end
+
+  test "invalid cast returns null" do
+    f = FunctionResolver.new('cast', [{:type => :character, :value => '1.1.1'}, {type: :character, :value => 'integer'}])
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :null, value[:type]
+    assert_equal 'NULL', value[:value]
+  end
+
   test "invalid function" do
     f = FunctionResolver.new('then', [])
     f.validate

@@ -16,6 +16,8 @@ class Sparkql::FunctionResolver
   VALID_REGEX_FLAGS = ["", "i"]
   MIN_DATE_TIME = Time.new(1970, 1, 1, 0, 0, 0, "+00:00").iso8601
   MAX_DATE_TIME = Time.new(9999, 12, 31, 23, 59, 59, "+00:00").iso8601
+  VALID_CAST_TYPES = [:field, :character, :decimal, :integer]
+
   SUPPORTED_FUNCTIONS = {
     :polygon => {
       :args => [:character],
@@ -68,6 +70,10 @@ class Sparkql::FunctionResolver
     :indexof => {
       :args => [[:field, :character], :character],
       :return_type => :integer
+    },
+    :cast => {
+      :args => [[:field, :character, :decimal, :integer, :null], :character],
+      :resolve_for_type => true,
     },
     :round => {
       :args => [[:field, :decimal]],
@@ -190,7 +196,7 @@ class Sparkql::FunctionResolver
   end
   
   # Validate the function instance prior to calling it. All validation failures will show up in the
-  # errors array. 
+  # errors array.
   def validate()
     name = @name.to_sym
     unless support.has_key?(name)
@@ -219,10 +225,26 @@ class Sparkql::FunctionResolver
       end
       count +=1
     end
+
+    if name == :cast
+      type = @args.last[:value]
+      if !VALID_CAST_TYPES.include?(type.to_sym)
+        @errors << Sparkql::ParserError.new(:token => @name,
+                                            :message => "Function call '#{@name}' requires a castable type.",
+                                            :status => :fatal )
+        return
+      end
+    end
   end
   
   def return_type
-    support[@name.to_sym][:return_type]
+    name = @name.to_sym
+
+    if name == :cast
+      @args.last[:value].to_sym
+    else
+      support[@name.to_sym][:return_type]
+    end
   end
   
   def errors
@@ -752,7 +774,76 @@ class Sparkql::FunctionResolver
       :value => [start_str.to_s, end_str.to_s]
     }
   end
-  
+
+  def cast_field(value, type)
+    {
+      :type => :function,
+      :value => "cast",
+      :args => [value, type]
+    }
+  end
+
+  def cast(value, type)
+    if value == 'NULL'
+      value = nil
+    end
+
+    new_type = type.to_sym
+    {
+      type: new_type,
+      value: cast_literal(value, new_type)
+    }
+  rescue
+    {
+      type: :null,
+      value: 'NULL'
+    }
+  end
+
+  def valid_cast_type?(type)
+    if VALID_CAST_TYPES.key?(type.to_sym)
+      true
+    else
+      @errors << Sparkql::ParserError.new(:token => coords,
+                                          :message => "Function call 'cast' requires a castable type.",
+                                          :status => :fatal )
+      false
+    end
+  end
+
+  def cast_null(value, type)
+    cast(value, type)
+  end
+
+  def cast_decimal(value, type)
+    cast(value, type)
+  end
+
+  def cast_character(value, type)
+    cast(value, type)
+  end
+
+  def cast_literal(value, type)
+    case type
+    when :character
+      "'#{value.to_s}'"
+    when :integer
+      if value.nil?
+        '0'
+      else
+        Integer(Float(value)).to_s
+      end
+    when :decimal
+      if value.nil?
+        '0.0'
+      else
+        Float(value).to_s
+      end
+    when :null
+      'NULL'
+    end
+  end
+
   private
 
   def is_coords?(coord_string)
