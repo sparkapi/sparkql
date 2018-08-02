@@ -1,3 +1,7 @@
+v1.1.17, 2018-08-01
+-------------------
+  * [IMPROVEMENT] New Function: concat()
+
 v1.1.16, 2018-07-26
 -------------------
   * [IMPROVEMENT] New Function: cast()

@@ -753,6 +753,30 @@ class ParserTest < Test::Unit::TestCase
     assert_equal(["FieldName"], expression[:function_parameters])
   end
 
+  def test_concat_with_field
+    filter = "City Eq concat(City, 'b')"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    assert_equal :function, expression[:type]
+    assert_equal 'concat', expression[:function_name]
+    assert_equal(["City", 'b'], expression[:function_parameters])
+    assert_equal("City", expression[:field])
+  end
+
+  def test_concat_with_literal
+    filter = "City Eq concat('a', 'b')"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+
+    assert_equal 'concat', expression[:function_name]
+    assert_equal :character, expression[:type]
+    assert_equal "'ab'", expression[:value]
+    assert_equal ["a", "b"], expression[:function_parameters]
+  end
+
   def test_cast_with_field
     filter = "cast(ListPrice, 'character') Eq '100000'"
     @parser = Parser.new
