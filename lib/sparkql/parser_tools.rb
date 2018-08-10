@@ -68,7 +68,7 @@ module Sparkql::ParserTools
   end
 
   # TODO Decide if this should use In logic instead of nested Ors
-  # Make that shit configurable
+  # Make it configurable
   def tokenize_list_operator(field, operator, values)
     if values.size == 1
       tokenize_operator(field, operator, values.first)
