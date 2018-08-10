@@ -98,7 +98,12 @@ module Sparkql::ParserTools
   end
   
   def tokenize_function(name, f_args)
-    Sparkql::Nodes::Function.new(name, f_args)
+    node = Sparkql::Nodes::Function.new(name, f_args)
+
+
+    self.errors.concat(node.errors)
+
+    node
   end
   
   def on_error(error_token_id, error_value, value_stack)

@@ -122,7 +122,7 @@ rule
 # 
 # Functions may optionally have a comma delimited list of parameters.
   function_args
-    : function_arg
+    : function_arg {result = val }
     | function_args COMMA function_arg { result = tokenize_function_args(val[0], val[2]) }
     ; 
     

@@ -16,6 +16,7 @@ class Sparkql::FunctionResolver
   VALID_REGEX_FLAGS = ["", "i"]
   MIN_DATE_TIME = Time.new(1, 1, 1, 0, 0, 0, "+00:00").iso8601
   MAX_DATE_TIME = Time.new(9999, 12, 31, 23, 59, 59, "+00:00").iso8601
+  METERS_PER_MILE = 1609.344
   SUPPORTED_FUNCTIONS = {
     :polygon => {
       :args => [:character],
@@ -184,9 +185,9 @@ class Sparkql::FunctionResolver
 
     count = 0
     @args.each do |arg|
-      unless Array(total_args[count]).include?(arg[:type])
+      unless Array(total_args[count]).include?(arg.type)
         @errors << Sparkql::ParserError.new(:token => @name, 
-          :message => "Function call '#{@name}' has an invalid argument at #{arg[:value]}",
+          :message => "Function call '#{@name}' has an invalid argument at #{arg.value}",
           :status => :fatal )
       end
       count +=1
@@ -211,7 +212,7 @@ class Sparkql::FunctionResolver
   
   # Execute the function
   def call()
-    real_vals = @args.map { |i| i[:value]}
+    real_vals = @args.map { |i| i.value}
     name = @name.to_sym
 
     required_args = support[name][:args]
@@ -223,7 +224,7 @@ class Sparkql::FunctionResolver
     end
     method = name
     if support[name][:resolve_for_type]
-      method_type =  @args.first[:type]
+      method_type =  @args.first.type
       method = "#{method}_#{method_type}"
     end
     v = self.send(method, *real_vals)
@@ -589,6 +590,9 @@ class Sparkql::FunctionResolver
         :status => :fatal )
       return
     end
+
+    # Spark input is miles, but everyone else uses meters
+    length = length * METERS_PER_MILE
 
     # The radius() function is overloaded to allow an identifier
     # to be specified over lat/lon.  This identifier should specify a

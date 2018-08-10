@@ -134,7 +134,7 @@ Functions may optionally have a comma delimited list of parameters.
 
 ```
      function_args
-       : function_arg
+       : function_arg 
        | function_args COMMA function_arg 
        ; 
      function_arg
