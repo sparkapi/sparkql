@@ -43,7 +43,7 @@ class Sparkql::Lexer < StringScanner
       when @current_token_value = scan(KEYWORD)
         check_keywords(@current_token_value)
       when @current_token_value = scan(CUSTOM_FIELD)
-        [:CUSTOM_FIELD, Sparkql::Nodes::Identifier.new(@current_token_value)]
+        [:CUSTOM_FIELD, Sparkql::Nodes::CustomIdentifier.new(@current_token_value)]
       when eos?
         [false, false] # end of file, \Z don't work with StringScanner
       else

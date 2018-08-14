@@ -3,9 +3,6 @@ module Sparkql::ParserCompatibility
 
   MAXIMUM_MULTIPLE_VALUES = 200
   MAXIMUM_EXPRESSIONS = 75
-  MAXIMUM_LEVEL_DEPTH = 2
-
-  OPERATORS_SUPPORTING_MULTIPLES = ["Eq","Ne"]
 
   # To be implemented by child class.
   # Shall return a valid query string for the respective database,
@@ -17,7 +14,6 @@ module Sparkql::ParserCompatibility
   end
 
   # Returns a list of expressions tokenized in the following format:
-  # [{ :field => IdentifierName, :operator => "Eq", :value => "'Fargo'", :type => :character, :conjunction => "And" }]
   # This step will set errors if source is not syntactically correct.
   def tokenize( source )
     raise ArgumentError, "You must supply a source string to tokenize!" unless source.is_a?(String)
@@ -53,11 +49,6 @@ module Sparkql::ParserCompatibility
   end
   def recovered_errors?
     process_errors.recovered_errors?
-  end
-
-  # Maximum supported nesting level for the parser filters
-  def max_level_depth
-    MAXIMUM_LEVEL_DEPTH
   end
 
   def max_expressions

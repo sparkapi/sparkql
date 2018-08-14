@@ -4,7 +4,8 @@ module Sparkql::ParserTools
   # Coercible types from highest precision to lowest
   DATE_TYPES = [:datetime, :date]
   NUMBER_TYPES = [:decimal, :integer]
-  
+  OPERATORS_SUPPORTING_MULTIPLES = ['Eq','Ne', 'Bt']
+
   def parse(str)
     @lexer = Sparkql::Lexer.new(str)
     @expression_count = 0
@@ -73,18 +74,48 @@ module Sparkql::ParserTools
     if values.size == 1
       tokenize_operator(field, operator, values.first)
     else
-      new_values = values.map do |literal|
-        tokenize_operator(field, operator, literal)
+
+      if !OPERATORS_SUPPORTING_MULTIPLES.include?(operator)
+        tokenizer_error(token: operator,
+                        message: "Operator #{operator} does not support multiple values",
+                        status: :fatal)
       end
 
-      data = Sparkql::Nodes::Or.new(new_values.pop, new_values.pop)
-
-      new_values.each do |val|
-        data = Sparkql::Nodes::Or.new(data, val)
+      types = values.map do |val|
+        if val.respond_to?(:type)
+          val.type
+        else
+          val.return_type
+        end
       end
 
-      data
+      if types.uniq.size > 1
+        tokenizer_error(token: @lexer.last_field,
+                        message: "Type mismatch in field list.",
+                        status: :fatal)
+      end
+
+      if operator == 'Bt'
+        tokenize_operator(field, operator, values)
+      else
+        split_in_to_ors(field, operator, values)
+      end
+
     end
+  end
+
+  def split_in_to_ors(field, operator, values)
+    new_values = values.map do |literal|
+      tokenize_operator(field, operator, literal)
+    end
+
+    data = Sparkql::Nodes::Or.new(new_values.pop, new_values.pop)
+
+    new_values.each do |val|
+      data = Sparkql::Nodes::Or.new(data, val)
+    end
+
+    data
   end
 
   def tokenize_function_args(lit1, lit2)
@@ -92,37 +123,38 @@ module Sparkql::ParserTools
     array << lit2
     array
   end
-  
+
   def tokenize_field_arg(field)
     Sparkql::Nodes::Identifier.new(field)
   end
-  
+
   def tokenize_function(name, f_args)
-    node = Sparkql::Nodes::Function.new(name, f_args)
+    constant_name = name.capitalize
+    if !Sparkql::Nodes::Functions.const_defined?(constant_name)
+      tokenizer_error(token: name,
+        message: "Unsupported function call '#{name}' for expression",
+        status: :fatal)
+      return
+    end
 
+    function = Sparkql::Nodes::Functions.const_get(constant_name).new(f_args)
 
-    self.errors.concat(node.errors)
+    function.errors.each do |error|
+      compile_error(error)
+    end
 
-    node
+    function
   end
-  
+
   def on_error(error_token_id, error_value, value_stack)
     token_name = token_to_str(error_token_id)
     token_name.downcase!
-    tokenizer_error(:token => @lexer.current_token_value, 
+    tokenizer_error(:token => @lexer.current_token_value,
                     :message => "Error parsing token #{token_name}",
-                    :status => :fatal, 
-                    :syntax => true)    
+                    :status => :fatal,
+                    :syntax => true)
   end
 
-  def validate_level_depth expression
-    if @lexer.level > max_level_depth
-      compile_error(:token => "(", :expression => expression,
-            :message => "You have exceeded the maximum nesting level.  Please nest no more than #{max_level_depth} levels deep.",
-            :status => :fatal, :syntax => false, :constraint => true )
-    end
-  end
-  
   def validate_expressions results
     if false
       compile_error(:token => results[max_expressions][:field], :expression => results[max_expressions],
@@ -131,28 +163,28 @@ module Sparkql::ParserTools
       results.slice!(max_expressions..-1)
     end
   end
-  
+
   def validate_multiple_values values
     values = Array(values)
-    if values.size > max_values 
+    if values.size > max_values
       compile_error(:token => values[max_values],
             :message => "You have exceeded the maximum value count.  Please limit to #{max_values} values in a single expression.",
             :status => :fatal, :syntax => false, :constraint => true )
       values.slice!(max_values..-1)
     end
   end
-  
+
   def validate_multiple_arguments args
     args = Array(args)
-    if args.size > max_values 
+    if args.size > max_values
       compile_error(:token => args[max_values],
             :message => "You have exceeded the maximum parameter count.  Please limit to #{max_values} parameters to a single function.",
             :status => :fatal, :syntax => false, :constraint => true )
       args.slice!(max_values..-1)
     end
   end
-  
-  # If both types support coercion with eachother, always selects the highest 
+
+  # If both types support coercion with eachother, always selects the highest
   # precision type to return as a reflection of the two. Any type that doesn't
   # support coercion with the other type returns nil
   def coercible_types type1, type2

@@ -58,7 +58,7 @@ rule
   expression
     : field OPERATOR condition { result = tokenize_operator(val[0], val[1],val[2]) }
     | field OPERATOR literal_list { result = tokenize_list_operator(val[0], val[1],val[2]) }
-    | field RANGE_OPERATOR range { result = tokenize_operator(val[0], val[1],val[2]) }
+    | field RANGE_OPERATOR range { result = tokenize_list_operator(val[0], val[1],val[2]) }
     | group
     ;
   

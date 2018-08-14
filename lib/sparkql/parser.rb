@@ -245,7 +245,7 @@ def _reduce_7(val, _values, result)
 end
 
 def _reduce_8(val, _values, result)
- result = tokenize_operator(val[0], val[1],val[2]) 
+ result = tokenize_list_operator(val[0], val[1],val[2]) 
     result
 end
 

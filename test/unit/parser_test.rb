@@ -132,8 +132,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse "ExpirationDate Gt months(-3)"
     assert !@parser.errors?, "errors :( #{@parser.errors.inspect}"
 
-    assert_equal Sparkql::Nodes::Function, expressions.right.class
-    assert_equal 'months', expressions.right.name
+    assert_equal Sparkql::Nodes::Functions::Months, expressions.right.class
     assert_equal(-3, expressions.right.args.first.value)
   end
 
@@ -141,8 +140,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse "SoldDate Lt years(2)"
     assert !@parser.errors?, "errors :( #{@parser.errors.inspect}"
 
-    assert_equal Sparkql::Nodes::Function, expressions.right.class
-    assert_equal 'years', expressions.right.name
+    assert_equal Sparkql::Nodes::Functions::Years, expressions.right.class
     assert_equal 2, expressions.right.args.first.value
   end
 
@@ -151,8 +149,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
-    assert_equal Sparkql::Nodes::Function, expressions.right.class
-    assert_equal 'days', expressions.right.name
+    assert_equal Sparkql::Nodes::Functions::Days, expressions.right.class
     assert_equal(-7, expressions.right.args.first.value)
   end
 
@@ -161,8 +158,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
-    assert_equal Sparkql::Nodes::Function, expressions.right.class
-    assert_equal 'now', expressions.right.name
+    assert_equal Sparkql::Nodes::Functions::Now, expressions.right.class
     assert_equal [], expressions.right.args
   end
 
@@ -171,8 +167,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
-    assert_equal Sparkql::Nodes::Function, expressions.right.class
-    assert_equal 'range', expressions.right.name
+    assert_equal Sparkql::Nodes::Functions::Range, expressions.right.class
     assert_equal ["M01","M04"], expressions.right.args.map(&:value)
   end
 
@@ -181,8 +176,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
-    assert_equal Sparkql::Nodes::Function, expressions.left.class
-    assert_equal 'indexof', expressions.left.name
+    assert_equal Sparkql::Nodes::Functions::Indexof, expressions.left.class
     assert_equal Sparkql::Nodes::Identifier, expressions.left.args.first.class
     assert_equal 'City', expressions.left.args.first.value
   end
@@ -229,8 +223,7 @@ class ParserTest < Test::Unit::TestCase
 
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-    assert_equal Sparkql::Nodes::Function, expressions.right.class
-    assert_equal 'date', expressions.right.name
+    assert_equal Sparkql::Nodes::Functions::Date, expressions.right.class
     assert_equal 'OriginalEntryTimestamp', expressions.right.args.first.value
 
     # Run using a static value, we just resolve the type
@@ -238,8 +231,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
-    assert_equal Sparkql::Nodes::Function, expressions.right.class
-    assert_equal 'date', expressions.right.name
+    assert_equal Sparkql::Nodes::Functions::Date, expressions.right.class
     assert_equal DateTime.parse('2013-07-26T10:22:15.111-0100'), expressions.right.args.first.value
 
     # And the grand finale: run on both sides
@@ -247,12 +239,10 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
-    assert_equal Sparkql::Nodes::Function, expressions.right.class
-    assert_equal 'date', expressions.right.name
+    assert_equal Sparkql::Nodes::Functions::Date, expressions.right.class
     assert_equal DateTime.parse('2013-07-26T10:22:15.111-0100'), expressions.right.args.first.value
 
-    assert_equal Sparkql::Nodes::Function, expressions.left.class
-    assert_equal 'date', expressions.left.name
+    assert_equal Sparkql::Nodes::Functions::Date, expressions.left.class
     assert_equal 'OriginalEntryTimestamp', expressions.left.args.first.value
   end
 
@@ -260,8 +250,7 @@ class ParserTest < Test::Unit::TestCase
     filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$')"
     expression = @parser.parse(filter)
 
-    assert_equal Sparkql::Nodes::Function, expression.right.class
-    assert_equal 'regex', expression.right.name
+    assert_equal Sparkql::Nodes::Functions::Regex, expression.right.class
     assert_equal "^[0-9]{3}-[0-9]{2}-[0-9]{3}$", expression.right.args.first.value
   end
 
@@ -269,8 +258,7 @@ class ParserTest < Test::Unit::TestCase
     filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$', 'i')"
     expression = @parser.parse(filter)
 
-    assert_equal Sparkql::Nodes::Function, expression.right.class
-    assert_equal 'regex', expression.right.name
+    assert_equal Sparkql::Nodes::Functions::Regex, expression.right.class
     assert_equal ["^[0-9]{3}-[0-9]{2}-[0-9]{3}$","i"], expression.right.args.map(&:value)
   end
 
@@ -279,6 +267,12 @@ class ParserTest < Test::Unit::TestCase
     @parser = Parser.new
     @parser.parse(filter)
     assert @parser.errors?, "Parser error expected due to invalid regex"
+  end
+
+  test 'invalid regex flags' do
+    filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$', 'k')"
+    @parser.parse(filter)
+    assert @parser.errors?, "Parser error expected due to invalid regex flags"
   end
 
   test "allow timezone offsets" do
@@ -312,8 +306,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
-    assert_equal Sparkql::Nodes::Function, expressions.right.class
-    assert_equal 'polygon', expressions.right.name
+    assert_equal Sparkql::Nodes::Functions::Polygon, expressions.right.class
     assert_equal "35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32", expressions.right.args.first.value
   end
 
@@ -322,8 +315,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
-    assert_equal Sparkql::Nodes::Function, expressions.right.class
-    assert_equal 'linestring', expressions.right.name
+    assert_equal Sparkql::Nodes::Functions::Linestring, expressions.right.class
     assert_equal "35.12 -68.33, 35.13 -68.33", expressions.right.args.first.value
   end
 
@@ -332,8 +324,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
-    assert_equal Sparkql::Nodes::Function, expressions.right.class
-    assert_equal 'rectangle', expressions.right.name
+    assert_equal Sparkql::Nodes::Functions::Rectangle, expressions.right.class
     assert_equal "35.12 -68.33, 35.13 -68.32", expressions.right.args.first.value
   end
 
@@ -342,8 +333,7 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
-    assert_equal Sparkql::Nodes::Function, expressions.right.class
-    assert_equal 'radius', expressions.right.name
+    assert_equal Sparkql::Nodes::Functions::Radius, expressions.right.class
     assert_equal ["35.12 -68.33",1.0], expressions.right.args.map(&:value)
   end
 
@@ -352,18 +342,15 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
-    assert_equal Sparkql::Nodes::Function, expressions.right.class
-    assert_equal 'radius', expressions.right.name
+    assert_equal Sparkql::Nodes::Functions::Radius, expressions.right.class
     assert_equal ["35.12 -68.33",1], expressions.right.args.map(&:value)
   end
 
-=begin
   test "function radius error on invalid syntax" do
     filter = "Location Eq radius('35.12,-68.33',1.0)"
     @parser.parse(filter)
     assert @parser.errors?, "Parser error expected due to comma between radius points"
   end
-=end
 
   test 'reserved words first literals second' do
     ["OrOrOr Eq true", "Equador Eq true", "Oregon Ge 10"].each do |filter|
@@ -372,12 +359,24 @@ class ParserTest < Test::Unit::TestCase
     end
   end
 
+  test 'undefined function' do
+    filter = "Location Eq bugus(1)"
+    @parser.parse(filter)
+    assert @parser.errors?, @parser.errors.inspect
+  end
+
+  test 'now requires no parameters' do
+    filter = "BeginDate Eq now(1)"
+    @parser.parse(filter)
+    assert @parser.errors?, @parser.errors.inspect
+  end
+
   test 'custom fields' do
     filter = '"General Property Description"."Taxes" Lt 500.0'
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
-    assert_equal Sparkql::Nodes::Identifier, expressions.left.class
+    assert_equal Sparkql::Nodes::CustomIdentifier, expressions.left.class
     assert_equal '"General Property Description"."Taxes"', expressions.left.value
   end
 
@@ -484,6 +483,38 @@ class ParserTest < Test::Unit::TestCase
     assert_equal :decimal, @parser.coercible_types(:integer, :decimal)
     # That covers the gambit, anything else should be null
     assert_nil @parser.coercible_types(:integer, :date)
+  end
+
+  test "only eq and ne accept multiple values" do
+    ["Gt","Ge","Lt","Le"].each do |op|
+      f = "IntegerType #{op} 100,200" 
+      parser = Parser.new
+      parser.parse( f )
+      assert parser.errors?
+      assert_equal op, parser.errors.first.token
+    end
+  end
+
+  test "eq and ne accept multiple values" do
+    ['Eq', 'Ne'].each do |op|
+      f = "IntegerType #{op} 100,200" 
+      parser = Parser.new
+      parser.parse( f )
+      assert !parser.errors?
+    end
+  end
+
+  test "fail on missing" do
+    filter = "City Eq 'Fargo' And PropertyType Eq 'A'"
+    filter_tokens = filter.split(" ")
+
+    filter_tokens.each do |token|
+      f = filter.gsub(token, "").gsub(/\s+/," ")
+      parser = Parser.new
+      expressions = parser.tokenize( f )
+      assert_nil expressions
+      assert parser.errors?
+    end
   end
 
   private

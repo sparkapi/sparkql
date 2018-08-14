@@ -1,13 +1,13 @@
-require 'time' 
+require 'time'
 require 'geo_ruby'
 require 'geo_ruby/ewk'
 require 'sparkql/geo'
 
-# Binding class to all supported function calls in the parser. Current support requires that the 
-# resolution of function calls to happen on the fly at parsing time at which point a value and 
+# Binding class to all supported function calls in the parser. Current support requires that the
+# resolution of function calls to happen on the fly at parsing time at which point a value and
 # value type is required, just as literals would be returned to the expression tokenization level.
 #
-# Name and argument requirements for the function should match the function declaration in 
+# Name and argument requirements for the function should match the function declaration in
 # SUPPORTED_FUNCTIONS which will run validation on the function syntax prior to execution.
 class Sparkql::FunctionResolver
   SECONDS_IN_DAY = 60 * 60 * 24
@@ -21,11 +21,11 @@ class Sparkql::FunctionResolver
     :polygon => {
       :args => [:character],
       :return_type => :shape
-    }, 
+    },
     :rectangle => {
       :args => [:character],
       :return_type => :shape
-    }, 
+    },
     :radius => {
       :args => [:character, [:decimal, :integer]],
       :return_type => :shape
@@ -97,47 +97,47 @@ class Sparkql::FunctionResolver
       :args => [],
       :return_type => :datetime
     },
-    :date => { 
+    :date => {
       :args => [[:field,:datetime,:date]],
       :resolve_for_type => true,
       :return_type => :date
     },
-    :time => { 
+    :time => {
       :args => [[:field,:datetime,:date]],
       :resolve_for_type => true,
       :return_type => :time
     },
-    :year => { 
+    :year => {
       :args => [[:field,:datetime,:date]],
       :resolve_for_type => true,
       :return_type => :integer
     },
-    :month => { 
+    :month => {
       :args => [[:field,:datetime,:date]],
       :resolve_for_type => true,
       :return_type => :integer
     },
-    :day => { 
+    :day => {
       :args => [[:field,:datetime,:date]],
       :resolve_for_type => true,
       :return_type => :integer
     },
-    :hour => { 
+    :hour => {
       :args => [[:field,:datetime,:date]],
       :resolve_for_type => true,
       :return_type => :integer
     },
-    :minute => { 
+    :minute => {
       :args => [[:field,:datetime,:date]],
       :resolve_for_type => true,
       :return_type => :integer
     },
-    :second => { 
+    :second => {
       :args => [[:field,:datetime,:date]],
       :resolve_for_type => true,
       :return_type => :integer
     },
-    :fractionalseconds => { 
+    :fractionalseconds => {
       :args => [[:field,:datetime,:date]],
       :resolve_for_type => true,
       :return_type => :decimal
@@ -151,7 +151,7 @@ class Sparkql::FunctionResolver
       :return_type => :shape
     }
   }
-  
+
   # Construct a resolver instance for a function
   # name: function name (String)
   # args: array of literal hashes of the format {:type=><literal_type>, :value=><escaped_literal_value>}.
@@ -161,13 +161,13 @@ class Sparkql::FunctionResolver
     @args = args
     @errors = []
   end
-  
+
   # Validate the function instance prior to calling it. All validation failures will show up in the
-  # errors array. 
+  # errors array.
   def validate()
     name = @name.to_sym
     unless support.has_key?(name)
-      @errors << Sparkql::ParserError.new(:token => @name, 
+      @errors << Sparkql::ParserError.new(:token => @name,
         :message => "Unsupported function call '#{@name}' for expression",
         :status => :fatal )
       return
@@ -177,7 +177,7 @@ class Sparkql::FunctionResolver
     total_args = required_args + Array(support[name][:opt_args]).collect {|args| args[:type]}
 
     if @args.size < required_args.size || @args.size > total_args.size
-      @errors << Sparkql::ParserError.new(:token => @name, 
+      @errors << Sparkql::ParserError.new(:token => @name,
         :message => "Function call '#{@name}' requires #{required_args.size} arguments",
         :status => :fatal )
       return
@@ -186,30 +186,30 @@ class Sparkql::FunctionResolver
     count = 0
     @args.each do |arg|
       unless Array(total_args[count]).include?(arg.type)
-        @errors << Sparkql::ParserError.new(:token => @name, 
+        @errors << Sparkql::ParserError.new(:token => @name,
           :message => "Function call '#{@name}' has an invalid argument at #{arg.value}",
           :status => :fatal )
       end
       count +=1
     end
   end
-  
+
   def return_type
     support[@name.to_sym][:return_type]
   end
-  
+
   def errors
     @errors
   end
-  
+
   def errors?
     @errors.size > 0
   end
-  
+
   def support
     SUPPORTED_FUNCTIONS
   end
-  
+
   # Execute the function
   def call()
     real_vals = @args.map { |i| i.value}
@@ -236,9 +236,9 @@ class Sparkql::FunctionResolver
 
     v
   end
-  
-  protected 
-  
+
+  protected
+
   # Supported function calls
 
   def regex(regular_expression, flags)
@@ -368,7 +368,7 @@ class Sparkql::FunctionResolver
 
   # Offset the current timestamp by a number of days
   def days(num)
-    # date calculated as the offset from midnight tommorrow. Zero will provide values for all times 
+    # date calculated as the offset from midnight tommorrow. Zero will provide values for all times
     # today.
     d = Date.today + num
     {
@@ -376,7 +376,7 @@ class Sparkql::FunctionResolver
       :value => d.strftime(STRFTIME_DATE_FORMAT)
     }
   end
-  
+
   # The current timestamp
   def now()
     {
@@ -414,7 +414,7 @@ class Sparkql::FunctionResolver
       :args => [arg]
     }
   end
-  
+
   def time_field(arg)
     {
       :type => :function,
@@ -485,7 +485,7 @@ class Sparkql::FunctionResolver
       :value => dt.strftime(STRFTIME_DATE_FORMAT)
     }
   end
-  
+
   def time_datetime(dt)
     {
       :type => :time,
@@ -508,12 +508,12 @@ class Sparkql::FunctionResolver
       :value => d.strftime(STRFTIME_DATE_FORMAT)
     }
   end
-  
+
   # TODO Donuts: to extend, we'd just replace (coords) param with (linear_ring1,linear_ring2, ...)
   def polygon(coords)
     new_coords = parse_coordinates(coords)
     unless new_coords.size > 2
-      @errors << Sparkql::ParserError.new(:token => coords, 
+      @errors << Sparkql::ParserError.new(:token => coords,
         :message => "Function call 'polygon' requires at least three coordinates",
         :status => :fatal )
       return
@@ -523,7 +523,7 @@ class Sparkql::FunctionResolver
     unless new_coords.first == new_coords.last
       new_coords << new_coords.first.clone
     end
-    
+
     shape = GeoRuby::SimpleFeatures::Polygon.from_coordinates([new_coords])
     {
       :type => :shape,
@@ -559,21 +559,21 @@ class Sparkql::FunctionResolver
       :status => :fatal )
     return
   end
-    
+
   def rectangle(coords)
     bounding_box = parse_coordinates(coords)
     unless bounding_box.size == 2
-      @errors << Sparkql::ParserError.new(:token => coords, 
+      @errors << Sparkql::ParserError.new(:token => coords,
         :message => "Function call 'rectangle' requires two coordinates for the bounding box",
         :status => :fatal )
       return
     end
     poly_coords = [
-                    bounding_box.first, 
+                    bounding_box.first,
                     [bounding_box.last.first, bounding_box.first.last],
                     bounding_box.last,
                     [bounding_box.first.first, bounding_box.last.last],
-                    bounding_box.first.clone, 
+                    bounding_box.first.clone,
                   ]
     shape = GeoRuby::SimpleFeatures::Polygon.from_coordinates([poly_coords])
     {
@@ -581,11 +581,11 @@ class Sparkql::FunctionResolver
       :value => shape
     }
   end
-  
+
   def radius(coords, length)
 
     unless length > 0
-      @errors << Sparkql::ParserError.new(:token => length, 
+      @errors << Sparkql::ParserError.new(:token => length,
         :message => "Function call 'radius' length must be positive",
         :status => :fatal )
       return
@@ -613,7 +613,7 @@ class Sparkql::FunctionResolver
             end
 
     if shape_error
-      @errors << Sparkql::ParserError.new(:token => coords, 
+      @errors << Sparkql::ParserError.new(:token => coords,
         :message => "Function call 'radius' requires one coordinate for the center",
         :status => :fatal )
       return
@@ -621,17 +621,17 @@ class Sparkql::FunctionResolver
 
     {
       :type => :shape,
-      :value => shape 
+      :value => shape
     }
   end
-  
+
   def range(start_str, end_str)
     {
       :type => :character,
       :value => [start_str.to_s, end_str.to_s]
     }
   end
-  
+
   private
 
   def is_coords?(coord_string)
@@ -645,9 +645,9 @@ class Sparkql::FunctionResolver
     end
     coords
   rescue
-    @errors << Sparkql::ParserError.new(:token => coord_string, 
+    @errors << Sparkql::ParserError.new(:token => coord_string,
       :message => "Unable to parse coordinate string.",
       :status => :fatal )
   end
-  
+
 end
