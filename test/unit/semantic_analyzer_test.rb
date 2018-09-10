@@ -6,7 +6,6 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
 
     analyzer = Sparkql::SemanticAnalyzer.new({})
     analyzer.visit(ast)
-
     assert analyzer.errors?
   end
 
@@ -18,6 +17,45 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
 
   test "type coercion works for numeric types" do
   end
+
+=begin
+  test 'toupper fails without 1 character parameter' do
+    assert_invalid("toupper()")
+    assert_invalid("toupper('First', 'Second')")
+    assert_invalid("toupper(1)")
+  end
+
+  test 'tolower fails without 1 character parameter' do
+    assert_invalid("tolower()")
+    assert_invalid("tolower('First', 'Second')")
+    assert_invalid("tolower(1)")
+  end
+
+  test 'length fails without bad parameters' do
+    assert_invalid("length()")
+    assert_invalid("length('First', 'Second')")
+    assert_invalid("length(1)")
+  end
+
+  test 'now requires no parameters' do
+    filter = "BeginDate Eq now(1)"
+    @parser.parse(filter)
+    assert @parser.errors?, @parser.errors.inspect
+  end
+
+  test 'mindatetime requires no parameters' do
+    filter = "BeginDate Eq mindatetime(1)"
+    @parser.parse(filter)
+    assert @parser.errors?, @parser.errors.inspect
+  end
+
+  test 'maxdatetime requires no parameters' do
+    filter = "BeginDate Eq maxdatetime(1)"
+    @parser.parse(filter)
+    assert @parser.errors?, @parser.errors.inspect
+  end
+=end
+
 
 =begin
   test "integer type coercion" do

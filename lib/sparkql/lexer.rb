@@ -44,7 +44,7 @@ class Sparkql::Lexer < StringScanner
         check_keywords(@current_token_value)
       when @current_token_value = scan(CUSTOM_FIELD)
         [:CUSTOM_FIELD, {
-          type: :custom_field,
+          name: :custom_field,
           value: @current_token_value
         }]
       when eos?

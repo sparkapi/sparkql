@@ -24,7 +24,11 @@ module Sparkql
     end
 
     def visit(ast)
-      send(ast.visit_name, ast)
+      if ast[:function]
+        visit_function(ast)
+      else
+        send("visit_#{ast[:name]}", ast)
+      end
     end
 
     def errors
@@ -37,47 +41,143 @@ module Sparkql
 
     private
 
-    # rubocop:disable Naming/MethodName
-    def visit_Or(node)
-      left = visit(node.left)
-      right = visit(node.right)
-      node.class.new(left, right)
+    def visit_literal(node)
+      node.dup
     end
 
-    def visit_Equal(node)
-      left = visit(node.left)
-      right = visit(node.right)
-      node.class.new(left, right)
+    def visit_field(node)
+      if @metadata[node[:value]].nil?
+        @errors << {
+        }
+      end
+      node.dup
     end
 
-    def visit_And(node)
-      left = visit(node.left)
-      right = visit(node.right)
-      node.class.new(left, right)
+    def visit_custom_field(node)
+      if @metadata[node[:value]].nil?
+        @errors << {
+        }
+      end
+      node.dup
     end
 
-    def visit_Between(node)
-      coerced_nodes = coerce_if_necessary([visit(node.left), visit(node.right[0]), visit(node.right[1])])
-      node.class.new(coerced_nodes[0], [coerced_nodes[0], coerced_nodes[1]])
+    def visit_and(node)
+      left = visit(node[:lhs])
+      right = visit(node[:rhs])
+      node.merge({
+        lhs: left,
+        rhs: right
+      })
+    end
+
+    def visit_or(node)
+      left = visit(node[:lhs])
+      right = visit(node[:rhs])
+      node.merge({
+        lhs: left,
+        rhs: right
+      })
+    end
+
+    def visit_eq(node)
+      left = visit(node[:lhs])
+      right = visit(node[:rhs])
+      node.merge({
+        lhs: left,
+        rhs: right
+      })
+    end
+
+    def visit_neq(node)
+      left = visit(node[:lhs])
+      right = visit(node[:rhs])
+      node.merge({
+        lhs: left,
+        rhs: right
+      })
+    end
+
+    def visit_in(node)
+      puts "visting: #{node.inspect}"
+    end
+
+    def visit_gt(node)
+      left = visit(node[:lhs])
+      right = visit(node[:rhs])
+      node.merge({
+        lhs: left,
+        rhs: right
+      })
+    end
+
+    def visit_ge(node)
+      left = visit(node[:lhs])
+      right = visit(node[:rhs])
+      node.merge({
+        lhs: left,
+        rhs: right
+      })
+    end
+
+    def visit_lt(node)
+      puts "visting: #{node.inspect}"
+    end
+
+    def visit_le(node)
+      puts "visting: #{node.inspect}"
+    end
+
+    def visit_bt(node)
+      coerced_nodes = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs][0]), visit(node[:rhs][1])])
+      node.merge({
+        lhs: coerced_nodes[0],
+        rhs: [coerced_nodes[0], coerced_nodes[1]]
+      })
+    end
+
+    def visit_group(node)
+      node.merge({
+        lhs: left,
+        rhs: right
+      })
+    end
+
+    def visit_unary_not(node)
+      node
+    end
+
+    def visit_function(function)
+      # TODO Basic function validation
+
+
+      # TODO Function specific validation
     end
 
     def coerce_if_necessary(all_nodes)
-      types = all_nodes.map {|node| node.type}
+      types = all_nodes.map {|node| node[:type]}
       if types.uniq.size == 1
         return all_nodes
       else
         if types.all? { |type| NUMBER_TYPES.include?(type) }
           all_nodes.map do |node|
-            if node.type == NUMBER_TYPES.first
-              Sparkql::Nodes::Coerce.new(NUMBER_TYPES.first, node)
+            if node[:type] == NUMBER_TYPES.first
+              {
+                name: :coerce,
+                lhs: node,
+                rhs: NUMBER_TYPES.first
+              }
             else
               node
             end
           end
         elsif types.all? { |type| DATE_TYPES.include?(type )}
           all_nodes.map do |node|
-            if node.type == DATE_TYPES.first
-              Sparkql::Nodes::Coerce.new(DATE_TYPES.first, node)
+            if node[:type] == DATE_TYPES.first
+              {
+                name: :coerce,
+                lhs: node,
+                rhs: DATE_TYPES.first
+              }
             else
               node
             end
@@ -94,44 +194,6 @@ module Sparkql
     def numeric?(type)
       NUMBER_TYPES.include?(type)
     end
-
-    def visit_Identifier(node)
-      if @metadata[node.value].nil?
-        @errors << {}
-      end
-      node.class.new(node.value)
-    end
-
-    def visit_Literal(node)
-      node.class.new(node.type, node.value)
-    end
-
-    def visit_GreaterThan(node)
-      left = visit(node.left)
-      right = visit(node.right)
-      node.class.new(left, right)
-    end
-
-    def visit_GreaterThanOrEqualTo(node)
-      left = visit(node.left)
-      right = visit(node.right)
-      node.class.new(left, right)
-    end
-
-    def visit_Group(node)
-      node.class.new(node.value)
-    end
-
-    def visit_NotEqual(node)
-      left = visit(node.left)
-      right = visit(node.right)
-      node.class.new(left, right)
-    end
-
-    def visit_Not(node)
-      node
-    end
-    # rubocop:enable Naming/MethodName
 
   end
 end

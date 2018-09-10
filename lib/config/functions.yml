@@ -1,0 +1,160 @@
+---
+:range:
+  :arguments:
+  - :types:
+    - :character
+    :allow_field: false
+  - :types:
+    - :character
+    :allow_field: false
+:time:
+  :arguments:
+  - :types:
+    - :datetime
+    - :date
+    :allow_field: true
+:date:
+  :arguments:
+  - :types:
+    - :datetime
+    - :date
+    :allow_field: true
+:polygon:
+  :arguments:
+  - :types:
+    - :character
+    :allow_field: false
+:radius:
+  :arguments:
+  - :types:
+    - :character
+    :allow_field: false
+  - :types:
+    - :decimal
+    - :integer
+    :allow_field: false
+:rectangle:
+  :arguments:
+  - :types:
+    - :character
+    :allow_field: false
+:regex:
+  :arguments:
+  - :types:
+    - :character
+    :allow_field: false
+  - :types:
+    - :character
+    :allow_field: false
+    :default: ''
+:tolower:
+  :arguments:
+  - :types:
+    - :character
+    :allow_field: true
+:toupper:
+  :arguments:
+  - :types:
+    - :character
+    :allow_field: true
+:length:
+  :arguments:
+  - :types:
+    - :character
+    :allow_field: true
+:indexof:
+  :arguments:
+  - :types:
+    - :character
+    :allow_field: true
+  - :types:
+    - :character
+    :allow_field: false
+:startswith:
+  :arguments:
+  - :types:
+    - :character
+    :allow_field: false
+:endswith:
+  :arguments:
+  - :types:
+    - :character
+    :allow_field: false
+:contains:
+  :arguments:
+  - :types:
+    - :character
+    :allow_field: false
+:linestring:
+  :arguments:
+  - :types:
+    - :character
+    :allow_field: false
+:days:
+  :arguments:
+  - :types:
+    - :integer
+    :allow_field: false
+:months:
+  :arguments:
+  - :types:
+    - :integer
+    :allow_field: false
+:years:
+  :arguments:
+  - :types:
+    - :integer
+    :allow_field: false
+:now:
+  :arguments: []
+:maxdatetime:
+  :arguments: []
+:mindatetime:
+  :arguments: []
+:year:
+  :arguments:
+  - :types:
+    - :datetime
+    - :date
+    :allow_field: true
+:month:
+  :arguments:
+  - :types:
+    - :datetime
+    - :date
+    :allow_field: true
+:day:
+  :arguments:
+  - :types:
+    - :datetime
+    - :date
+    :allow_field: true
+:hour:
+  :arguments:
+  - :types:
+    - :datetime
+    - :date
+    :allow_field: true
+:minute:
+  :arguments:
+  - :types:
+    - :datetime
+    - :date
+    :allow_field: true
+:second:
+  :arguments:
+  - :types:
+    - :datetime
+    - :date
+    :allow_field: true
+:fractionalseconds:
+  :arguments:
+  - :types:
+    - :datetime
+    - :date
+    :allow_field: true
+:wkt:
+  :arguments:
+  - :types:
+    - :character
+    :allow_field: false

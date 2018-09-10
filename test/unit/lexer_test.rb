@@ -31,7 +31,7 @@ class LexerTest < Test::Unit::TestCase
       @lexer = Lexer.new("#{standard_field} Eq true")
       token = @lexer.shift
       assert_equal :STANDARD_FIELD, token.first, standard_field
-      assert_equal standard_field, token.last.value
+      assert_equal standard_field, token.last[:value]
     end
   end
 
@@ -39,7 +39,7 @@ class LexerTest < Test::Unit::TestCase
     @lexer = Lexer.new("4PostalCodePlus4 Eq true")
     token = @lexer.shift
     assert_equal :INTEGER, token.first
-    assert_equal 4, token.last.value
+    assert_equal 4, token.last[:value]
   end
 
   def test_check_reserved_words_conjunctions

@@ -6,7 +6,6 @@ require 'sparkql/lexer'
 require 'sparkql/parser_tools'
 require 'sparkql/parser_compatibility'
 require 'sparkql/parser'
-require 'sparkql/nodes'
 require 'sparkql/semantic_analyzer'
 
 # Parse
@@ -15,4 +14,5 @@ require 'sparkql/semantic_analyzer'
 # Literal Folding
 # Custom Optimizations (Tree reordering)
 module Sparkql
+  FUNCTION_METADATA = YAML::load_file(File.join(__dir__, 'config/functions.yml'))
 end

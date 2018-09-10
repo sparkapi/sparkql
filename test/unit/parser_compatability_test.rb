@@ -195,12 +195,10 @@ class ParserCompatabilityTest < Test::Unit::TestCase
         parser = Parser.new
         ast = parser.tokenize( f )
         assert !parser.errors?
-        assert_equal Sparkql::Nodes::Equal, ast.class
-        assert_equal Sparkql::Nodes::Identifier, ast.left.class
-        assert_equal 'City', ast.left.value
-        assert_equal Sparkql::Nodes::Literal, ast.right.class
-        assert_equal Sparkql::Nodes::Literal.escape_value(:character,string.strip),
-          ast.right.value
+        assert_equal :eq, ast[:name]
+        assert_equal :field, ast[:lhs][:name]
+        assert_equal 'City', ast[:lhs][:value]
+        assert_equal :literal, ast[:rhs][:name]
       end
     end
   end
@@ -287,8 +285,8 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     parser = Parser.new
     ast = parser.tokenize( filter )
     assert !parser.errors?, "Parser errrors [#{filter}]: #{parser.errors.inspect}"
-    assert_equal Sparkql::Nodes::CustomIdentifier, ast.left.class
-    assert_equal "\"Security\".\"@R080T$' ` ` `#\"", ast.left.value
+    assert_equal :custom_field, ast[:lhs][:name]
+    assert_equal "\"Security\".\"@R080T$' ` ` `#\"", ast[:lhs][:value]
   end
 
   test "custom field supports all types" do
@@ -304,25 +302,23 @@ class ParserCompatabilityTest < Test::Unit::TestCase
       ast = parser.tokenize( filter )
       assert !parser.errors?, "Parser errrors [#{filter}]: #{parser.errors.inspect}"
 
-      assert_equal Sparkql::Nodes::CustomIdentifier, ast.left.class
-      assert_equal Sparkql::Nodes::Literal, ast.right.class
-      assert_equal type, ast.right.type
-      assert_equal Sparkql::Nodes::Literal.escape_value(type, value),
-        ast.right.value
+      assert_equal :custom_field, ast[:lhs][:name]
+      assert_equal :literal, ast[:rhs][:name]
+      assert_equal type, ast[:rhs][:type]
     end
   end
 
   test "escape boolean value" do
     parser = Parser.new
     ast = parser.tokenize("BooleanField Eq true")
-    assert_equal true, ast.right.value
+    assert_equal true, ast[:rhs][:value]
   end
 
   test "escape decimal values" do
     parser = Parser.new
     ast = parser.tokenize( "DecimalField Eq 0.00005 And DecimalField Eq 5.0E-5" )
-    assert_equal 5.0E-5, ast.right.right.value
-    assert_equal ast.left.right.value, ast.right.right.value
+    assert_equal 5.0E-5, ast[:rhs][:rhs][:value]
+    assert_equal ast[:lhs][:rhs][:value], ast[:rhs][:rhs][:value]
   end
 
   test "Between" do

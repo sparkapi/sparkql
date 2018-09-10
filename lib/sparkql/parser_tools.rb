@@ -109,19 +109,27 @@ module Sparkql::ParserTools
   end
 
   def tokenize_function(name, f_args)
-    constant_name = name.capitalize
-    if !Sparkql::Nodes::Functions.const_defined?(constant_name)
+    method = name.to_sym
+
+    if !Sparkql::FUNCTION_METADATA.key?(method)
       tokenizer_error(token: name,
         message: "Unsupported function call '#{name}' for expression",
         status: :fatal)
       return
     end
 
-    function = Sparkql::Nodes::Functions.const_get(constant_name).new(f_args)
+    function = {
+      function: true,
+      name: method,
+      args: f_args
+    }
 
+=begin
+    function = Sparkql::Nodes::Functions.const_get(constant_name).new(f_args)
     function.errors.each do |error|
       compile_error(error)
     end
+=end
 
     function
   end
