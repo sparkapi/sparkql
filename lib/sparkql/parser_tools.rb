@@ -48,6 +48,10 @@ module Sparkql::ParserTools
     operator_class = case operator
     when 'Eq'
       Sparkql::Nodes::Equal
+    when 'Ne'
+      Sparkql::Nodes::NotEqual
+    when 'In'
+      Sparkql::Nodes::In
     when 'Gt'
       Sparkql::Nodes::GreaterThan
     when 'Ge'
@@ -56,8 +60,6 @@ module Sparkql::ParserTools
       Sparkql::Nodes::LessThan
     when 'Le'
       Sparkql::Nodes::LessThanOrEqualTo
-    when 'Ne'
-      Sparkql::Nodes::NotEqual
     when 'Bt'
       Sparkql::Nodes::Between
     else
@@ -68,8 +70,6 @@ module Sparkql::ParserTools
     operator_class.new(field, value)
   end
 
-  # TODO Decide if this should use In logic instead of nested Ors
-  # Make it configurable
   def tokenize_list_operator(field, operator, values)
     if values.size == 1
       tokenize_operator(field, operator, values.first)
@@ -81,41 +81,15 @@ module Sparkql::ParserTools
                         status: :fatal)
       end
 
-      types = values.map do |val|
-        if val.respond_to?(:type)
-          val.type
-        else
-          val.return_type
-        end
-      end
-
-      if types.uniq.size > 1
-        tokenizer_error(token: @lexer.last_field,
-                        message: "Type mismatch in field list.",
-                        status: :fatal)
-      end
-
       if operator == 'Bt'
         tokenize_operator(field, operator, values)
-      else
-        split_in_to_ors(field, operator, values)
+      elsif operator == 'Eq'
+        tokenize_operator(field, 'In', values)
+      elsif operator == 'Ne'
+        Sparkql::Nodes::Not.new(tokenize_operator(field, 'In', values))
       end
 
     end
-  end
-
-  def split_in_to_ors(field, operator, values)
-    new_values = values.map do |literal|
-      tokenize_operator(field, operator, literal)
-    end
-
-    data = Sparkql::Nodes::Or.new(new_values.pop, new_values.pop)
-
-    new_values.each do |val|
-      data = Sparkql::Nodes::Or.new(data, val)
-    end
-
-    data
   end
 
   def tokenize_function_args(lit1, lit2)
@@ -181,19 +155,6 @@ module Sparkql::ParserTools
             :message => "You have exceeded the maximum parameter count.  Please limit to #{max_values} parameters to a single function.",
             :status => :fatal, :syntax => false, :constraint => true )
       args.slice!(max_values..-1)
-    end
-  end
-
-  # If both types support coercion with eachother, always selects the highest
-  # precision type to return as a reflection of the two. Any type that doesn't
-  # support coercion with the other type returns nil
-  def coercible_types type1, type2
-    if DATE_TYPES.include?(type1) && DATE_TYPES.include?(type2)
-      DATE_TYPES.first
-    elsif NUMBER_TYPES.include?(type1) && NUMBER_TYPES.include?(type2)
-      NUMBER_TYPES.first
-    else
-      nil
     end
   end
 

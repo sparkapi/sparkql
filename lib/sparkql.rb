@@ -8,7 +8,12 @@ require 'sparkql/parser_tools'
 require 'sparkql/parser_compatibility'
 require 'sparkql/parser'
 require 'sparkql/nodes'
+require 'sparkql/semantic_analyzer'
 
-# I AM A SPARKQLING MODULE!!!
+# Parse
+# SemanticAnalysis
+# Intermediate Code Gen
+# Literal Folding
+# Custom Optimizations (Tree reordering)
 module Sparkql
 end

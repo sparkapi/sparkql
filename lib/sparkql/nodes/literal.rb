@@ -5,7 +5,12 @@ module Sparkql
 
       def initialize(type, value)
         @type = type
-        @value = Literal.escape_value(type, value)
+        @value = value
+      end
+
+      def self.build(type, value)
+        value = Literal.escape_value(type, value)
+        Literal.new(type, value)
       end
 
       def self.escape_value(type, value)

@@ -38,10 +38,11 @@ module Sparkql
           arg1 = @args.first
           if arg1.is_a?(Sparkql::Nodes::Literal) &&
               [:character].include?(arg1.type) &&
-              !is_coords?(arg1.value)
+              !is_coords?(arg1.value) &&
+              !arg1.value.is_a?(String) && arg1.value =~ /^\d{26}$/
             errors << {
               token: arg1,
-              message: "First argument must be valid coordinates",
+              message: "First argument must be valid coordinates or a tech id",
               status: :fatal,
               sytanx: false,
               constraint: true

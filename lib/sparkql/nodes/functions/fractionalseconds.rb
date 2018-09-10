@@ -2,7 +2,7 @@ module Sparkql
   module Nodes
     module Functions
       # arg1: TODO
-      class FractionalSeconds < Function
+      class Fractionalseconds < Function
         ARG_META = [
           {
             types: [:datetime, :date],

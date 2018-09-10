@@ -1,20 +1,5 @@
 require 'test_helper'
 
-=begin
-We _could_ do this validation while parsing, but then we have to do it again for identifiers.
-
-TODO: Need to do this when validating with metadata (need field types as well)
-  def test_invalid_operators
-    (Sparkql::Token::OPERATORS - Sparkql::Token::EQUALITY_OPERATORS).each do |o|
-      ["NULL", "true", "'My String'"].each do |v|
-        parser_errors("Test #{o} #{v}")
-      end
-    end
-  end
-=end
-
-
-# TODO: Test function resolutions
 class ParserTest < Test::Unit::TestCase
   include Sparkql
 
@@ -77,18 +62,25 @@ class ParserTest < Test::Unit::TestCase
     assert_equal Sparkql::Nodes::Or, expression.value.class
   end
 
-  test 'multiples' do
+  test 'multiple Eq' do
     expression = @parser.parse('Test Eq 10,11,12')
-    assert_equal Sparkql::Nodes::Or, expression.class
-    assert_equal Sparkql::Nodes::Or, expression.left.class
-    assert_equal 'Test', expression.right.left.value
-    assert_equal 10, expression.right.right.value
+    assert_equal Sparkql::Nodes::In, expression.class
 
-    assert_equal 'Test', expression.left.right.left.value
-    assert_equal 11, expression.left.right.right.value
+    assert_equal 'Test', expression.left.value
+    assert_equal 10, expression.right[0].value
+    assert_equal 11, expression.right[1].value
+    assert_equal 12, expression.right[2].value
+  end
 
-    assert_equal 'Test', expression.left.left.left.value
-    assert_equal 12, expression.left.left.right.value
+  test 'multiple Ne' do
+    expression = @parser.parse('Test Ne 10,11,12')
+    assert_equal Sparkql::Nodes::Not, expression.class
+    assert_equal Sparkql::Nodes::In, expression.value.class
+
+    assert_equal 'Test', expression.value.left.value
+    assert_equal 10, expression.value.right[0].value
+    assert_equal 11, expression.value.right[1].value
+    assert_equal 12, expression.value.right[2].value
   end
 
   test 'invalid syntax' do
@@ -128,69 +120,6 @@ class ParserTest < Test::Unit::TestCase
     assert @parser.fatal_errors?, "Should be nil: #{@parser.errors.inspect}"
   end
 
-  test 'function months' do
-    expressions = @parser.parse "ExpirationDate Gt months(-3)"
-    assert !@parser.errors?, "errors :( #{@parser.errors.inspect}"
-
-    assert_equal Sparkql::Nodes::Functions::Months, expressions.right.class
-    assert_equal(-3, expressions.right.args.first.value)
-  end
-
-  test 'function years' do
-    expressions = @parser.parse "SoldDate Lt years(2)"
-    assert !@parser.errors?, "errors :( #{@parser.errors.inspect}"
-
-    assert_equal Sparkql::Nodes::Functions::Years, expressions.right.class
-    assert_equal 2, expressions.right.args.first.value
-  end
-
-  test 'function days' do
-    filter = "OriginalEntryTimestamp Ge days(-7)"
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-
-    assert_equal Sparkql::Nodes::Functions::Days, expressions.right.class
-    assert_equal(-7, expressions.right.args.first.value)
-  end
-
-  test 'function now' do
-    filter = "City Eq now()"
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-
-    assert_equal Sparkql::Nodes::Functions::Now, expressions.right.class
-    assert_equal [], expressions.right.args
-  end
-
-  test 'function range' do
-    filter = "MapCoordinates Eq range('M01','M04')"
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-
-    assert_equal Sparkql::Nodes::Functions::Range, expressions.right.class
-    assert_equal ["M01","M04"], expressions.right.args.map(&:value)
-  end
-
-  test 'indexof with field' do
-    filter = "indexof(City, '4131800000000') Eq 13"
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-
-    assert_equal Sparkql::Nodes::Functions::Indexof, expressions.left.class
-    assert_equal Sparkql::Nodes::Identifier, expressions.left.args.first.class
-    assert_equal 'City', expressions.left.args.first.value
-  end
-
-  test "function rangeable " do
-    filter = "OriginalEntryTimestamp Bt days(-7),days(-1)"
-    expressions = @parser.parse(filter)
-
-    assert_equal Sparkql::Nodes::Between, expressions.class
-    assert_equal Array, expressions.right.class
-    assert_equal(-7, expressions.right.first.args.first.value)
-    assert_equal(-1, expressions.right.last.args.first.value)
-  end
-
   test "mixed rangeable " do
     filter = "OriginalEntryTimestamp Bt days(-7),2013-07-26"
     expressions = @parser.parse(filter)
@@ -199,80 +128,6 @@ class ParserTest < Test::Unit::TestCase
     assert_equal Array, expressions.right.class
     assert_equal(-7, expressions.right.first.args.first.value)
     assert_equal(Date.parse('2013-07-26'), expressions.right.last.value)
-  end
-
-  test "multiple function list" do
-    filter = "OriginalEntryTimestamp Eq days(-1),days(-7),days(-30)"
-    expression = @parser.parse(filter)
-
-    assert_equal Sparkql::Nodes::Or, expression.class
-    assert_equal Sparkql::Nodes::Or, expression.left.class
-
-    assert_equal 'OriginalEntryTimestamp', expression.right.left.value
-    assert_equal(-1, expression.right.right.args.first.value)
-
-    assert_equal 'OriginalEntryTimestamp', expression.left.right.left.value
-    assert_equal(-7, expression.left.right.right.args.first.value)
-
-    assert_equal 'OriginalEntryTimestamp', expression.left.left.left.value
-    assert_equal(-30, expression.left.left.right.args.first.value)
-  end
-
-  test 'function date' do
-    filter = "OnMarketDate Eq date(OriginalEntryTimestamp)"
-
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-    assert_equal Sparkql::Nodes::Functions::Date, expressions.right.class
-    assert_equal 'OriginalEntryTimestamp', expressions.right.args.first.value
-
-    # Run using a static value, we just resolve the type
-    filter = "OnMarketDate Eq date(2013-07-26T10:22:15.111-0100)"
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-
-    assert_equal Sparkql::Nodes::Functions::Date, expressions.right.class
-    assert_equal DateTime.parse('2013-07-26T10:22:15.111-0100'), expressions.right.args.first.value
-
-    # And the grand finale: run on both sides
-    filter = "date(OriginalEntryTimestamp) Eq date(2013-07-26T10:22:15.111-0100)"
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-
-    assert_equal Sparkql::Nodes::Functions::Date, expressions.right.class
-    assert_equal DateTime.parse('2013-07-26T10:22:15.111-0100'), expressions.right.args.first.value
-
-    assert_equal Sparkql::Nodes::Functions::Date, expressions.left.class
-    assert_equal 'OriginalEntryTimestamp', expressions.left.args.first.value
-  end
-
-  test "regex function parses without second param" do
-    filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$')"
-    expression = @parser.parse(filter)
-
-    assert_equal Sparkql::Nodes::Functions::Regex, expression.right.class
-    assert_equal "^[0-9]{3}-[0-9]{2}-[0-9]{3}$", expression.right.args.first.value
-  end
-
-  test "regex function parses with case-insensitive flag" do
-    filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$', 'i')"
-    expression = @parser.parse(filter)
-
-    assert_equal Sparkql::Nodes::Functions::Regex, expression.right.class
-    assert_equal ["^[0-9]{3}-[0-9]{2}-[0-9]{3}$","i"], expression.right.args.map(&:value)
-  end
-
-  test "invalid regex" do
-    filter = "ParcelNumber Eq regex('[1234', '')"
-    @parser = Parser.new
-    @parser.parse(filter)
-    assert @parser.errors?, "Parser error expected due to invalid regex"
-  end
-
-  test 'invalid regex flags' do
-    filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$', 'k')"
-    @parser.parse(filter)
-    assert @parser.errors?, "Parser error expected due to invalid regex flags"
   end
 
   test "allow timezone offsets" do
@@ -301,74 +156,11 @@ class ParserTest < Test::Unit::TestCase
     end
   end
 
-  test "function polygon" do
-    filter = "Location Eq polygon('35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32')"
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-
-    assert_equal Sparkql::Nodes::Functions::Polygon, expressions.right.class
-    assert_equal "35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32", expressions.right.args.first.value
-  end
-
-  test "function linestring" do
-    filter = "Location Eq linestring('35.12 -68.33, 35.13 -68.33')"
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-
-    assert_equal Sparkql::Nodes::Functions::Linestring, expressions.right.class
-    assert_equal "35.12 -68.33, 35.13 -68.33", expressions.right.args.first.value
-  end
-
-  test "function rectangle" do
-    filter = "Location Eq rectangle('35.12 -68.33, 35.13 -68.32')"
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-
-    assert_equal Sparkql::Nodes::Functions::Rectangle, expressions.right.class
-    assert_equal "35.12 -68.33, 35.13 -68.32", expressions.right.args.first.value
-  end
-
-  test "function radius" do
-    filter = "Location Eq radius('35.12 -68.33',1.0)"
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-
-    assert_equal Sparkql::Nodes::Functions::Radius, expressions.right.class
-    assert_equal ["35.12 -68.33",1.0], expressions.right.args.map(&:value)
-  end
-
-  test "function radius accepts integer" do
-    filter = "Location Eq radius('35.12 -68.33',1)"
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-
-    assert_equal Sparkql::Nodes::Functions::Radius, expressions.right.class
-    assert_equal ["35.12 -68.33",1], expressions.right.args.map(&:value)
-  end
-
-  test "function radius error on invalid syntax" do
-    filter = "Location Eq radius('35.12,-68.33',1.0)"
-    @parser.parse(filter)
-    assert @parser.errors?, "Parser error expected due to comma between radius points"
-  end
-
   test 'reserved words first literals second' do
     ["OrOrOr Eq true", "Equador Eq true", "Oregon Ge 10"].each do |filter|
       @parser.parse(filter)
       assert !@parser.errors?, "Filter '#{filter}' errors: #{@parser.errors.inspect}"
     end
-  end
-
-  test 'undefined function' do
-    filter = "Location Eq bugus(1)"
-    @parser.parse(filter)
-    assert @parser.errors?, @parser.errors.inspect
-  end
-
-  test 'now requires no parameters' do
-    filter = "BeginDate Eq now(1)"
-    @parser.parse(filter)
-    assert @parser.errors?, @parser.errors.inspect
   end
 
   test 'custom fields' do
@@ -460,9 +252,8 @@ class ParserTest < Test::Unit::TestCase
     assert_equal Sparkql::Nodes::Not, expression.left.class
   end
 
-  test 'bad filters' do
+  test 'bad string?' do
     parser_errors("Test Eq BADSTRING")
-    parser_errors("Test Eq radius('46.8 -96.8',-20.0)")
   end
 
   test 'datetimes as ranges' do
@@ -473,16 +264,6 @@ class ParserTest < Test::Unit::TestCase
       @parser.parse filter
       assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
      end
-  end
-
-  test 'coercible types' do
-    @parser = Parser.new
-    assert_equal :datetime, @parser.coercible_types(:date, :datetime)
-    assert_equal :datetime, @parser.coercible_types(:datetime, :date)
-    assert_equal :decimal, @parser.coercible_types(:decimal, :integer)
-    assert_equal :decimal, @parser.coercible_types(:integer, :decimal)
-    # That covers the gambit, anything else should be null
-    assert_nil @parser.coercible_types(:integer, :date)
   end
 
   test "only eq and ne accept multiple values" do

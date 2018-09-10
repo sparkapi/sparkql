@@ -86,6 +86,6 @@ class Sparkql::Lexer < StringScanner
   end
 
   def literal(symbol, value)
-    [symbol, Sparkql::Nodes::Literal.new(symbol.to_s.downcase.to_sym, value)]
+    [symbol, Sparkql::Nodes::Literal.build(symbol.to_s.downcase.to_sym, value)]
   end
 end
