@@ -34,6 +34,6 @@ name | description | value
 `:group` | A parenthesis wrapped expression. | Nested expression with precedence.
 `:unary_not` | Unary not. | Expression to negate.
 
-## Funtions
+## Functions
 
 Parsing will also yield function nodes which are documented in [FUNCTIONS.md](FUNCTIONS.md).
