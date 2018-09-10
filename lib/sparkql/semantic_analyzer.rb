@@ -128,10 +128,6 @@ module Sparkql
       node.class.new(left, right)
     end
 
-    def visit_Function(node)
-      node
-    end
-
     def visit_Not(node)
       node
     end

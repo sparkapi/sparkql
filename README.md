@@ -12,33 +12,16 @@ Installation
 Add the gem to your gemfile:
 
 Gemfile
-	gem 'sparkql', '~> 0.0.1'
+	gem 'sparkql', '~> 2.0.0'
 
 When completed, run 'bundle install'.
 
 
 Usage
 -------------
-Ruby 1.9 or greater is required.
 
-See test/unit/parser_test.rb for generic parsing examples. In most cases an extended parser is
-needed to do anything of significance, such as the postgres and db2 search implementations in the
-API.
-
-Here is a basic example:
-
-	expressions = Parser.new.parse("Hello Eq 'World'")
-
-The return value will be an array with one expression element containing the query information:
-
-	{
-	  :field => "Hello",
-	  :type => :character,
-	  :value => "'World'",
-	  :operator => 'Eq'
-	  # ...
-	}
-
+Parsing documentation can be found [here]().
+Semantic Analysis documentation can be found [here]().
 
 Development
 -------------
