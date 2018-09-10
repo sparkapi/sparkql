@@ -1,6 +1,6 @@
 ## SparkQL BNF Grammar
 This document explains the rules for the Spark API filter language syntax and
-is a living document generated from the reference implementation at 
+is a living document generated from the reference implementation at
 https://github.com/sparkapi/sparkql.
 ### Precedence Rules
 SparkQL And and Or both have the same precedence. Unless otherwise specified,
@@ -39,9 +39,9 @@ One or more expressions
 ```
 
 #### Expression
-The core of the filtering system, the expression requires a field, a condition 
-and criteria for comparing the value of the field to the value(s) of the 
-condition. The result of evaluating the expression on a resource is a true of 
+The core of the filtering system, the expression requires a field, a condition
+and criteria for comparing the value of the field to the value(s) of the
+condition. The result of evaluating the expression on a resource is a true of
 false for matching the criteria.
 
 
@@ -55,13 +55,13 @@ false for matching the criteria.
 ```
 
 #### Unary Conjunction
-Some conjunctions don't need to expression at all times (e.g. 'NOT'). 
+Some conjunctions don't need to expression at all times (e.g. 'NOT').
 
 
 ```
      unary_conjunction
        : UNARY_CONJUNCTION expression 
-       ;  
+       ;
 ```
 
 #### Conjunction
@@ -85,8 +85,8 @@ Two expressions joined together using a supported conjunction
 ```
 
 #### Field
-Keyword for searching on, these fields should be discovered using the metadata 
-rules. In general, Keywords that cannot be found will be dropped from the 
+Keyword for searching on, these fields should be discovered using the metadata
+rules. In general, Keywords that cannot be found will be dropped from the
 filter.
 
 
@@ -99,8 +99,8 @@ filter.
 ```
 
 #### Condition
-The determinant of the filter, this is typically a value or set of values of 
-a type that the field supports (review the field meta data for support). 
+The determinant of the filter, this is typically a value or set of values of
+a type that the field supports (review the field meta data for support).
 Functions are also supported on some field types, and provide more flexibility
 on filtering values
 
@@ -113,8 +113,8 @@ on filtering values
 ```
 
 #### Function
-Functions may replace static values for conditions with supported field 
-types. Functions may have parameters that match types supported by 
+Functions may replace static values for conditions with supported field
+types. Functions may have parameters that match types supported by
 fields.
 
 
@@ -136,7 +136,7 @@ Functions may optionally have a comma delimited list of parameters.
      function_args
        : function_arg 
        | function_args COMMA function_arg 
-       ; 
+       ;
      function_arg
        : literal
        | literals
@@ -158,12 +158,12 @@ A comma delimited list of functions and values.
 ```
 
 #### Range List
-A comma delimited list of values that support ranges for the Between operator 
+A comma delimited list of values that support ranges for the Between operator
 (see rangeable).
 
 
 ```
-     range                                                                             
+     range
        : rangeable COMMA rangeable 
        ;
 ```
@@ -195,7 +195,7 @@ Literals only support a single value in a condition
 ```
 
 #### Range List
-Functions, and literals that can be used in a range                                                       
+Functions, and literals that can be used in a range
 
 
 ```

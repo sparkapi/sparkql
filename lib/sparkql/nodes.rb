@@ -1,23 +1,5 @@
 require 'sparkql/nodes/node'
 
-# Conjunctions
-require 'sparkql/nodes/not'
-require 'sparkql/nodes/and'
-require 'sparkql/nodes/or'
-
-# Operators
-require 'sparkql/nodes/operators/operator'
-require 'sparkql/nodes/operators/equality_operator'
-require 'sparkql/nodes/operators/spanning_operator'
-require 'sparkql/nodes/operators/equal'
-require 'sparkql/nodes/operators/not_equal'
-require 'sparkql/nodes/operators/in'
-require 'sparkql/nodes/operators/greater_than'
-require 'sparkql/nodes/operators/greater_than_or_equal_to'
-require 'sparkql/nodes/operators/less_than'
-require 'sparkql/nodes/operators/less_than_or_equal_to'
-require 'sparkql/nodes/operators/between'
-
 # Functions
 require 'sparkql/nodes/functions/function'
 require 'sparkql/nodes/functions/polygon'
@@ -50,8 +32,3 @@ require 'sparkql/nodes/functions/fractionalseconds'
 require 'sparkql/nodes/functions/range'
 require 'sparkql/nodes/functions/wkt'
 
-require 'sparkql/nodes/group'
-
-require 'sparkql/nodes/identifier'
-require 'sparkql/nodes/custom_identifier'
-require 'sparkql/nodes/literal'

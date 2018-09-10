@@ -12,7 +12,7 @@ module Sparkql
 
   include Sparkql::ParserTools
   include Sparkql::ParserCompatibility
-  
+
 ##### State transition tables begin ###
 
 racc_action_table = [
@@ -252,7 +252,7 @@ end
 # reduce 9 omitted
 
 def _reduce_10(val, _values, result)
- result = tokenize_unary_conjunction(val[0], val[1]) 
+ result = tokenize_unary_not(val[1]) 
     result
 end
 

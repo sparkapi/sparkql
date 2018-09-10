@@ -26,48 +26,52 @@ module Sparkql::ParserTools
   def tokenize_conjunction(exp1, conj, exp2)
     case conj
     when 'And'
-      Sparkql::Nodes::And.new(exp1, exp2)
+      tokenize_and_conjunction(exp1, exp2)
     when 'Or'
-      Sparkql::Nodes::Or.new(exp1, exp2)
+      tokenize_or_conjunction(exp1, exp2)
     when 'Not'
-      Sparkql::Nodes::And.new(exp1, Sparkql::Nodes::Not.new(exp2))
+      tokenize_and_conjunction(exp1, tokenize_unary_not(exp2))
     else
       raise "#{conj} is not supported"
     end
   end
 
-  def tokenize_unary_conjunction(conj, exp)
-    Sparkql::Nodes::Not.new(exp)
+  def tokenize_and_conjunction(left, right)
+    {
+      name: :and,
+      lhs: left,
+      rhs: right
+    }
+  end
+
+  def tokenize_or_conjunction(left, right)
+    {
+      name: :or,
+      lhs: left,
+      rhs: right
+    }
+  end
+
+  def tokenize_unary_not(expression)
+    {
+      name: :unary_not,
+      value: expression
+    }
   end
 
   def tokenize_group(expression)
-    Sparkql::Nodes::Group.new(expression)
+    {
+      name: :group,
+      value: expression
+    }
   end
 
   def tokenize_operator(field, operator, value)
-    operator_class = case operator
-    when 'Eq'
-      Sparkql::Nodes::Equal
-    when 'Ne'
-      Sparkql::Nodes::NotEqual
-    when 'In'
-      Sparkql::Nodes::In
-    when 'Gt'
-      Sparkql::Nodes::GreaterThan
-    when 'Ge'
-      Sparkql::Nodes::GreaterThanOrEqualTo
-    when 'Lt'
-      Sparkql::Nodes::LessThan
-    when 'Le'
-      Sparkql::Nodes::LessThanOrEqualTo
-    when 'Bt'
-      Sparkql::Nodes::Between
-    else
-      # TODO: Make cuter
-      raise operator
-    end
-
-    operator_class.new(field, value)
+    {
+      name: operator.downcase.to_sym,
+      lhs: field,
+      rhs: value
+    }
   end
 
   def tokenize_list_operator(field, operator, values)
@@ -86,9 +90,8 @@ module Sparkql::ParserTools
       elsif operator == 'Eq'
         tokenize_operator(field, 'In', values)
       elsif operator == 'Ne'
-        Sparkql::Nodes::Not.new(tokenize_operator(field, 'In', values))
+        tokenize_unary_not(tokenize_operator(field, 'In', values))
       end
-
     end
   end
 
@@ -99,7 +102,10 @@ module Sparkql::ParserTools
   end
 
   def tokenize_field_arg(field)
-    Sparkql::Nodes::Identifier.new(field)
+    {
+      name: :field,
+      value: field
+    }
   end
 
   def tokenize_function(name, f_args)
