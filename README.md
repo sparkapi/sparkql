@@ -20,8 +20,8 @@ When completed, run 'bundle install'.
 Usage
 -------------
 
-Parsing documentation can be found [here]().
-Semantic Analysis documentation can be found [here]().
+Parsing documentation can be found [here](PARSING.md).
+Semantic Analysis documentation can be found [here](SEMANTIC_ANALSIS.md).
 
 Development
 -------------
