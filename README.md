@@ -21,7 +21,7 @@ Usage
 -------------
 
 Parsing documentation can be found [here](PARSING.md).
-Semantic Analysis documentation can be found [here](SEMANTIC_ANALSIS.md).
+Semantic Analysis documentation can be found [here](SEMANTIC_ANALYSIS.md).
 
 Development
 -------------
