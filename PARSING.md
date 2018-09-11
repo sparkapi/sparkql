@@ -19,7 +19,7 @@ name | description | lhs | rhs
 name | description | lhs | rhs
 ---- | ----------- | --- | ---
 `:eq` | check equality. | left hand expression | right hand expression
-`:neq` | check inequality. | left hand expression | right hand expression
+`:ne` | check inequality. | left hand expression | right hand expression
 `:in` | check mass equality. rhs is any number of expressions to check against. | left hand expression | [right hand expressions]
 `:gt` | greater than. | left hand expression | right hand expression
 `:ge` | greater than or equal to. | left hand expression| right hand expression

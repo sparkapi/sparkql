@@ -1,161 +1,172 @@
 require 'test_helper'
 
 class SemanticAnalyzerTest < Test::Unit::TestCase
+
+  def setup
+    @fields = {
+      'StringField' => {
+        searchable: true,
+        type: :character
+      },
+      'NoSearchStringField' => {
+        searchable: false,
+        type: :character
+      },
+      'IntField' => {
+        searchable: true,
+        type: :integer
+      },
+      'DateField' => {
+        searchable: true,
+        type: :date
+      },
+      '"Custom"."DateField"' => {
+        searchable: true,
+        type: :date
+      },
+      'DecimalField' => {
+        searchable: true,
+        type: :decimal
+      },
+      'Location' => {
+        searchable: true,
+        type: :shape
+      }
+    }
+  end
+
+  STRING_OPERATORS = ['Eq', 'Ne']
+  NUMBER_OPERATORS = ['Eq', 'Ne', 'Gt', 'Ge', 'Lt', 'Le']
+
   test 'errors on invalid field' do
-    ast = parses("Bogus Eq 'Fargo'")
-
-    analyzer = Sparkql::SemanticAnalyzer.new({})
-    analyzer.visit(ast)
-    assert analyzer.errors?
+    assert_errors("Bogus Eq 'Fargo'")
   end
 
-  test "all same types does no coercion" do
+  test 'In' do
+    assert_errors "StringField Eq 1,'2'"
+    assert_success "StringField Eq '1','2'"
+    assert_success "IntField Eq 1,2.0"
   end
 
-  test "type coercion works for date types" do
-  end
-
-  test "type coercion works for numeric types" do
-  end
-
-=begin
   test 'toupper fails without 1 character parameter' do
-    assert_invalid("toupper()")
-    assert_invalid("toupper('First', 'Second')")
-    assert_invalid("toupper(1)")
+    STRING_OPERATORS.each do |op|
+      assert_errors("StringField #{op} toupper()")
+      assert_errors("StringField #{op} toupper('First', 'Second')")
+      assert_errors("StringField #{op} toupper(1)")
+      assert_errors("StringField #{op} toupper(IntField)")
+      assert_success("StringField #{op} toupper(StringField)")
+      assert_success("StringField #{op} toupper('Far')")
+    end
   end
 
   test 'tolower fails without 1 character parameter' do
-    assert_invalid("tolower()")
-    assert_invalid("tolower('First', 'Second')")
-    assert_invalid("tolower(1)")
+    STRING_OPERATORS.each do |op|
+      assert_errors("StringField #{op} tolower()")
+      assert_errors("StringField #{op} tolower('First', 'Second')")
+      assert_errors("StringField #{op} tolower(1)")
+      assert_errors("StringField #{op} tolower(IntField)")
+      assert_success("StringField #{op} tolower(StringField)")
+      assert_success("StringField #{op} tolower('Far')")
+    end
   end
 
   test 'length fails without bad parameters' do
-    assert_invalid("length()")
-    assert_invalid("length('First', 'Second')")
-    assert_invalid("length(1)")
+    NUMBER_OPERATORS.each do |op|
+      assert_errors("IntField #{op} length()")
+      assert_errors("IntField #{op} length('First', 'Second')")
+      assert_errors("IntField #{op} length(1)")
+      assert_errors("IntField #{op} length(IntField)")
+      assert_success("IntField #{op} length('a')")
+      assert_success("IntField #{op} length(StringField)")
+    end
   end
 
   test 'now requires no parameters' do
-    filter = "BeginDate Eq now(1)"
-    @parser.parse(filter)
-    assert @parser.errors?, @parser.errors.inspect
+    NUMBER_OPERATORS.each do |op|
+      assert_errors("DateField #{op} now(1)")
+      assert_errors("DateField #{op} now('1')")
+      assert_success("DateField #{op} now()")
+    end
   end
 
   test 'mindatetime requires no parameters' do
-    filter = "BeginDate Eq mindatetime(1)"
-    @parser.parse(filter)
-    assert @parser.errors?, @parser.errors.inspect
+    NUMBER_OPERATORS.each do |op|
+      assert_errors("DateField #{op} mindatetime(1)")
+      assert_errors("DateField #{op} mindatetime('1')")
+      assert_success("DateField #{op} mindatetime()")
+    end
   end
 
   test 'maxdatetime requires no parameters' do
-    filter = "BeginDate Eq maxdatetime(1)"
-    @parser.parse(filter)
-    assert @parser.errors?, @parser.errors.inspect
+    NUMBER_OPERATORS.each do |op|
+      assert_errors("DateField #{op} maxdatetime(1)")
+      assert_errors("DateField #{op} maxdatetime('1')")
+      assert_success("DateField #{op} maxdatetime()")
+    end
   end
-=end
 
-
-=begin
   test "integer type coercion" do
-    parser = Parser.new
-    expression = parser.tokenize( "DecimalField Eq 100").first
-    assert parser.send(:check_type!, expression, :decimal)
-    assert_equal 100.0, parser.escape_value(expression)
+    parse_tree = assert_success("DecimalField Eq 100")
+    assert_equal :coerce, parse_tree[:rhs][:name]
+    assert_equal :integer, parse_tree[:rhs][:lhs][:type]
+    assert_equal :decimal, parse_tree[:rhs][:rhs]
   end
-=end
 
-=begin
   test "integer type coercion with function" do
-    parser = Parser.new
-    expression = parser.tokenize("fractionalseconds(SomeDate) Le 1").first
-    assert parser.send(:check_type!, expression, :date)
-    assert_equal 1.0, parser.escape_value(expression)
+    parse_tree = assert_success("fractionalseconds(DateField) Le 1")
+    assert_equal :le, parse_tree[:name]
+    assert_equal :coerce, parse_tree[:rhs][:name]
+    assert_equal :decimal, parse_tree[:rhs][:rhs]
+    assert_equal :fractionalseconds, parse_tree[:lhs][:name]
   end
-=end
 
-=begin
   test "datetime->date type coercion" do
-    t = Time.now
-    parser = Parser.new
-    expression = parser.tokenize( "DateField Eq now()").first
-    assert !parser.errors?
-    assert parser.send(:check_type!, expression, :date)
-    assert_equal t.strftime(Sparkql::FunctionResolver::STRFTIME_DATE_FORMAT),
-                 parser.escape_value(expression).strftime(Sparkql::FunctionResolver::STRFTIME_DATE_FORMAT)
+    parse_tree = assert_success( "DateField Eq now()")
+    assert_equal :eq, parse_tree[:name]
+    assert_equal :coerce, parse_tree[:lhs][:name]
+    assert_equal :datetime, parse_tree[:lhs][:rhs]
+    assert_equal :now, parse_tree[:rhs][:name]
   end
-=end
 
-=begin
   test "datetime->date type coercion array" do
-    today = Time.now
-    parser = Parser.new
-    expression = parser.tokenize('"Custom"."DateField" Bt days(-1),now()').first
-    assert !parser.errors?
-    assert parser.send(:check_type!, expression, :date)
-    yesterday = today - 3600 * 24
-    assert_equal [ yesterday.strftime(Sparkql::FunctionResolver::STRFTIME_DATE_FORMAT),
-                   today.strftime(Sparkql::FunctionResolver::STRFTIME_DATE_FORMAT)],
-                 parser.escape_value(expression).map { |i| i.strftime(Sparkql::FunctionResolver::STRFTIME_DATE_FORMAT)}
+    parse_tree = assert_success('"Custom"."DateField" Bt days(-1),now()')
+    assert_equal :coerce, parse_tree[:lhs][:name]
+    assert_equal :datetime, parse_tree[:lhs][:rhs]
+    assert_equal :days, parse_tree[:rhs].first[:name]
+    assert_equal :now, parse_tree[:rhs].last[:name]
   end
 
-  # TODO: move to semantic analyzer
-  test "invalid regex" do
-    filter = "ParcelNumber Eq regex('[1234', '')"
-    @parser = Parser.new
-    @parser.parse(filter)
-    assert @parser.errors?, "Parser error expected due to invalid regex"
+  test 'inalid regex' do
+    assert_errors("StringField Eq regex('[1234', '')")
   end
 
-  # TODO: move to semantic analyzer
-  test 'invalid regex flags' do
-    filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$', 'k')"
-    @parser.parse(filter)
-    assert @parser.errors?, "Parser error expected due to invalid regex flags"
+  test 'inalid regex flags' do
+    assert_errors("StringField Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$', 'k')")
   end
 
-  test 'radius bad params'
-    # TODO move radius test to semantic analysis
-    parser_errors("Test Eq radius('46.8 -96.8',-20.0)")
+  test 'radius bad params' do
+    assert_errors("Location Eq radius('46.8 -96.8',-20.0)")
   end
 
-  # TODO move to semantic analyzer
   test "function radius error on invalid syntax" do
-    filter = "Location Eq radius('35.12,-68.33',1.0)"
-    @parser.parse(filter)
-    assert @parser.errors?, "Parser error expected due to comma between radius points"
+    assert_errors("Location Eq radius('35.12,-68.33',1.0)")
   end
 
-    TODO: Need to do this when validating with metadata (need field types as well)
-    def test_invalid_operators
-      (Sparkql::Token::OPERATORS - Sparkql::Token::EQUALITY_OPERATORS).each do |o|
-        ["NULL", "true", "'My String'"].each do |v|
-          parser_errors("Test #{o} #{v}")
-        end
+  test 'radius allows tech_id' do
+    assert_success("Location Eq radius('20100000000000000000000000',1)")
+  end
+
+  test 'invalid operators' do
+    (Sparkql::Token::OPERATORS - Sparkql::Token::EQUALITY_OPERATORS).each do |o|
+      ["NULL", "true", "'My String'"].each do |v|
+        assert_errors("StringField #{o} #{v}").inspect
       end
     end
-
-    TODO test this during semantic analysis
-    test 'coercible types' do
-      @parser = Parser.new
-      assert_equal :datetime, @parser.coercible_types(:date, :datetime)
-      assert_equal :datetime, @parser.coercible_types(:datetime, :date)
-      assert_equal :decimal, @parser.coercible_types(:decimal, :integer)
-      assert_equal :decimal, @parser.coercible_types(:integer, :decimal)
-      # That covers the gambit, anything else should be null
-      assert_nil @parser.coercible_types(:integer, :date)
-    end
+  end
 
   test 'wkt() invalid params' do
-    f = FunctionResolver.new('wkt',
-                             [{:type => :character,
-                               :value => "POLYGON((45.234534534))"}])
-    f.validate
-    f.call
-    assert f.errors?
+    assert_errors("Location Eq wkt('POLYGON((45.234534534))')")
   end
-=end
 
   test "non-coercible types in list throws errors" do
     ["Field Bt 2012-12-31,1", "Field Bt 10,2012-12-31"].each do |f|
@@ -177,5 +188,21 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
     ast = parser.parse(sparkql)
     assert !parser.errors?, "#{msg}: #{sparkql}"
     ast
+  end
+
+  def assert_errors(sparkql)
+    ast = parses(sparkql)
+    analyzer = Sparkql::SemanticAnalyzer.new(@fields)
+    analyzer.visit(ast)
+    assert(analyzer.errors?, sparkql.inspect)
+    analyzer.errors
+  end
+
+  def assert_success(sparkql)
+    ast = parses(sparkql)
+    analyzer = Sparkql::SemanticAnalyzer.new(@fields)
+    parse_tree = analyzer.visit(ast)
+    assert(!analyzer.errors?, "sparkql: #{sparkql}, #{analyzer.errors.inspect}")
+    parse_tree
   end
 end

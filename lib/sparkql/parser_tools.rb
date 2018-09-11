@@ -118,20 +118,11 @@ module Sparkql::ParserTools
       return
     end
 
-    function = {
+    {
       function: true,
       name: method,
       args: f_args
     }
-
-=begin
-    function = Sparkql::Nodes::Functions.const_get(constant_name).new(f_args)
-    function.errors.each do |error|
-      compile_error(error)
-    end
-=end
-
-    function
   end
 
   def on_error(error_token_id, error_value, value_stack)

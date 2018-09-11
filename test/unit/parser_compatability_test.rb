@@ -203,7 +203,7 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     end
   end
 
-=begin
+=begin TODO
   test "max out values" do
     parser = Parser.new
     to_the_max = []
@@ -217,7 +217,7 @@ class ParserCompatabilityTest < Test::Unit::TestCase
   end
 =end
 
-=begin
+=begin TODO
   test "max out expressions" do
     parser = Parser.new
     to_the_max = []
@@ -230,7 +230,7 @@ class ParserCompatabilityTest < Test::Unit::TestCase
   end
 =end
 
-=begin
+=begin TODO
   test "max out function args" do
     parser = Parser.new
     to_the_max = []

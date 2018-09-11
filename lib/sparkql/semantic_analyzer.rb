@@ -1,3 +1,5 @@
+require 'georuby'
+require 'geo_ruby/ewk'
 module Sparkql
   # Performs:
   # - Type checking
@@ -16,11 +18,12 @@ module Sparkql
 
     DATE_TYPES = [:datetime, :date]
     NUMBER_TYPES = [:decimal, :integer]
+    VALID_REGEX_FLAGS = ["", "i"]
+    INVALID_RANGE_TYPES = [:character, :shape, :boolean, :null]
 
     def initialize(metadata)
       @metadata = metadata
       @errors = []
-      @identifiers = []
     end
 
     def visit(ast)
@@ -41,24 +44,59 @@ module Sparkql
 
     private
 
+    def require_range_type!(*all)
+      all.each do |item|
+        if INVALID_RANGE_TYPES.include?(item[:type])
+          @errors << {}
+        end
+      end
+    end
+
     def visit_literal(node)
       node.dup
     end
 
     def visit_field(node)
-      if @metadata[node[:value]].nil?
+      meta = @metadata[node[:value]]
+
+      if meta.nil?
         @errors << {
+          token: node[:value],
+          message: "standard field #{node[:value]} is invalid",
+          status: :fatal
         }
+        return node.dup
       end
-      node.dup
+
+      type = if meta[:searchable]
+               meta[:type]
+             else
+               :drop
+             end
+      node.dup.merge({
+        type: type
+      })
     end
 
     def visit_custom_field(node)
-      if @metadata[node[:value]].nil?
+      meta = @metadata[node[:value]]
+      if meta.nil?
         @errors << {
+          token: node[:value],
+          message: "custom field #{node[:value]} is invalid",
+          status: :fatal,
         }
+        return node.dup
       end
-      node.dup
+
+      type = if meta[:searchable]
+               meta[:type]
+             else
+               :drop
+             end
+      node.dup.merge({
+        type: type
+      })
     end
 
     def visit_and(node)
@@ -80,17 +118,17 @@ module Sparkql
     end
 
     def visit_eq(node)
-      left = visit(node[:lhs])
-      right = visit(node[:rhs])
+      left, right = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs])])
+
       node.merge({
         lhs: left,
         rhs: right
       })
     end
 
-    def visit_neq(node)
-      left = visit(node[:lhs])
-      right = visit(node[:rhs])
+    def visit_ne(node)
+      left, right = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs])])
+
       node.merge({
         lhs: left,
         rhs: right
@@ -98,12 +136,23 @@ module Sparkql
     end
 
     def visit_in(node)
-      puts "visting: #{node.inspect}"
+      all = ([node[:lhs]] + node[:rhs]).map do |item|
+        visit(item)
+      end
+      all = coerce_if_necessary(all)
+
+      left = all.shift
+      right = all
+      node.merge({
+        lhs: left,
+        rhs: right
+      })
     end
 
     def visit_gt(node)
-      left = visit(node[:lhs])
-      right = visit(node[:rhs])
+      left, right = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs])])
+      require_range_type!(left, right)
+
       node.merge({
         lhs: left,
         rhs: right
@@ -111,8 +160,9 @@ module Sparkql
     end
 
     def visit_ge(node)
-      left = visit(node[:lhs])
-      right = visit(node[:rhs])
+      left, right = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs])])
+      require_range_type!(left, right)
+
       node.merge({
         lhs: left,
         rhs: right
@@ -120,18 +170,32 @@ module Sparkql
     end
 
     def visit_lt(node)
-      puts "visting: #{node.inspect}"
+      left, right = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs])])
+      require_range_type!(left, right)
+
+      node.merge({
+        lhs: left,
+        rhs: right
+      })
     end
 
     def visit_le(node)
-      puts "visting: #{node.inspect}"
+      left, right = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs])])
+      require_range_type!(left, right)
+
+      node.merge({
+        lhs: left,
+        rhs: right
+      })
     end
 
     def visit_bt(node)
-      coerced_nodes = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs][0]), visit(node[:rhs][1])])
+      left, rhs1, rhs2 = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs][0]), visit(node[:rhs][1])])
+      require_range_type!(left, rhs1, rhs2)
+
       node.merge({
-        lhs: coerced_nodes[0],
-        rhs: [coerced_nodes[0], coerced_nodes[1]]
+        lhs: left,
+        rhs: [rhs1, rhs2]
       })
     end
 
@@ -147,10 +211,153 @@ module Sparkql
     end
 
     def visit_function(function)
-      # TODO Basic function validation
+      arg_meta = Sparkql::FUNCTION_METADATA[function[:name]][:arguments]
+      args = function[:args].map {|arg| visit(arg)}
+      basic_arg_validation(args, arg_meta)
 
+      if function[:name] == :regex
+          if args[1] && args[1][:type] == :character &&
+              !VALID_REGEX_FLAGS.include?(args[1][:value])
+            errors << {
+              token: args.first,
+              message: "Invalid Regex flag",
+              status: :fatal,
+              syntax: false,
+              constraint: true
+            }
+          end
 
-      # TODO Function specific validation
+          begin
+            Regexp.new(args.first[:value])
+          rescue
+            errors << {
+              token: args.first,
+              message: "Invalid Regexp",
+              status: :fatal,
+              syntax: false,
+              constraint: true
+            }
+          end
+      elsif function[:name] == :wkt
+        begin
+          GeoRuby::SimpleFeatures::Geometry.from_ewkt(args.first[:value])
+        rescue GeoRuby::SimpleFeatures::EWKTFormatError
+          errors << {
+            token: args.first[:value],
+            message: "wkt() requires valid WKT",
+            status: :fatal,
+            syntax: false,
+            constraint: true
+          }
+        end
+      elsif function[:name] == :radius
+        arg2 = args[1]
+        if arg2[:name] == :literal &&
+            [:decimal, :integer].include?(arg2[:type]) &&
+            arg2[:value] < 0
+          errors << {
+            token: arg2,
+            message: "Second argument cannot be negative",
+            status: :fatal,
+            syntax: false,
+            constraint: true
+          }
+        end
+
+        arg1 = args.first
+        if arg1[:name] == :literal &&
+            [:character].include?(arg1[:type]) &&
+            (!is_coords?(arg1[:value]) &&
+            arg1[:value] !~ /^\d{26}$/)
+          errors << {
+            token: arg1,
+            message: "First argument must be valid coordinates or a tech id",
+            status: :fatal,
+            syntax: false,
+            constraint: true
+          }
+        end
+      end
+
+      type = case function[:name]
+             when :length
+               :integer
+             when :toupper
+               :character
+             when :tolower
+               :character
+             when :now
+               :datetime
+             when :mindatetime
+               :date
+             when :maxdatetime
+               :date
+             when :fractionalseconds
+               :decimal
+             when :days
+               :datetime
+             when :regex
+               :character
+             when :radius
+               :shape
+             when :polygon
+               :shape
+             when :wkt
+               :shape
+             else
+               raise "FUNCTION DOESN'T HAVE A RETURN TYPE!!!"
+             end
+
+      function.dup.merge({
+        type: type
+      })
+    end
+
+    def is_coords?(coord_string)
+      coord_string.split(" ").size > 1
+    end
+
+    def basic_arg_validation(args, arg_meta)
+      min_args = arg_meta.select {|arg| !arg.key?(:default) }.size
+      max_args = arg_meta.size
+
+      if args.size < min_args || args.size > max_args
+        message = if min_args == max_args
+                    "requires #{min_args} arguments"
+                  else
+                    "requires between #{min_args} and #{max_args} arguments"
+                  end
+        @errors << {
+          token: 'name',
+          message: message,
+          status: :fatal,
+        }
+        return
+      end
+
+      arg_meta.each_with_index do |meta, index|
+        current_argument = args[index]
+
+        if !meta[:allow_field] && current_argument[:name] == :field
+          @errors << {
+            token: current_argument,
+            message: "Argument does not support a field",
+            status: :fatal,
+            syntax: false,
+            constraint: true
+          }
+        end
+
+        if current_argument.key?(:type) && !meta[:types].include?(current_argument[:type])
+          @errors << {
+            token: current_argument,
+            message: "Incorrect argument type: #{current_argument[:type]}",
+            status: :fatal,
+            syntax: false,
+            constraint: true
+          }
+        end
+      end
     end
 
     def coerce_if_necessary(all_nodes)
@@ -160,7 +367,7 @@ module Sparkql
       else
         if types.all? { |type| NUMBER_TYPES.include?(type) }
           all_nodes.map do |node|
-            if node[:type] == NUMBER_TYPES.first
+            if node[:type] != NUMBER_TYPES.first
               {
                 name: :coerce,
                 lhs: node,
@@ -172,7 +379,7 @@ module Sparkql
           end
         elsif types.all? { |type| DATE_TYPES.include?(type )}
           all_nodes.map do |node|
-            if node[:type] == DATE_TYPES.first
+            if node[:type] != DATE_TYPES.first
               {
                 name: :coerce,
                 lhs: node,
@@ -187,6 +394,7 @@ module Sparkql
             message: "Type mismatch in comparison.",
             status: :fatal
           }
+          all_nodes
         end
       end
     end
