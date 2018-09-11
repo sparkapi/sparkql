@@ -1,7 +1,6 @@
 require 'test_helper'
 
 class SemanticAnalyzerTest < Test::Unit::TestCase
-
   def setup
     @fields = {
       'StringField' => {
@@ -35,8 +34,8 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
     }
   end
 
-  STRING_OPERATORS = ['Eq', 'Ne']
-  NUMBER_OPERATORS = ['Eq', 'Ne', 'Gt', 'Ge', 'Lt', 'Le']
+  STRING_OPERATORS = %w[Eq Ne].freeze
+  NUMBER_OPERATORS = %w[Eq Ne Gt Ge Lt Le].freeze
 
   test 'errors on invalid field' do
     assert_errors("Bogus Eq 'Fargo'")
@@ -45,7 +44,7 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
   test 'In' do
     assert_errors "StringField Eq 1,'2'"
     assert_success "StringField Eq '1','2'"
-    assert_success "IntField Eq 1,2.0"
+    assert_success 'IntField Eq 1,2.0'
   end
 
   test 'toupper fails without 1 character parameter' do
@@ -105,30 +104,30 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
     end
   end
 
-  test "integer type coercion" do
-    parse_tree = assert_success("DecimalField Eq 100")
+  test 'integer type coercion' do
+    parse_tree = assert_success('DecimalField Eq 100')
     assert_equal :coerce, parse_tree[:rhs][:name]
     assert_equal :integer, parse_tree[:rhs][:lhs][:type]
     assert_equal :decimal, parse_tree[:rhs][:rhs]
   end
 
-  test "integer type coercion with function" do
-    parse_tree = assert_success("fractionalseconds(DateField) Le 1")
+  test 'integer type coercion with function' do
+    parse_tree = assert_success('fractionalseconds(DateField) Le 1')
     assert_equal :le, parse_tree[:name]
     assert_equal :coerce, parse_tree[:rhs][:name]
     assert_equal :decimal, parse_tree[:rhs][:rhs]
     assert_equal :fractionalseconds, parse_tree[:lhs][:name]
   end
 
-  test "datetime->date type coercion" do
-    parse_tree = assert_success( "DateField Eq now()")
+  test 'datetime->date type coercion' do
+    parse_tree = assert_success('DateField Eq now()')
     assert_equal :eq, parse_tree[:name]
     assert_equal :coerce, parse_tree[:lhs][:name]
     assert_equal :datetime, parse_tree[:lhs][:rhs]
     assert_equal :now, parse_tree[:rhs][:name]
   end
 
-  test "datetime->date type coercion array" do
+  test 'datetime->date type coercion array' do
     parse_tree = assert_success('"Custom"."DateField" Bt days(-1),now()')
     assert_equal :coerce, parse_tree[:lhs][:name]
     assert_equal :datetime, parse_tree[:lhs][:rhs]
@@ -148,7 +147,7 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
     assert_errors("Location Eq radius('46.8 -96.8',-20.0)")
   end
 
-  test "function radius error on invalid syntax" do
+  test 'function radius error on invalid syntax' do
     assert_errors("Location Eq radius('35.12,-68.33',1.0)")
   end
 
@@ -158,7 +157,7 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
 
   test 'invalid operators' do
     (Sparkql::Token::OPERATORS - Sparkql::Token::EQUALITY_OPERATORS).each do |o|
-      ["NULL", "true", "'My String'"].each do |v|
+      ['NULL', 'true', "'My String'"].each do |v|
         assert_errors("StringField #{o} #{v}").inspect
       end
     end
@@ -168,12 +167,12 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
     assert_errors("Location Eq wkt('POLYGON((45.234534534))')")
   end
 
-  test "non-coercible types in list throws errors" do
-    ["Field Bt 2012-12-31,1", "Field Bt 10,2012-12-31"].each do |f|
+  test 'non-coercible types in list throws errors' do
+    ['Field Bt 2012-12-31,1', 'Field Bt 10,2012-12-31'].each do |f|
       parser = Sparkql::Parser.new
       ast = parser.parse(f)
 
-      analyzer = Sparkql::SemanticAnalyzer.new({'Field' => {}})
+      analyzer = Sparkql::SemanticAnalyzer.new('Field' => {})
       analyzer.visit(ast)
 
       assert analyzer.errors?
@@ -183,8 +182,8 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
 
   private
 
-  def parses(sparkql, msg="Expected sparkql to parse: ")
-    parser = Sparkql::Parser.new()
+  def parses(sparkql, msg = 'Expected sparkql to parse: ')
+    parser = Sparkql::Parser.new
     ast = parser.parse(sparkql)
     assert !parser.errors?, "#{msg}: #{sparkql}"
     ast

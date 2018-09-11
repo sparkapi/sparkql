@@ -14,21 +14,21 @@ class ParserTest < Test::Unit::TestCase
     parse "Test Eq 'false'"
   end
 
-  test "And conjunction" do
+  test 'And conjunction' do
     expression = @parser.parse('Test Eq 10 And Test Ne 11')
     assert_equal 10, expression[:lhs][:rhs][:value]
     assert_equal 11, expression[:rhs][:rhs][:value]
     assert_equal :and, expression[:name]
   end
 
-  test "Or conjunction" do
+  test 'Or conjunction' do
     expression = @parser.parse('Test Eq 10 Or Test Ne 11')
     assert_equal 10, expression[:lhs][:rhs][:value]
     assert_equal 11, expression[:rhs][:rhs][:value]
     assert_equal :or, expression[:name]
   end
 
-  test "Not conjunction" do
+  test 'Not conjunction' do
     expression = @parser.parse('Test Eq 10 Not Test Ne 11')
     assert_equal 10, expression[:lhs][:rhs][:value]
     assert_equal 11, expression[:rhs][:value][:rhs][:value]
@@ -120,8 +120,8 @@ class ParserTest < Test::Unit::TestCase
     assert @parser.fatal_errors?, "Should be nil: #{@parser.errors.inspect}"
   end
 
-  test "mixed rangeable " do
-    filter = "OriginalEntryTimestamp Bt days(-7),2013-07-26"
+  test 'mixed rangeable ' do
+    filter = 'OriginalEntryTimestamp Bt days(-7),2013-07-26'
     expressions = @parser.parse(filter)
 
     assert_equal :bt, expressions[:name]
@@ -129,22 +129,22 @@ class ParserTest < Test::Unit::TestCase
     assert_equal(Date.parse('2013-07-26'), expressions[:rhs].last[:value])
   end
 
-  test "allow timezone offsets" do
+  test 'allow timezone offsets' do
     values = [
-      "2013-07-26",
-      "10:22",
-      "10:22:15.1111",
-      "10:22:15",
-      "2013-07-26T10:22",
-      "2013-07-26T10:22Z",
-      "2013-07-26T10:22+01:00",
-      "2013-07-26T10:22:15+01:00",
-      "2013-07-26T10:22:15.1-01:00",
-      "2013-07-26T10:22:15.11+0100",
-      "2013-07-26T10:22:15.111-0100",
-      "2013-07-26T10:22:15.1111Z",
-      "2013-07-26T10:22:15.11111+01:00",
-      "2013-07-26T10:22:15.111111+01:00"
+      '2013-07-26',
+      '10:22',
+      '10:22:15.1111',
+      '10:22:15',
+      '2013-07-26T10:22',
+      '2013-07-26T10:22Z',
+      '2013-07-26T10:22+01:00',
+      '2013-07-26T10:22:15+01:00',
+      '2013-07-26T10:22:15.1-01:00',
+      '2013-07-26T10:22:15.11+0100',
+      '2013-07-26T10:22:15.111-0100',
+      '2013-07-26T10:22:15.1111Z',
+      '2013-07-26T10:22:15.11111+01:00',
+      '2013-07-26T10:22:15.111111+01:00'
     ]
     values.each do |value|
       filter = "DatetimeField Eq #{value}"
@@ -156,7 +156,7 @@ class ParserTest < Test::Unit::TestCase
   end
 
   test 'reserved words first literals second' do
-    ["OrOrOr Eq true", "Equador Eq true", "Oregon Ge 10"].each do |filter|
+    ['OrOrOr Eq true', 'Equador Eq true', 'Oregon Ge 10'].each do |filter|
       @parser.parse(filter)
       assert !@parser.errors?, "Filter '#{filter}' errors: #{@parser.errors.inspect}"
     end
@@ -173,14 +173,13 @@ class ParserTest < Test::Unit::TestCase
 
   test 'valid custom field filters' do
     ['"General Property Description"."Taxes$" Lt 500.0',
-      '"General Property Desc\'"."Taxes" Lt 500.0',
-      '"General Property Description"."Taxes" Lt 500.0',
-      '"General \'Property\' Description"."Taxes" Lt 500.0',
-      '"General Property Description"."Taxes #" Lt 500.0',
-      '"General$Description"."Taxes" Lt 500.0',
-      '"Garage Type"."1" Eq true',
-      '" a "." b " Lt 500.0'
-    ].each do |filter|
+     '"General Property Desc\'"."Taxes" Lt 500.0',
+     '"General Property Description"."Taxes" Lt 500.0',
+     '"General \'Property\' Description"."Taxes" Lt 500.0',
+     '"General Property Description"."Taxes #" Lt 500.0',
+     '"General$Description"."Taxes" Lt 500.0',
+     '"Garage Type"."1" Eq true',
+     '" a "." b " Lt 500.0'].each do |filter|
       @parser.parse(filter)
       assert !@parser.errors?, "errors '#{filter}'\n#{@parser.errors.inspect}"
     end
@@ -188,13 +187,12 @@ class ParserTest < Test::Unit::TestCase
 
   test 'invalid custom field filters' do
     ['"$General Property Description"."Taxes" Lt 500.0',
-      '"General Property Description"."$Taxes" Lt 500.0',
-      '"General Property Description"."Tax.es" Lt 500.0',
-      '"General Property Description".".Taxes" Lt 500.0',
-      '"General Property Description".".Taxes"."SUB" Lt 500.0',
-      '"General.Description"."Taxes" Lt 500.0',
-      '""."" Lt 500.0'
-    ].each do |filter|
+     '"General Property Description"."$Taxes" Lt 500.0',
+     '"General Property Description"."Tax.es" Lt 500.0',
+     '"General Property Description".".Taxes" Lt 500.0',
+     '"General Property Description".".Taxes"."SUB" Lt 500.0',
+     '"General.Description"."Taxes" Lt 500.0',
+     '""."" Lt 500.0'].each do |filter|
       @parser.parse(filter)
       assert @parser.errors?, "No errors? '#{filter}'\n#{@parser.inspect}"
     end
@@ -238,60 +236,60 @@ class ParserTest < Test::Unit::TestCase
   end
 
   test 'not not' do
-    filter = "Not (Not ListPrice Eq 1)"
+    filter = 'Not (Not ListPrice Eq 1)'
     expression = parse(filter)
     assert_equal :unary_not, expression[:name]
     assert_equal :unary_not, expression[:value][:value][:name]
   end
 
   test 'unary not with and' do
-    filter = "Not ListPrice Eq 1 And ListPrice Eq 1"
+    filter = 'Not ListPrice Eq 1 And ListPrice Eq 1'
     expression = parse(filter)
     assert_equal :and, expression[:name]
     assert_equal :unary_not, expression[:lhs][:name]
   end
 
   test 'bad string?' do
-    parser_errors("Test Eq BADSTRING")
+    parser_errors('Test Eq BADSTRING')
   end
 
   test 'datetimes as ranges' do
-    ["DatetimeField Bt 2013-07-26T10:22:15.422804,2013-07-26T10:22:15.422805",
-     "DateTimeField Bt 2013-07-26T10:22:15,2013-07-26T10:22:16",
-     "DateTimeField Bt 2013-07-26T10:22:15.422804-0300,2013-07-26T10:22:15.422805-0300",
-     "DateTimeField Bt 2013-07-26T10:22:15+0400,2013-07-26T10:22:16+0400"].each do |filter|
-      @parser.parse filter
-      assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
+    ['DatetimeField Bt 2013-07-26T10:22:15.422804,2013-07-26T10:22:15.422805',
+     'DateTimeField Bt 2013-07-26T10:22:15,2013-07-26T10:22:16',
+     'DateTimeField Bt 2013-07-26T10:22:15.422804-0300,2013-07-26T10:22:15.422805-0300',
+     'DateTimeField Bt 2013-07-26T10:22:15+0400,2013-07-26T10:22:16+0400'].each do |filter|
+       @parser.parse filter
+       assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
      end
   end
 
-  test "only eq and ne accept multiple values" do
-    ["Gt","Ge","Lt","Le"].each do |op|
-      f = "IntegerType #{op} 100,200" 
+  test 'only eq and ne accept multiple values' do
+    %w[Gt Ge Lt Le].each do |op|
+      f = "IntegerType #{op} 100,200"
       parser = Parser.new
-      parser.parse( f )
+      parser.parse(f)
       assert parser.errors?
       assert_equal op, parser.errors.first.token
     end
   end
 
-  test "eq and ne accept multiple values" do
-    ['Eq', 'Ne'].each do |op|
-      f = "IntegerType #{op} 100,200" 
+  test 'eq and ne accept multiple values' do
+    %w[Eq Ne].each do |op|
+      f = "IntegerType #{op} 100,200"
       parser = Parser.new
-      parser.parse( f )
+      parser.parse(f)
       assert !parser.errors?
     end
   end
 
-  test "fail on missing" do
+  test 'fail on missing' do
     filter = "City Eq 'Fargo' And PropertyType Eq 'A'"
-    filter_tokens = filter.split(" ")
+    filter_tokens = filter.split(' ')
 
     filter_tokens.each do |token|
-      f = filter.gsub(token, "").gsub(/\s+/," ")
+      f = filter.gsub(token, '').gsub(/\s+/, ' ')
       parser = Parser.new
-      expressions = parser.tokenize( f )
+      expressions = parser.tokenize(f)
       assert_nil expressions
       assert parser.errors?
     end
@@ -311,5 +309,4 @@ class ParserTest < Test::Unit::TestCase
     expression = @parser.parse(filter)
     assert @parser.errors?, "Should find errors for '#{filter}': #{expression}"
   end
-
 end

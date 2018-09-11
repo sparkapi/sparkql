@@ -1,25 +1,23 @@
 # This is the guts of the parser internals and is mixed into the parser for organization.
 module Sparkql::ParserTools
-
   # Coercible types from highest precision to lowest
-  DATE_TYPES = [:datetime, :date]
-  NUMBER_TYPES = [:decimal, :integer]
-  OPERATORS_SUPPORTING_MULTIPLES = ['Eq','Ne', 'Bt']
+  DATE_TYPES = [:datetime, :date].freeze
+  NUMBER_TYPES = [:decimal, :integer].freeze
+  OPERATORS_SUPPORTING_MULTIPLES = %w[Eq Ne Bt].freeze
 
   def parse(str)
     @lexer = Sparkql::Lexer.new(str)
     @expression_count = 0
     results = do_parse
     return if results.nil?
+
     validate_expressions results
     results
   end
 
   def next_token
     t = @lexer.shift
-    while t[0] == :SPACE or t[0] == :NEWLINE
-      t = @lexer.shift
-    end
+    t = @lexer.shift while (t[0] == :SPACE) || (t[0] == :NEWLINE)
     t
   end
 
@@ -79,7 +77,7 @@ module Sparkql::ParserTools
       tokenize_operator(field, operator, values.first)
     else
 
-      if !OPERATORS_SUPPORTING_MULTIPLES.include?(operator)
+      unless OPERATORS_SUPPORTING_MULTIPLES.include?(operator)
         tokenizer_error(token: operator,
                         message: "Operator #{operator} does not support multiple values",
                         status: :fatal)
@@ -96,7 +94,7 @@ module Sparkql::ParserTools
   end
 
   def tokenize_function_args(lit1, lit2)
-    array = lit1.kind_of?(Array) ? lit1 : [lit1]
+    array = lit1.is_a?(Array) ? lit1 : [lit1]
     array << lit2
     array
   end
@@ -111,10 +109,10 @@ module Sparkql::ParserTools
   def tokenize_function(name, f_args)
     method = name.to_sym
 
-    if !Sparkql::FUNCTION_METADATA.key?(method)
+    unless Sparkql::FUNCTION_METADATA.key?(method)
       tokenizer_error(token: name,
-        message: "Unsupported function call '#{name}' for expression",
-        status: :fatal)
+                      message: "Unsupported function call '#{name}' for expression",
+                      status: :fatal)
       return
     end
 
@@ -125,42 +123,41 @@ module Sparkql::ParserTools
     }
   end
 
-  def on_error(error_token_id, error_value, value_stack)
+  def on_error(error_token_id, _error_value, _value_stack)
     token_name = token_to_str(error_token_id)
     token_name.downcase!
-    tokenizer_error(:token => @lexer.current_token_value,
-                    :message => "Error parsing token #{token_name}",
-                    :status => :fatal,
-                    :syntax => true)
+    tokenizer_error(token: @lexer.current_token_value,
+                    message: "Error parsing token #{token_name}",
+                    status: :fatal,
+                    syntax: true)
   end
 
-  def validate_expressions results
+  def validate_expressions(results)
     if false
-      compile_error(:token => results[max_expressions][:field], :expression => results[max_expressions],
-            :message => "You have exceeded the maximum expression count.  Please limit to no more than #{max_expressions} expressions in a filter.",
-            :status => :fatal, :syntax => false, :constraint => true )
+      compile_error(token: results[max_expressions][:field], expression: results[max_expressions],
+                    message: "You have exceeded the maximum expression count.  Please limit to no more than #{max_expressions} expressions in a filter.",
+                    status: :fatal, syntax: false, constraint: true)
       results.slice!(max_expressions..-1)
     end
   end
 
-  def validate_multiple_values values
+  def validate_multiple_values(values)
     values = Array(values)
     if values.size > max_values
-      compile_error(:token => values[max_values],
-            :message => "You have exceeded the maximum value count.  Please limit to #{max_values} values in a single expression.",
-            :status => :fatal, :syntax => false, :constraint => true )
+      compile_error(token: values[max_values],
+                    message: "You have exceeded the maximum value count.  Please limit to #{max_values} values in a single expression.",
+                    status: :fatal, syntax: false, constraint: true)
       values.slice!(max_values..-1)
     end
   end
 
-  def validate_multiple_arguments args
+  def validate_multiple_arguments(args)
     args = Array(args)
     if args.size > max_values
-      compile_error(:token => args[max_values],
-            :message => "You have exceeded the maximum parameter count.  Please limit to #{max_values} parameters to a single function.",
-            :status => :fatal, :syntax => false, :constraint => true )
+      compile_error(token: args[max_values],
+                    message: "You have exceeded the maximum parameter count.  Please limit to #{max_values} parameters to a single function.",
+                    status: :fatal, syntax: false, constraint: true)
       args.slice!(max_values..-1)
     end
   end
-
 end

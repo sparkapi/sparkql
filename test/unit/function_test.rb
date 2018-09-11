@@ -1,6 +1,5 @@
 require 'test_helper'
 
-# 
 class FunctionTest < Test::Unit::TestCase
   include Sparkql
 
@@ -9,7 +8,7 @@ class FunctionTest < Test::Unit::TestCase
   end
 
   test 'tolower takes field' do
-    f = get("tolower(City)")
+    f = get('tolower(City)')
     assert_equal :tolower, f[:name]
     assert_equal :field, f[:args].first[:name]
   end
@@ -20,7 +19,7 @@ class FunctionTest < Test::Unit::TestCase
   end
 
   test 'toupper takes field' do
-    f = get("toupper(City)")
+    f = get('toupper(City)')
     assert_equal :toupper, f[:name]
     assert_equal :field, f[:args].first[:name]
   end
@@ -31,7 +30,7 @@ class FunctionTest < Test::Unit::TestCase
   end
 
   test 'length takes field' do
-    f = get("length(City)")
+    f = get('length(City)')
     assert_equal :length, f[:name]
     assert_equal :field, f[:args].first[:name]
   end
@@ -42,7 +41,7 @@ class FunctionTest < Test::Unit::TestCase
   end
 
   test 'function months' do
-    expressions = @parser.parse "ExpirationDate Gt months(-3)"
+    expressions = @parser.parse 'ExpirationDate Gt months(-3)'
     assert !@parser.errors?, "errors :( #{@parser.errors.inspect}"
 
     assert_equal :months, expressions[:rhs][:name]
@@ -50,7 +49,7 @@ class FunctionTest < Test::Unit::TestCase
   end
 
   test 'function years' do
-    expressions = @parser.parse "SoldDate Lt years(2)"
+    expressions = @parser.parse 'SoldDate Lt years(2)'
     assert !@parser.errors?, "errors :( #{@parser.errors.inspect}"
 
     assert_equal :years, expressions[:rhs][:name]
@@ -58,7 +57,7 @@ class FunctionTest < Test::Unit::TestCase
   end
 
   test 'function days' do
-    filter = "OriginalEntryTimestamp Ge days(-7)"
+    filter = 'OriginalEntryTimestamp Ge days(-7)'
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
@@ -67,7 +66,7 @@ class FunctionTest < Test::Unit::TestCase
   end
 
   test 'function now' do
-    filter = "City Eq now()"
+    filter = 'City Eq now()'
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
@@ -76,7 +75,7 @@ class FunctionTest < Test::Unit::TestCase
   end
 
   test 'function mindatetime' do
-    filter = "City Eq mindatetime()"
+    filter = 'City Eq mindatetime()'
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
@@ -85,7 +84,7 @@ class FunctionTest < Test::Unit::TestCase
   end
 
   test 'function maxdatetime' do
-    filter = "City Eq maxdatetime()"
+    filter = 'City Eq maxdatetime()'
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
@@ -94,7 +93,7 @@ class FunctionTest < Test::Unit::TestCase
   end
 
   test 'time(datetime)' do
-    filter = "City Eq time(OriginalEntryTimestamp)"
+    filter = 'City Eq time(OriginalEntryTimestamp)'
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
@@ -103,7 +102,7 @@ class FunctionTest < Test::Unit::TestCase
   end
 
   test 'date(datetime)' do
-    filter = "City Eq date(OriginalEntryTimestamp)"
+    filter = 'City Eq date(OriginalEntryTimestamp)'
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
@@ -111,8 +110,8 @@ class FunctionTest < Test::Unit::TestCase
     assert_equal 'OriginalEntryTimestamp', expressions[:rhs][:args].first[:value]
   end
 
-  test "startswith(), endswith() and contains()" do
-    ['startswith', 'endswith', 'contains'].each do |function|
+  test 'startswith(), endswith() and contains()' do
+    %w[startswith endswith contains].each do |function|
       filter = "City Eq #{function}('Far')"
       expressions = @parser.parse(filter)
       assert !@parser.errors?, "errors #{@parser.errors.inspect}"
@@ -138,11 +137,11 @@ class FunctionTest < Test::Unit::TestCase
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
     assert_equal :range, expressions[:rhs][:name]
-    assert_equal ["M01","M04"], expressions[:rhs][:args].map {|v| v[:value]}
+    assert_equal %w[M01 M04], expressions[:rhs][:args].map { |v| v[:value] }
   end
 
-  test "function rangeable " do
-    filter = "OriginalEntryTimestamp Bt days(-7),days(-1)"
+  test 'function rangeable ' do
+    filter = 'OriginalEntryTimestamp Bt days(-7),days(-1)'
     expressions = @parser.parse(filter)
 
     assert_equal :bt, expressions[:name]
@@ -151,8 +150,8 @@ class FunctionTest < Test::Unit::TestCase
     assert_equal(-1, expressions[:rhs].last[:args].first[:value])
   end
 
-  test "multiple function list" do
-    filter = "OriginalEntryTimestamp Eq days(-1),days(-7),days(-30)"
+  test 'multiple function list' do
+    filter = 'OriginalEntryTimestamp Eq days(-1),days(-7),days(-30)'
     expression = @parser.parse(filter)
 
     assert_equal :in, expression[:name]
@@ -164,7 +163,7 @@ class FunctionTest < Test::Unit::TestCase
   end
 
   test 'function date' do
-    filter = "OnMarketDate Eq date(OriginalEntryTimestamp)"
+    filter = 'OnMarketDate Eq date(OriginalEntryTimestamp)'
 
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
@@ -172,7 +171,7 @@ class FunctionTest < Test::Unit::TestCase
     assert_equal 'OriginalEntryTimestamp', expressions[:rhs][:args].first[:value]
 
     # Run using a static value, we just resolve the type
-    filter = "OnMarketDate Eq date(2013-07-26T10:22:15.111-0100)"
+    filter = 'OnMarketDate Eq date(2013-07-26T10:22:15.111-0100)'
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
@@ -180,7 +179,7 @@ class FunctionTest < Test::Unit::TestCase
     assert_equal DateTime.parse('2013-07-26T10:22:15.111-0100'), expressions[:rhs][:args].first[:value]
 
     # And the grand finale: run on both sides
-    filter = "date(OriginalEntryTimestamp) Eq date(2013-07-26T10:22:15.111-0100)"
+    filter = 'date(OriginalEntryTimestamp) Eq date(2013-07-26T10:22:15.111-0100)'
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
@@ -191,78 +190,78 @@ class FunctionTest < Test::Unit::TestCase
     assert_equal 'OriginalEntryTimestamp', expressions[:lhs][:args].first[:value]
   end
 
-  test "regex function parses without second param" do
+  test 'regex function parses without second param' do
     filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$')"
     expression = @parser.parse(filter)
 
     assert_equal :regex, expression[:rhs][:name]
-    assert_equal "^[0-9]{3}-[0-9]{2}-[0-9]{3}$", expression[:rhs][:args].first[:value]
+    assert_equal '^[0-9]{3}-[0-9]{2}-[0-9]{3}$', expression[:rhs][:args].first[:value]
   end
 
-  test "regex function parses with case-insensitive flag" do
+  test 'regex function parses with case-insensitive flag' do
     filter = "ParcelNumber Eq regex('^[0-9]{3}-[0-9]{2}-[0-9]{3}$', 'i')"
     expression = @parser.parse(filter)
 
     assert_equal :regex, expression[:rhs][:name]
-    assert_equal ["^[0-9]{3}-[0-9]{2}-[0-9]{3}$","i"], expression[:rhs][:args].map {|v| v[:value]}
+    assert_equal ['^[0-9]{3}-[0-9]{2}-[0-9]{3}$', 'i'], expression[:rhs][:args].map { |v| v[:value] }
   end
 
-  test "function polygon" do
+  test 'function polygon' do
     filter = "Location Eq polygon('35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32')"
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
     assert_equal :polygon, expressions[:rhs][:name]
-    assert_equal "35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32", expressions[:rhs][:args].first[:value]
+    assert_equal '35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32', expressions[:rhs][:args].first[:value]
   end
 
-  test "function linestring" do
+  test 'function linestring' do
     filter = "Location Eq linestring('35.12 -68.33, 35.13 -68.33')"
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
     assert_equal :linestring, expressions[:rhs][:name]
-    assert_equal "35.12 -68.33, 35.13 -68.33", expressions[:rhs][:args].first[:value]
+    assert_equal '35.12 -68.33, 35.13 -68.33', expressions[:rhs][:args].first[:value]
   end
 
-  test "function rectangle" do
+  test 'function rectangle' do
     filter = "Location Eq rectangle('35.12 -68.33, 35.13 -68.32')"
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
     assert_equal :rectangle, expressions[:rhs][:name]
-    assert_equal "35.12 -68.33, 35.13 -68.32", expressions[:rhs][:args].first[:value]
+    assert_equal '35.12 -68.33, 35.13 -68.32', expressions[:rhs][:args].first[:value]
   end
 
-  test "function radius with decimal" do
+  test 'function radius with decimal' do
     filter = "Location Eq radius('35.12 -68.33',1.0)"
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
     assert_equal :radius, expressions[:rhs][:name]
-    assert_equal ["35.12 -68.33",1.0], expressions[:rhs][:args].map {|v| v[:value]}
+    assert_equal ['35.12 -68.33', 1.0], expressions[:rhs][:args].map { |v| v[:value] }
   end
 
-  test "function radius accepts integer" do
+  test 'function radius accepts integer' do
     filter = "Location Eq radius('35.12 -68.33',1)"
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
     assert_equal :radius, expressions[:rhs][:name]
-    assert_equal ["35.12 -68.33",1], expressions[:rhs][:args].map {|v| v[:value]}
+    assert_equal ['35.12 -68.33', 1], expressions[:rhs][:args].map { |v| v[:value] }
   end
 
-  test "radius() can be overloaded with a ListingKey" do
+  test 'radius() can be overloaded with a ListingKey' do
     filter = "Location Eq radius('20100000000000000000000000',1)"
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
     assert_equal :radius, expressions[:rhs][:name]
-    assert_equal ['20100000000000000000000000', 1], expressions[:rhs][:args].map {|v| v[:value]}
+    assert_equal ['20100000000000000000000000', 1], expressions[:rhs][:args].map { |v| v[:value] }
   end
 
   test 'undefined function' do
-    filter = "Location Eq bugus(1)"
+    filter = 'Location Eq bugus(1)'
     @parser.parse(filter)
     assert @parser.errors?, @parser.errors.inspect
   end
@@ -277,8 +276,8 @@ class FunctionTest < Test::Unit::TestCase
     assert_equal 'City', expressions[:lhs][:args].first[:value]
   end
 
-  test "year(), month(), and day()" do
-    ['year', 'month', 'day'].each do |function|
+  test 'year(), month(), and day()' do
+    %w[year month day].each do |function|
       @parser = Parser.new
       filter = "FieldName Eq #{function}(OriginalEntryTimestamp)"
       @parser.parse(filter)
@@ -286,8 +285,8 @@ class FunctionTest < Test::Unit::TestCase
     end
   end
 
-  test "hour(), minute(), and second()" do
-    ['hour', 'minute', 'second'].each do |function|
+  test 'hour(), minute(), and second()' do
+    %w[hour minute second].each do |function|
       @parser = Parser.new
       filter = " FieldName Eq #{function}(OriginalEntryTimestamp)"
       @parser.parse(filter)
@@ -295,8 +294,8 @@ class FunctionTest < Test::Unit::TestCase
     end
   end
 
-  test "fractionalseconds()" do
-    filter = "City Eq fractionalseconds(OriginalEntryTimestamp)"
+  test 'fractionalseconds()' do
+    filter = 'City Eq fractionalseconds(OriginalEntryTimestamp)'
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
@@ -320,5 +319,4 @@ class FunctionTest < Test::Unit::TestCase
     assert !@parser.errors?
     ast[:rhs]
   end
-
 end

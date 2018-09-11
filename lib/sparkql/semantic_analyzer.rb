@@ -6,20 +6,19 @@ module Sparkql
   # - Coerces literals and casts identifiers
   # - Flags fields which are not searchable
   # Returns an annotated syntax tree
+  # Needs to accept:
+  # - Metadata
+  # - AST
+  #
+  # Annotates nodes with
+  #  - all identifiers
+  #  - errors for invalid type comparisons
+  #  - comparison
   class SemanticAnalyzer
-    # Needs to accept:
-    # - Metadata
-    # - AST
-    #
-    # Annotates nodes with
-    #  - all identifiers
-    #  - errors for invalid type comparisons
-    #  - comparison
-
-    DATE_TYPES = [:datetime, :date]
-    NUMBER_TYPES = [:decimal, :integer]
-    VALID_REGEX_FLAGS = ["", "i"]
-    INVALID_RANGE_TYPES = [:character, :shape, :boolean, :null]
+    DATE_TYPES = [:datetime, :date].freeze
+    NUMBER_TYPES = [:decimal, :integer].freeze
+    VALID_REGEX_FLAGS = ['', 'i'].freeze
+    INVALID_RANGE_TYPES = [:character, :shape, :boolean, :null].freeze
 
     def initialize(metadata)
       @metadata = metadata
@@ -34,21 +33,17 @@ module Sparkql
       end
     end
 
-    def errors
-      @errors
-    end
+    attr_reader :errors
 
     def errors?
-      @errors.size > 0
+      !@errors.empty?
     end
 
     private
 
     def require_range_type!(*all)
       all.each do |item|
-        if INVALID_RANGE_TYPES.include?(item[:type])
-          @errors << {}
-        end
+        @errors << {} if INVALID_RANGE_TYPES.include?(item[:type])
       end
     end
 
@@ -73,9 +68,9 @@ module Sparkql
              else
                :drop
              end
-      node.dup.merge({
+      node.dup.merge(
         type: type
-      })
+      )
     end
 
     def visit_custom_field(node)
@@ -84,7 +79,7 @@ module Sparkql
         @errors << {
           token: node[:value],
           message: "custom field #{node[:value]} is invalid",
-          status: :fatal,
+          status: :fatal
         }
         return node.dup
       end
@@ -94,45 +89,45 @@ module Sparkql
              else
                :drop
              end
-      node.dup.merge({
+      node.dup.merge(
         type: type
-      })
+      )
     end
 
     def visit_and(node)
       left = visit(node[:lhs])
       right = visit(node[:rhs])
-      node.merge({
+      node.merge(
         lhs: left,
         rhs: right
-      })
+      )
     end
 
     def visit_or(node)
       left = visit(node[:lhs])
       right = visit(node[:rhs])
-      node.merge({
+      node.merge(
         lhs: left,
         rhs: right
-      })
+      )
     end
 
     def visit_eq(node)
       left, right = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs])])
 
-      node.merge({
+      node.merge(
         lhs: left,
         rhs: right
-      })
+      )
     end
 
     def visit_ne(node)
       left, right = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs])])
 
-      node.merge({
+      node.merge(
         lhs: left,
         rhs: right
-      })
+      )
     end
 
     def visit_in(node)
@@ -143,67 +138,67 @@ module Sparkql
 
       left = all.shift
       right = all
-      node.merge({
+      node.merge(
         lhs: left,
         rhs: right
-      })
+      )
     end
 
     def visit_gt(node)
       left, right = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs])])
       require_range_type!(left, right)
 
-      node.merge({
+      node.merge(
         lhs: left,
         rhs: right
-      })
+      )
     end
 
     def visit_ge(node)
       left, right = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs])])
       require_range_type!(left, right)
 
-      node.merge({
+      node.merge(
         lhs: left,
         rhs: right
-      })
+      )
     end
 
     def visit_lt(node)
       left, right = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs])])
       require_range_type!(left, right)
 
-      node.merge({
+      node.merge(
         lhs: left,
         rhs: right
-      })
+      )
     end
 
     def visit_le(node)
       left, right = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs])])
       require_range_type!(left, right)
 
-      node.merge({
+      node.merge(
         lhs: left,
         rhs: right
-      })
+      )
     end
 
     def visit_bt(node)
       left, rhs1, rhs2 = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs][0]), visit(node[:rhs][1])])
       require_range_type!(left, rhs1, rhs2)
 
-      node.merge({
+      node.merge(
         lhs: left,
         rhs: [rhs1, rhs2]
-      })
+      )
     end
 
     def visit_group(node)
-      node.merge({
+      node.merge(
         lhs: left,
         rhs: right
-      })
+      )
     end
 
     def visit_unary_not(node)
@@ -212,39 +207,39 @@ module Sparkql
 
     def visit_function(function)
       arg_meta = Sparkql::FUNCTION_METADATA[function[:name]][:arguments]
-      args = function[:args].map {|arg| visit(arg)}
+      args = function[:args].map { |arg| visit(arg) }
       basic_arg_validation(args, arg_meta)
 
       if function[:name] == :regex
-          if args[1] && args[1][:type] == :character &&
-              !VALID_REGEX_FLAGS.include?(args[1][:value])
-            errors << {
-              token: args.first,
-              message: "Invalid Regex flag",
-              status: :fatal,
-              syntax: false,
-              constraint: true
-            }
-          end
+        if args[1] && args[1][:type] == :character &&
+           !VALID_REGEX_FLAGS.include?(args[1][:value])
+          errors << {
+            token: args.first,
+            message: 'Invalid Regex flag',
+            status: :fatal,
+            syntax: false,
+            constraint: true
+          }
+        end
 
-          begin
-            Regexp.new(args.first[:value])
-          rescue
-            errors << {
-              token: args.first,
-              message: "Invalid Regexp",
-              status: :fatal,
-              syntax: false,
-              constraint: true
-            }
-          end
+        begin
+          Regexp.new(args.first[:value])
+        rescue StandardError
+          errors << {
+            token: args.first,
+            message: 'Invalid Regexp',
+            status: :fatal,
+            syntax: false,
+            constraint: true
+          }
+        end
       elsif function[:name] == :wkt
         begin
           GeoRuby::SimpleFeatures::Geometry.from_ewkt(args.first[:value])
         rescue GeoRuby::SimpleFeatures::EWKTFormatError
           errors << {
             token: args.first[:value],
-            message: "wkt() requires valid WKT",
+            message: 'wkt() requires valid WKT',
             status: :fatal,
             syntax: false,
             constraint: true
@@ -253,11 +248,11 @@ module Sparkql
       elsif function[:name] == :radius
         arg2 = args[1]
         if arg2[:name] == :literal &&
-            [:decimal, :integer].include?(arg2[:type]) &&
-            arg2[:value] < 0
+           [:decimal, :integer].include?(arg2[:type]) &&
+           arg2[:value] < 0
           errors << {
             token: arg2,
-            message: "Second argument cannot be negative",
+            message: 'Second argument cannot be negative',
             status: :fatal,
             syntax: false,
             constraint: true
@@ -266,12 +261,12 @@ module Sparkql
 
         arg1 = args.first
         if arg1[:name] == :literal &&
-            [:character].include?(arg1[:type]) &&
-            (!is_coords?(arg1[:value]) &&
-            arg1[:value] !~ /^\d{26}$/)
+           [:character].include?(arg1[:type]) &&
+           (!is_coords?(arg1[:value]) &&
+           arg1[:value] !~ /^\d{26}$/)
           errors << {
             token: arg1,
-            message: "First argument must be valid coordinates or a tech id",
+            message: 'First argument must be valid coordinates or a tech id',
             status: :fatal,
             syntax: false,
             constraint: true
@@ -308,17 +303,17 @@ module Sparkql
                raise "FUNCTION DOESN'T HAVE A RETURN TYPE!!!"
              end
 
-      function.dup.merge({
+      function.dup.merge(
         type: type
-      })
+      )
     end
 
     def is_coords?(coord_string)
-      coord_string.split(" ").size > 1
+      coord_string.split(' ').size > 1
     end
 
     def basic_arg_validation(args, arg_meta)
-      min_args = arg_meta.select {|arg| !arg.key?(:default) }.size
+      min_args = arg_meta.reject { |arg| arg.key?(:default) }.size
       max_args = arg_meta.size
 
       if args.size < min_args || args.size > max_args
@@ -330,7 +325,7 @@ module Sparkql
         @errors << {
           token: 'name',
           message: message,
-          status: :fatal,
+          status: :fatal
         }
         return
       end
@@ -341,27 +336,27 @@ module Sparkql
         if !meta[:allow_field] && current_argument[:name] == :field
           @errors << {
             token: current_argument,
-            message: "Argument does not support a field",
+            message: 'Argument does not support a field',
             status: :fatal,
             syntax: false,
             constraint: true
           }
         end
 
-        if current_argument.key?(:type) && !meta[:types].include?(current_argument[:type])
-          @errors << {
-            token: current_argument,
-            message: "Incorrect argument type: #{current_argument[:type]}",
-            status: :fatal,
-            syntax: false,
-            constraint: true
-          }
-        end
+        next unless current_argument.key?(:type) && !meta[:types].include?(current_argument[:type])
+
+        @errors << {
+          token: current_argument,
+          message: "Incorrect argument type: #{current_argument[:type]}",
+          status: :fatal,
+          syntax: false,
+          constraint: true
+        }
       end
     end
 
     def coerce_if_necessary(all_nodes)
-      types = all_nodes.map {|node| node[:type]}
+      types = all_nodes.map { |node| node[:type] }
       if types.uniq.size == 1
         return all_nodes
       else
@@ -377,7 +372,7 @@ module Sparkql
               node
             end
           end
-        elsif types.all? { |type| DATE_TYPES.include?(type )}
+        elsif types.all? { |type| DATE_TYPES.include?(type) }
           all_nodes.map do |node|
             if node[:type] != DATE_TYPES.first
               {
@@ -391,7 +386,7 @@ module Sparkql
           end
         else
           @errors << {
-            message: "Type mismatch in comparison.",
+            message: 'Type mismatch in comparison.',
             status: :fatal
           }
           all_nodes
@@ -402,6 +397,5 @@ module Sparkql
     def numeric?(type)
       NUMBER_TYPES.include?(type)
     end
-
   end
 end

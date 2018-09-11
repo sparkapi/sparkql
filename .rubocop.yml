@@ -1,0 +1,9 @@
+
+AllCops:
+  Exclude:
+    - 'lib/sparkql/parser.rb'
+    - 'vendor/**/*'
+    - '.git/**/*'
+
+Style/SymbolArray:
+    EnforcedStyle: brackets

@@ -1,35 +1,28 @@
 # Parses the grammar into a fancy markdown document.
 
 class Markdownify
-  
-  def initialize file
+  def initialize(file)
     @file = file
     @line_num = 0
     @markdowning = false
     @codeblock = false
   end
-  
+
   def format!
-    line_num=0
+    line_num = 0
     markdowning = false
     File.open(@file).each do |line|
-      if line =~ /^\#STOP_MARKDOWN/
-        @markdowning = false
-      end
-      if markdowning? && !(line =~ /^\s+$/)
-        print format_line(line)
-      end
-      if line =~ /^\#START_MARKDOWN/
-        @markdowning = true
-      end
+      @markdowning = false if line =~ /^\#STOP_MARKDOWN/
+      print format_line(line) if markdowning? && line !~ /^\s+$/
+      @markdowning = true if line =~ /^\#START_MARKDOWN/
     end
     finish_code_block if @codeblock
   end
-  
+
   def markdowning?
     @markdowning
   end
-  
+
   def format_line(line)
     if line =~ /\s*\#/
       finish_code_block if @codeblock
@@ -41,12 +34,12 @@ class Markdownify
       format_bnf line
     end
   end
-  
-  def format_doc line
+
+  def format_doc(line)
     line.sub(/\s*\#\s*/, '')
   end
-  
-  def format_bnf line
+
+  def format_bnf(line)
     bnf = line.gsub(/\{.+\}/, '')
     "   #{bnf}"
   end
@@ -54,8 +47,8 @@ class Markdownify
   def start_code_block
     print "\n\n```\n"
   end
-  
-  def finish_code_block 
+
+  def finish_code_block
     print "```\n\n"
   end
 end

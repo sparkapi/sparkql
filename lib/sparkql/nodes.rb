@@ -31,4 +31,3 @@ require 'sparkql/nodes/functions/second'
 require 'sparkql/nodes/functions/fractionalseconds'
 require 'sparkql/nodes/functions/range'
 require 'sparkql/nodes/functions/wkt'
-
