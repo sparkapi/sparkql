@@ -8,7 +8,7 @@ The `:field`, `:custom_field` and all nodes where `:function` is true will gain 
 
 ## New Nodes
 
-Following are new node(s) which will be added the the parse tree:
+Following are new node(s) which will be added to the parse tree:
 
 name | description | lhs | rhs
 ---- | ----------- | --- | ---
