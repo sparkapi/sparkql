@@ -180,6 +180,12 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
     end
   end
 
+  test 'No extra function validations break on invalid field types within parameters' do
+    assert_nothing_raised do
+      assert_errors("Location Eq radius('46.8 -96.8','-20.0')")
+    end
+  end
+
   private
 
   def parses(sparkql, msg = 'Expected sparkql to parse: ')

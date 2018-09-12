@@ -51,46 +51,55 @@ module Sparkql
       node.dup
     end
 
-    def visit_field(node)
-      meta = @metadata[node[:value]]
-
+    def field_valid?(node, meta)
       if meta.nil?
         @errors << {
           token: node[:value],
           message: "standard field #{node[:value]} is invalid",
           status: :fatal
         }
-        return node.dup
+        return false
       end
-
-      type = if meta[:searchable]
-               meta[:type]
-             else
-               :drop
-             end
-      node.dup.merge(
-        type: type
-      )
+      true
     end
 
-    def visit_custom_field(node)
-      meta = @metadata[node[:value]]
+    def custom_field_valid?(node, meta)
       if meta.nil?
         @errors << {
           token: node[:value],
           message: "custom field #{node[:value]} is invalid",
           status: :fatal
         }
-        return node.dup
+        return false
       end
+      true
+    end
 
-      type = if meta[:searchable]
-               meta[:type]
-             else
-               :drop
-             end
+    def type_for(meta)
+      if meta[:searchable]
+        meta[:type]
+      else
+        :drop
+      end
+    end
+
+    def visit_field(node)
+      meta = @metadata[node[:value]]
+
+      return node.dup unless field_valid?(node, meta)
+
       node.dup.merge(
-        type: type
+        type: type_for(meta)
+      )
+    end
+
+    def visit_custom_field(node)
+      meta = @metadata[node[:value]]
+
+      return node.dup unless custom_field_valid?(node, meta)
+
+      node.dup.merge(
+        type: type_for(meta)
       )
     end
 
@@ -185,7 +194,8 @@ module Sparkql
     end
 
     def visit_bt(node)
-      left, rhs1, rhs2 = coerce_if_necessary([visit(node[:lhs]), visit(node[:rhs][0]), visit(node[:rhs][1])])
+      nodes = [visit(node[:lhs]), visit(node[:rhs][0]), visit(node[:rhs][1])]
+      left, rhs1, rhs2 = coerce_if_necessary(nodes)
       require_range_type!(left, rhs1, rhs2)
 
       node.merge(
@@ -205,114 +215,144 @@ module Sparkql
       node
     end
 
+    def regex_flags_valid?(args)
+      if args[1] && args[1][:type] == :character &&
+         !VALID_REGEX_FLAGS.include?(args[1][:value])
+        errors << {
+          token: args.first,
+          message: 'Invalid Regex flag',
+          status: :fatal,
+          syntax: false,
+          constraint: true
+        }
+      end
+    end
+
+    def regex_parses?(args)
+      Regexp.new(args.first[:value])
+    rescue StandardError
+      errors << {
+        token: args.first,
+        message: 'Invalid Regexp',
+        status: :fatal,
+        syntax: false,
+        constraint: true
+      }
+    end
+
+    def regex_valid?(args)
+      regex_flags_valid?(args)
+      regex_parses?(args)
+    end
+
+    def wkt_valid?(args)
+      GeoRuby::SimpleFeatures::Geometry.from_ewkt(args.first[:value])
+    rescue GeoRuby::SimpleFeatures::EWKTFormatError
+      @errors << {
+        token: args.first[:value],
+        message: 'wkt() requires valid WKT',
+        status: :fatal,
+        syntax: false,
+        constraint: true
+      }
+    end
+
+    def radius_second_arg_valid?(arg2)
+      return unless arg2[:value] < 0
+
+      @errors << {
+        token: arg2,
+        message: 'Second argument cannot be negative',
+        status: :fatal,
+        syntax: false,
+        constraint: true
+      }
+    end
+
+    def radius_first_arg_valid?(arg1)
+      if !coords?(arg1[:value]) &&
+         arg1[:value] !~ /^\d{26}$/
+        @errors << {
+          token: arg1,
+          message: 'First argument must be valid coordinates or a tech id',
+          status: :fatal,
+          syntax: false,
+          constraint: true
+        }
+      end
+    end
+
+    def radius_valid?(args)
+      radius_first_arg_valid?(args[0])
+      radius_second_arg_valid?(args[1])
+    end
+
+    def function_valid?(name, args)
+      case name
+      when :regex
+        regex_valid?(args)
+      when :wkt
+        wkt_valid?(args)
+      when :radius
+        radius_valid?(args)
+      else
+        true
+      end
+    end
+
+    def function_type(name, _args)
+      # TODO: Move these into functions.yml file
+      case name
+      when :length
+        :integer
+      when :toupper
+        :character
+      when :tolower
+        :character
+      when :now
+        :datetime
+      when :mindatetime
+        :date
+      when :maxdatetime
+        :date
+      when :fractionalseconds
+        :decimal
+      when :days
+        :datetime
+      when :regex
+        :character
+      when :radius
+        :shape
+      when :polygon
+        :shape
+      when :wkt
+        :shape
+      else
+        raise "FUNCTION DOESN'T HAVE A RETURN TYPE!!!"
+      end
+    end
+
     def visit_function(function)
       arg_meta = Sparkql::FUNCTION_METADATA[function[:name]][:arguments]
       args = function[:args].map { |arg| visit(arg) }
-      basic_arg_validation(args, arg_meta)
 
-      if function[:name] == :regex
-        if args[1] && args[1][:type] == :character &&
-           !VALID_REGEX_FLAGS.include?(args[1][:value])
-          errors << {
-            token: args.first,
-            message: 'Invalid Regex flag',
-            status: :fatal,
-            syntax: false,
-            constraint: true
-          }
-        end
-
-        begin
-          Regexp.new(args.first[:value])
-        rescue StandardError
-          errors << {
-            token: args.first,
-            message: 'Invalid Regexp',
-            status: :fatal,
-            syntax: false,
-            constraint: true
-          }
-        end
-      elsif function[:name] == :wkt
-        begin
-          GeoRuby::SimpleFeatures::Geometry.from_ewkt(args.first[:value])
-        rescue GeoRuby::SimpleFeatures::EWKTFormatError
-          errors << {
-            token: args.first[:value],
-            message: 'wkt() requires valid WKT',
-            status: :fatal,
-            syntax: false,
-            constraint: true
-          }
-        end
-      elsif function[:name] == :radius
-        arg2 = args[1]
-        if arg2[:name] == :literal &&
-           [:decimal, :integer].include?(arg2[:type]) &&
-           arg2[:value] < 0
-          errors << {
-            token: arg2,
-            message: 'Second argument cannot be negative',
-            status: :fatal,
-            syntax: false,
-            constraint: true
-          }
-        end
-
-        arg1 = args.first
-        if arg1[:name] == :literal &&
-           [:character].include?(arg1[:type]) &&
-           (!is_coords?(arg1[:value]) &&
-           arg1[:value] !~ /^\d{26}$/)
-          errors << {
-            token: arg1,
-            message: 'First argument must be valid coordinates or a tech id',
-            status: :fatal,
-            syntax: false,
-            constraint: true
-          }
-        end
-      end
-
-      type = case function[:name]
-             when :length
-               :integer
-             when :toupper
-               :character
-             when :tolower
-               :character
-             when :now
-               :datetime
-             when :mindatetime
-               :date
-             when :maxdatetime
-               :date
-             when :fractionalseconds
-               :decimal
-             when :days
-               :datetime
-             when :regex
-               :character
-             when :radius
-               :shape
-             when :polygon
-               :shape
-             when :wkt
-               :shape
-             else
-               raise "FUNCTION DOESN'T HAVE A RETURN TYPE!!!"
-             end
-
-      function.dup.merge(
-        type: type
+      new_node = function.dup.merge(
+        type: function_type(function[:name], args)
       )
+
+      # After this point we don't need to worry about checking field types
+      return new_node unless basic_arg_validation?(args, arg_meta)
+
+      function_valid?(function[:name], args)
+
+      new_node
     end
 
-    def is_coords?(coord_string)
+    def coords?(coord_string)
       coord_string.split(' ').size > 1
     end
 
-    def basic_arg_validation(args, arg_meta)
+    def basic_arg_validation?(args, arg_meta)
       min_args = arg_meta.reject { |arg| arg.key?(:default) }.size
       max_args = arg_meta.size
 
@@ -327,7 +367,7 @@ module Sparkql
           message: message,
           status: :fatal
         }
-        return
+        return false
       end
 
       arg_meta.each_with_index do |meta, index|
@@ -341,6 +381,7 @@ module Sparkql
             syntax: false,
             constraint: true
           }
+          return false
         end
 
         next unless current_argument.key?(:type) && !meta[:types].include?(current_argument[:type])
@@ -352,7 +393,9 @@ module Sparkql
           syntax: false,
           constraint: true
         }
+        return false
       end
+      true
     end
 
     def coerce_if_necessary(all_nodes)
