@@ -1,3 +1,4 @@
+require 'yaml'
 require 'sparkql/version'
 require 'sparkql/token'
 require 'sparkql/errors'

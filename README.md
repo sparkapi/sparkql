@@ -1,7 +1,7 @@
-SparkQL query language parser
+SparkQL parser
 =====================
-This gem contains the syntax parser for processing spark api filter queries into manageable
-expressions. To get an overview of the language syntax-wise, refer to the following files:
+This gem contains the syntax parser for processing Spark Query Language filter queries into a manageable
+structure. To get an overview of the language syntax-wise, refer to the following files:
 
 * lib/sparkql/parser.y   # BNF Grammar
 * lib/sparkql/token.rb   # Token matching rules
@@ -20,8 +20,8 @@ When completed, run 'bundle install'.
 Usage
 -------------
 
-Parsing documentation can be found [here](PARSING.md).
-Semantic Analysis documentation can be found [here](SEMANTIC_ANALYSIS.md).
+Parsing documentation can be found [here](docs/PARSING.md).
+Semantic Analysis documentation can be found [here](docs/SEMANTIC_ANALYSIS.md).
 
 Development
 -------------
@@ -35,5 +35,4 @@ parser states (and conflicts) can be generated via
 
 	racc -o lib/sparkql/parser.rb lib/sparkql/parser.y -v  # see lib/sparkql/parser.output
 
-The [rails/journey](https://github.com/rails/journey) project was an inspiration for this gem. Look it up on github for reference.
 

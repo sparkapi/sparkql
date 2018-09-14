@@ -7,3 +7,12 @@ AllCops:
 
 Style/SymbolArray:
     EnforcedStyle: brackets
+
+Metrics/LineLength:
+    Max: 90
+    Exclude:
+      - 'test/**/*'
+
+Metrics/ClassLength:
+    Exclude:
+      - 'test/**/*'

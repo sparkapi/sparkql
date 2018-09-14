@@ -206,13 +206,14 @@ module Sparkql
 
     def visit_group(node)
       node.merge(
-        lhs: left,
-        rhs: right
+        value: visit(node[:value])
       )
     end
 
     def visit_unary_not(node)
-      node
+      node.merge(
+        value: visit(node[:value])
+      )
     end
 
     def regex_flags_valid?(args)
@@ -301,35 +302,7 @@ module Sparkql
     end
 
     def function_type(name, _args)
-      # TODO: Move these into functions.yml file
-      case name
-      when :length
-        :integer
-      when :toupper
-        :character
-      when :tolower
-        :character
-      when :now
-        :datetime
-      when :mindatetime
-        :date
-      when :maxdatetime
-        :date
-      when :fractionalseconds
-        :decimal
-      when :days
-        :datetime
-      when :regex
-        :character
-      when :radius
-        :shape
-      when :polygon
-        :shape
-      when :wkt
-        :shape
-      else
-        raise "FUNCTION DOESN'T HAVE A RETURN TYPE!!!"
-      end
+      Sparkql::FUNCTION_METADATA[name][:return_type]
     end
 
     def visit_function(function)
@@ -400,7 +373,9 @@ module Sparkql
 
     def coerce_if_necessary(all_nodes)
       types = all_nodes.map { |node| node[:type] }
-      if types.uniq.size == 1
+
+      # Can compare null to other types
+      if (types.uniq - [:null]).size <= 1
         return all_nodes
       else
         if types.all? { |type| NUMBER_TYPES.include?(type) }

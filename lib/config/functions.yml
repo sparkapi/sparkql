@@ -1,5 +1,6 @@
 ---
 :range:
+  :return_type: :character
   :arguments:
   - :types:
     - :character
@@ -8,23 +9,27 @@
     - :character
     :allow_field: false
 :time:
+  :return_type: :time
   :arguments:
   - :types:
     - :datetime
     - :date
     :allow_field: true
 :date:
+  :return_type: :date
   :arguments:
   - :types:
     - :datetime
     - :date
     :allow_field: true
 :polygon:
+  :return_type: :shape
   :arguments:
   - :types:
     - :character
     :allow_field: false
 :radius:
+  :return_type: :shape
   :arguments:
   - :types:
     - :character
@@ -34,11 +39,13 @@
     - :integer
     :allow_field: false
 :rectangle:
+  :return_type: :shape
   :arguments:
   - :types:
     - :character
     :allow_field: false
 :regex:
+  :return_type: :character
   :arguments:
   - :types:
     - :character
@@ -48,21 +55,25 @@
     :allow_field: false
     :default: ''
 :tolower:
+  :return_type: :character
   :arguments:
   - :types:
     - :character
     :allow_field: true
 :toupper:
+  :return_type: :character
   :arguments:
   - :types:
     - :character
     :allow_field: true
 :length:
+  :return_type: :integer
   :arguments:
   - :types:
     - :character
     :allow_field: true
 :indexof:
+  :return_type: :integer
   :arguments:
   - :types:
     - :character
@@ -71,89 +82,110 @@
     - :character
     :allow_field: false
 :startswith:
+  :return_type: :character
+  :special_builder: true
   :arguments:
   - :types:
     - :character
     :allow_field: false
 :endswith:
+  :return_type: :character
+  :special_builder: true
   :arguments:
   - :types:
     - :character
     :allow_field: false
 :contains:
+  :return_type: :character
+  :special_builder: true
   :arguments:
   - :types:
     - :character
     :allow_field: false
 :linestring:
+  :return_type: :shape
   :arguments:
   - :types:
     - :character
     :allow_field: false
 :days:
+  :return_type: :datetime
   :arguments:
   - :types:
     - :integer
     :allow_field: false
 :months:
+  :return_type: :datetime
   :arguments:
   - :types:
     - :integer
     :allow_field: false
 :years:
+  :return_type: :datetime
   :arguments:
   - :types:
     - :integer
     :allow_field: false
 :now:
+  :return_type: :datetime
   :arguments: []
 :maxdatetime:
+  :return_type: :datetime
   :arguments: []
 :mindatetime:
+  :return_type: :datetime
   :arguments: []
 :year:
+  :return_type: :integer
   :arguments:
   - :types:
     - :datetime
     - :date
     :allow_field: true
 :month:
+  :return_type: :integer
   :arguments:
   - :types:
     - :datetime
     - :date
     :allow_field: true
 :day:
+  :return_type: :integer
   :arguments:
   - :types:
     - :datetime
     - :date
     :allow_field: true
 :hour:
+  :return_type: :integer
   :arguments:
   - :types:
     - :datetime
     - :date
     :allow_field: true
 :minute:
+  :return_type: :integer
   :arguments:
   - :types:
     - :datetime
     - :date
     :allow_field: true
 :second:
+  :return_type: :integer
   :arguments:
   - :types:
     - :datetime
     - :date
     :allow_field: true
 :fractionalseconds:
+  :return_type: :decimal
   :arguments:
   - :types:
     - :datetime
     - :date
     :allow_field: true
 :wkt:
+  :return_type: :shape
   :arguments:
   - :types:
     - :character
