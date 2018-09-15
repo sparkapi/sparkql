@@ -4,10 +4,10 @@
 # the result for the expression, or when not a boolean, drops the expression.
 class BooleanOrBustExpressionResolver < Sparkql::ExpressionResolver
   def resolve(expression)
-    if expression[:type] == :boolean
-      expression[:value] == 'true'
+    if expression['type'] == :boolean
+      expression['value'] == 'true'
     else
-      :drop
+      'drop'
     end
   end
 end

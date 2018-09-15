@@ -6,32 +6,32 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
   def setup
     @fields = {
       'StringField' => {
-        searchable: true,
-        type: :character
+        'Searchable' => true,
+        'Type' => 'character'
       },
       'NoSearchStringField' => {
-        searchable: false,
-        type: :character
+        'Searchable' => false,
+        'Type' => 'character'
       },
       'IntField' => {
-        searchable: true,
-        type: :integer
+        'Searchable' => true,
+        'Type' => 'integer'
       },
       'DateField' => {
-        searchable: true,
-        type: :date
+        'Searchable' => true,
+        'Type' => 'date'
       },
       '"Custom"."DateField"' => {
-        searchable: true,
-        type: :date
+        'Searchable' => true,
+        'Type' => 'date'
       },
       'DecimalField' => {
-        searchable: true,
-        type: :decimal
+        'Searchable' => true,
+        'Type' => 'decimal'
       },
       'Location' => {
-        searchable: true,
-        type: :shape
+        'Searchable' => true,
+        'Type' => 'shape'
       }
     }
   end
@@ -108,33 +108,33 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
 
   test 'integer type coercion' do
     parse_tree = assert_success('DecimalField Eq 100')
-    assert_equal :coerce, parse_tree[:rhs][:name]
-    assert_equal :integer, parse_tree[:rhs][:lhs][:type]
-    assert_equal :decimal, parse_tree[:rhs][:rhs]
+    assert_equal 'coerce', parse_tree['rhs']['name']
+    assert_equal 'integer', parse_tree['rhs']['lhs']['type']
+    assert_equal 'decimal', parse_tree['rhs']['rhs']
   end
 
   test 'integer type coercion with function' do
     parse_tree = assert_success('fractionalseconds(DateField) Le 1')
-    assert_equal :le, parse_tree[:name]
-    assert_equal :coerce, parse_tree[:rhs][:name]
-    assert_equal :decimal, parse_tree[:rhs][:rhs]
-    assert_equal :fractionalseconds, parse_tree[:lhs][:name]
+    assert_equal 'le', parse_tree['name']
+    assert_equal 'coerce', parse_tree['rhs']['name']
+    assert_equal 'decimal', parse_tree['rhs']['rhs']
+    assert_equal 'fractionalseconds', parse_tree['lhs']['name']
   end
 
   test 'datetime->date type coercion' do
     parse_tree = assert_success('DateField Eq now()')
-    assert_equal :eq, parse_tree[:name]
-    assert_equal :coerce, parse_tree[:lhs][:name]
-    assert_equal :datetime, parse_tree[:lhs][:rhs]
-    assert_equal :now, parse_tree[:rhs][:name]
+    assert_equal 'eq', parse_tree['name']
+    assert_equal 'coerce', parse_tree['lhs']['name']
+    assert_equal 'datetime', parse_tree['lhs']['rhs']
+    assert_equal 'now', parse_tree['rhs']['name']
   end
 
   test 'datetime->date type coercion array' do
     parse_tree = assert_success('"Custom"."DateField" Bt days(-1),now()')
-    assert_equal :coerce, parse_tree[:lhs][:name]
-    assert_equal :datetime, parse_tree[:lhs][:rhs]
-    assert_equal :days, parse_tree[:rhs].first[:name]
-    assert_equal :now, parse_tree[:rhs].last[:name]
+    assert_equal 'coerce', parse_tree['lhs']['name']
+    assert_equal 'datetime', parse_tree['lhs']['rhs']
+    assert_equal 'days', parse_tree['rhs'].first['name']
+    assert_equal 'now', parse_tree['rhs'].last['name']
   end
 
   test 'inalid regex' do

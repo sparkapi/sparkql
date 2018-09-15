@@ -3,8 +3,8 @@
 # This is the guts of the parser internals and is mixed into the parser for organization.
 module Sparkql::ParserTools
   # Coercible types from highest precision to lowest
-  DATE_TYPES = [:datetime, :date].freeze
-  NUMBER_TYPES = [:decimal, :integer].freeze
+  DATE_TYPES = ['datetime', 'date'].freeze
+  NUMBER_TYPES = ['decimal', 'integer'].freeze
   OPERATORS_SUPPORTING_MULTIPLES = %w[Eq Ne Bt].freeze
 
   def parse(str)
@@ -38,39 +38,39 @@ module Sparkql::ParserTools
 
   def tokenize_and_conjunction(left, right)
     {
-      name: :and,
-      lhs: left,
-      rhs: right
+      'name' => 'and',
+      'lhs' => left,
+      'rhs' => right
     }
   end
 
   def tokenize_or_conjunction(left, right)
     {
-      name: :or,
-      lhs: left,
-      rhs: right
+      'name' => 'or',
+      'lhs' => left,
+      'rhs' => right
     }
   end
 
   def tokenize_unary_not(expression)
     {
-      name: :unary_not,
-      value: expression
+      'name' => 'unary_not',
+      'value' => expression
     }
   end
 
   def tokenize_group(expression)
     {
-      name: :group,
-      value: expression
+      'name' => 'group',
+      'value' => expression
     }
   end
 
   def tokenize_operator(field, operator, value)
     {
-      name: operator.downcase.to_sym,
-      lhs: field,
-      rhs: value
+      'name' => operator.downcase,
+      'lhs' => field,
+      'rhs' => value
     }
   end
 
@@ -103,8 +103,8 @@ module Sparkql::ParserTools
 
   def tokenize_field_arg(field)
     {
-      name: :field,
-      value: field
+      'name' => 'field',
+      'value' => field
     }
   end
 
@@ -119,9 +119,9 @@ module Sparkql::ParserTools
     end
 
     {
-      function: true,
-      name: method,
-      args: f_args
+      'function' => true,
+      'name' => name,
+      'args' => f_args
     }
   end
 
@@ -135,7 +135,7 @@ module Sparkql::ParserTools
 
   def validate_expressions(results)
     if false
-      compile_error(token: results[max_expressions][:field], expression: results[max_expressions],
+      compile_error(token: results[max_expressions]['field'], expression: results[max_expressions],
                     message: "You have exceeded the maximum expression count.  Please limit to no more than #{max_expressions} expressions in a filter.",
                     status: :fatal, syntax: false, constraint: true)
       results.slice!(max_expressions..-1)

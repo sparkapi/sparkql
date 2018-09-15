@@ -6,8 +6,8 @@ class ParserCompatabilityTest < Test::Unit::TestCase
   include Sparkql
 
   def setup
-    @expression_keys = [:field, :operator, :value]
-    @multiple_types = [:character, :integer]
+    @expression_keys = ['field', :operator, 'value']
+    @multiple_types = ['character', 'integer']
     @bad_character_strings = ["'Fargo's Boat'", 'Fargo', "''Fargo''", "'Fargo''s'",
                               "'Fargo", "Fargo'", "\\'Fargo\\'"]
     @bad_multiple_character_strings = ["'Fargo's Boat'", 'Fargo', "''Fargo''", "'Fargo''s'",
@@ -16,82 +16,82 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     @test_filters = [
       {
         string: "City Eq 'Fargo'",
-        type: :character,
+        type: 'character',
         operator: 'Eq'
       },
       {
         string: "City Ne 'Fargo'",
-        type: :character,
+        type: 'character',
         operator: 'Not Eq'
       },
       {
         string: "City Eq 'Fargo','Moorhead'",
-        type: :character,
+        type: 'character',
         operator: 'In'
       },
       {
         string: "City Eq 'Fargo','Moorhead','Bemidji','Duluth'",
-        type: :character,
+        type: 'character',
         operator: 'In'
       },
       {
         string: "City Ne 'Fargo','Moorhead','Bemidji','Duluth'",
-        type: :character,
+        type: 'character',
         operator: 'Not In'
       },
       {
         string: 'IntegerField Eq 2001',
-        type: :integer,
+        type: 'integer',
         operator: 'Eq'
       },
       {
         string: 'IntegerField Eq -2001',
-        type: :integer,
+        type: 'integer',
         operator: 'Eq'
       },
       {
         string: 'IntegerField Eq 2001,2002',
-        type: :integer,
+        type: 'integer',
         operator: 'In'
       },
       {
         string: 'IntegerField Eq -2001,-2002',
-        type: :integer,
+        type: 'integer',
         operator: 'In'
       },
       {
         string: 'FloatField Eq 2001.120',
-        type: :decimal,
+        type: 'decimal',
         operator: 'Eq'
       },
       {
         string: 'FloatField Eq -2001.120',
-        type: :decimal,
+        type: 'decimal',
         operator: 'Eq'
       },
       {
         string: 'FloatField Eq 9.1E-6',
-        type: :decimal,
+        type: 'decimal',
         operator: 'Eq'
       },
       {
         string: 'FloatField Eq -9.1E-6',
-        type: :decimal,
+        type: 'decimal',
         operator: 'Eq'
       },
       {
         string: 'FloatField Eq 1.0E8',
-        type: :decimal,
+        type: 'decimal',
         operator: 'Eq'
       },
       {
         string: 'FloatField Eq -2001.120,-2002.0',
-        type: :decimal,
+        type: 'decimal',
         operator: 'In'
       },
       {
         string: 'FloatField Eq 100.1,2,3.4',
-        type: :decimal,
+        type: 'decimal',
         operator: 'In'
       },
       {
@@ -196,10 +196,10 @@ class ParserCompatabilityTest < Test::Unit::TestCase
         parser = Parser.new
         ast = parser.tokenize(f)
         assert !parser.errors?
-        assert_equal :eq, ast[:name]
-        assert_equal :field, ast[:lhs][:name]
-        assert_equal 'City', ast[:lhs][:value]
-        assert_equal :literal, ast[:rhs][:name]
+        assert_equal 'eq', ast['name']
+        assert_equal 'field', ast['lhs']['name']
+        assert_equal 'City', ast['lhs']['value']
+        assert_equal 'literal', ast['rhs']['name']
       end
     end
   end
@@ -212,7 +212,7 @@ class ParserCompatabilityTest < Test::Unit::TestCase
   #       to_the_max << x
   #     end
   #     ex = parser.tokenize("City Eq #{to_the_max.join(',')}")
-  #     vals = ex.first[:value]
+  #     vals = ex.first['value']
   #     assert_equal 200, vals.size
   #     assert parser.errors?
   #   end
@@ -283,16 +283,16 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     parser = Parser.new
     ast = parser.tokenize(filter)
     assert !parser.errors?, "Parser errrors [#{filter}]: #{parser.errors.inspect}"
-    assert_equal :custom_field, ast[:lhs][:name]
-    assert_equal "\"Security\".\"@R080T$' ` ` `#\"", ast[:lhs][:value]
+    assert_equal 'custom_field', ast['lhs']['name']
+    assert_equal "\"Security\".\"@R080T$' ` ` `#\"", ast['lhs']['value']
   end
 
   test 'custom field supports all types' do
     types = {
-      character: "'character'",
-      integer: '1234',
-      decimal: '12.34',
-      boolean: 'true'
+      'character' => "'character'",
+      'integer' => '1234',
+      'decimal' => '12.34',
+      'boolean' => 'true'
     }
     types.each_pair do |type, value|
       filter = '"Details"."Random" Eq ' + value.to_s
@@ -300,23 +300,23 @@ class ParserCompatabilityTest < Test::Unit::TestCase
       ast = parser.tokenize(filter)
       assert !parser.errors?, "Parser errrors [#{filter}]: #{parser.errors.inspect}"
 
-      assert_equal :custom_field, ast[:lhs][:name]
-      assert_equal :literal, ast[:rhs][:name]
-      assert_equal type, ast[:rhs][:type]
+      assert_equal 'custom_field', ast['lhs']['name']
+      assert_equal 'literal', ast['rhs']['name']
+      assert_equal type, ast['rhs']['type']
     end
   end
 
   test 'escape boolean value' do
     parser = Parser.new
     ast = parser.tokenize('BooleanField Eq true')
-    assert_equal true, ast[:rhs][:value]
+    assert_equal true, ast['rhs']['value']
   end
 
   test 'escape decimal values' do
     parser = Parser.new
     ast = parser.tokenize('DecimalField Eq 0.00005 And DecimalField Eq 5.0E-5')
-    assert_equal 5.0E-5, ast[:rhs][:rhs][:value]
-    assert_equal ast[:lhs][:rhs][:value], ast[:rhs][:rhs][:value]
+    assert_equal 5.0E-5, ast['rhs']['rhs']['value']
+    assert_equal ast['lhs']['rhs']['value'], ast['rhs']['rhs']['value']
   end
 
   test 'Between' do

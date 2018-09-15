@@ -4,7 +4,7 @@ After parsing, we need to make sure we are dealing with proper type comparisons 
 
 ## New Attributes
 
-The `:field`, `:custom_field` and all nodes where `:function` is true will gain a new `:type` attribute which is the label for the type of that field or function. For `:field` and `:custom_field` nodes `:type` may also have the value `:drop` which signifies that the field was not searcable. No coerce nodes will be created if there is a `:drop` type within the comparison.
+The `'field'`, `'custom_field'` and all nodes where `:function` is true will gain a new `'type'` attribute which is the label for the type of that field or function. For `'field'` and `'custom_field'` nodes `'type'` may also have the value `'drop'` which signifies that the field was not searcable. No coerce nodes will be created if there is a `'drop'` type within the comparison.
 
 ## New Nodes
 

@@ -45,8 +45,8 @@ class Sparkql::Lexer < StringScanner
               check_keywords(@current_token_value)
             elsif @current_token_value = scan(CUSTOM_FIELD)
               [:CUSTOM_FIELD, {
-                name: :custom_field,
-                value: @current_token_value
+                'name' => 'custom_field',
+                'value' => @current_token_value
               }]
             elsif eos?
               [false, false] # end of file, \Z don't work with StringScanner
@@ -76,7 +76,7 @@ class Sparkql::Lexer < StringScanner
     result = check_reserved_words(value)
     if result.first == :UNKNOWN
       @last_field = value
-      result = [:STANDARD_FIELD, { name: :field, value: value }]
+      result = [:STANDARD_FIELD, { 'name' => 'field', 'value' => value }]
     end
     result
   end
@@ -88,31 +88,31 @@ class Sparkql::Lexer < StringScanner
   end
 
   def literal(symbol, value)
-    type = symbol.to_s.downcase.to_sym
+    type = symbol.to_s.downcase
     [symbol, {
-      name: :literal,
-      value: escape_value(type, value),
-      type: type
+      'name' => 'literal',
+      'value' => escape_value(type, value),
+      'type' => type
     }]
   end
 
   def escape_value(type, value)
     case type
-    when :character
+    when 'character'
       return character_escape(value)
-    when :integer
+    when 'integer'
       return integer_escape(value)
-    when :decimal
+    when 'decimal'
       return decimal_escape(value)
-    when :date
+    when 'date'
       return date_escape(value)
-    when :datetime
+    when 'datetime'
       return datetime_escape(value)
-    when :time
+    when 'time'
       return time_escape(value)
-    when :boolean
+    when 'boolean'
       return boolean_escape(value)
-    when :null
+    when 'null'
       return nil
     end
     value
