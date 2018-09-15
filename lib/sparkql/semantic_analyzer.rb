@@ -76,8 +76,8 @@ module Sparkql
     end
 
     def type_for(meta)
-      if meta[:searchable]
-        meta[:type]
+      if meta['Searchable']
+        meta['Type']
       else
         :drop
       end
