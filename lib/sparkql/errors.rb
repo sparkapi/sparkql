@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sparkql
   class ErrorsProcessor
     attr_accessor :errors

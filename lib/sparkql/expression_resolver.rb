@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Base class for handling expression resolution
 class Sparkql::ExpressionResolver
   # Accepted results from the resolve method:

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This is the guts of the parser internals and is mixed into the parser for organization.
 module Sparkql::ParserTools
   # Coercible types from highest precision to lowest
@@ -125,9 +127,8 @@ module Sparkql::ParserTools
 
   def on_error(error_token_id, _error_value, _value_stack)
     token_name = token_to_str(error_token_id)
-    token_name.downcase!
     tokenizer_error(token: @lexer.current_token_value,
-                    message: "Error parsing token #{token_name}",
+                    message: "Error parsing token #{token_name.downcase}",
                     status: :fatal,
                     syntax: true)
   end

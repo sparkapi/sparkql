@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'georuby'
 require 'geo_ruby/ewk'
 module Sparkql
@@ -76,8 +78,8 @@ module Sparkql
     end
 
     def type_for(meta)
-      if meta['Searchable']
-        meta['Type']
+      if meta[:searchable]
+        meta[:type]
       else
         :drop
       end
