@@ -223,7 +223,8 @@ class Sparkql::FunctionResolver
 
     count = 0
     @args.each do |arg|
-      unless Array(total_args[count]).include?(arg[:type])
+      type = arg[:type] == :function ? arg[:return_type] : arg[:type]
+      unless Array(total_args[count]).include?(type)
         @errors << Sparkql::ParserError.new(:token => @name, 
           :message => "Function call '#{@name}' has an invalid argument at #{arg[:value]}",
           :status => :fatal )
@@ -239,6 +240,10 @@ class Sparkql::FunctionResolver
                                             :status => :fatal )
         return
       end
+    end
+
+    if name == :substring && !@args[2].nil?
+      substring_index_error?(@args[2][:value])
     end
   end
   
@@ -269,24 +274,46 @@ class Sparkql::FunctionResolver
     real_vals = @args.map { |i| i[:value]}
     name = @name.to_sym
 
+    field = @args.find do |i|
+      i[:type] == :field || i.key?(:field)
+    end
+
+    field = field[:type] == :function ? field[:field] : field[:value] unless field.nil?
+
     required_args = support[name][:args]
     total_args = required_args + Array(support[name][:opt_args]).collect {|args| args[:default]}
+
     fill_in_optional_args = total_args.drop(real_vals.length)
 
     fill_in_optional_args.each do |default|
       real_vals << default
     end
-    method = name
-    if support[name][:resolve_for_type]
-      method_type =  @args.first[:type]
-      method = "#{method}_#{method_type}"
-    end
-    v = self.send(method, *real_vals)
 
-    unless v.nil? || v.key?(:function_name)
-      v[:function_name] = @name
-      v[:function_parameters] = real_vals
+
+    v = if field.nil?
+      method = name
+      if support[name][:resolve_for_type]
+        method_type =  @args.first[:type]
+        method = "#{method}_#{method_type}"
+      end
+      self.send(method, *real_vals)
+    else
+      {
+        :type => :function,
+        :return_type => return_type,
+        :value => "#{name}",
+      }
     end
+
+    return if v.nil?
+
+    if !v.key?(:function_name)
+      v.merge!( function_parameters: real_vals,
+              function_name: @name)
+    end
+
+    v.merge!(args: @args,
+            field: field)
 
     v
   end
@@ -319,14 +346,6 @@ class Sparkql::FunctionResolver
     }
   end
 
-  def trim_field(arg)
-    {
-      :type => :function,
-      :value => "trim",
-      :args => [arg]
-    }
-  end
-
   def trim_character(arg)
     {
       :type => :character,
@@ -334,18 +353,7 @@ class Sparkql::FunctionResolver
     }
   end
 
-  def substring_field(field, first_index, number_chars)
-    return if substring_index_error?(number_chars)
-    {
-      :type => :function,
-      :value => "substring",
-      :args => [field, first_index, number_chars]
-    }
-  end
-
   def substring_character(character, first_index, number_chars)
-    return if substring_index_error?(number_chars)
-
     second_index = if number_chars.nil?
       -1
     else
@@ -370,6 +378,13 @@ class Sparkql::FunctionResolver
     false
   end
 
+  def tolower(args)
+    {
+      :type => :character,
+      :value => "tolower"
+    }
+  end
+
   def tolower_character(string)
     {
       :type => :character,
@@ -377,13 +392,6 @@ class Sparkql::FunctionResolver
     }
   end
 
-  def tolower_field(arg)
-    {
-      :type => :function,
-      :value => "tolower",
-      :args => [arg]
-    }
-  end
 
   def toupper_character(string)
     {
@@ -392,26 +400,10 @@ class Sparkql::FunctionResolver
     }
   end
 
-  def toupper_field(arg)
-    {
-      :type => :function,
-      :value => "toupper",
-      :args => [arg]
-    }
-  end
-
   def length_character(string)
     {
       :type => :integer,
       :value => "#{string.size}"
-    }
-  end
-
-  def length_field(arg)
-    {
-      :type => :function,
-      :value => "length",
-      :args => [arg]
     }
   end
 
@@ -512,26 +504,10 @@ class Sparkql::FunctionResolver
     }
   end
 
-  def floor_field(arg)
-    {
-      :type => :function,
-      :value => "floor",
-      :args => [arg]
-    }
-  end
-
   def ceiling_decimal(arg)
     {
       :type => :integer,
       :value => arg.ceil.to_s
-    }
-  end
-
-  def ceiling_field(arg)
-    {
-      :type => :function,
-      :value => "ceiling",
-      :args => [arg]
     }
   end
 
@@ -542,17 +518,8 @@ class Sparkql::FunctionResolver
     }
   end
 
-  def round_field(arg)
-    {
-      :type => :function,
-      :value => "round",
-      :args => [arg]
-    }
-  end
-
   def indexof(arg1, arg2)
     {
-      :type => :function,
       :value => "indexof",
       :args => [arg1, arg2]
     }
@@ -562,86 +529,6 @@ class Sparkql::FunctionResolver
     {
       :type => :character,
       :value => "'#{arg1}#{arg2}'"
-    }
-  end
-
-  def concat_field(arg1, arg2)
-    {
-      :type => :function,
-      :value => 'concat',
-      :args => [arg1, arg2]
-    }
-  end
-
-  def date_field(arg)
-    {
-      :type => :function,
-      :value => "date",
-      :args => [arg]
-    }
-  end
-  
-  def time_field(arg)
-    {
-      :type => :function,
-      :value => "time",
-      :args => [arg]
-    }
-  end
-
-  def year_field(arg)
-    {
-      :type => :function,
-      :value => "year",
-      :args => [arg]
-    }
-  end
-
-  def month_field(arg)
-    {
-      :type => :function,
-      :value => "month",
-      :args => [arg]
-    }
-  end
-
-  def day_field(arg)
-    {
-      :type => :function,
-      :value => "day",
-      :args => [arg]
-    }
-  end
-
-  def hour_field(arg)
-    {
-      :type => :function,
-      :value => "hour",
-      :args => [arg]
-    }
-  end
-
-  def minute_field(arg)
-    {
-      :type => :function,
-      :value => "minute",
-      :args => [arg]
-    }
-  end
-
-  def second_field(arg)
-    {
-      :type => :function,
-      :value => "second",
-      :args => [arg]
-    }
-  end
-
-  def fractionalseconds_field(arg)
-    {
-      :type => :function,
-      :value => "fractionalseconds",
-      :args => [arg]
     }
   end
 
@@ -675,7 +562,6 @@ class Sparkql::FunctionResolver
     }
   end
   
-  # TODO Donuts: to extend, we'd just replace (coords) param with (linear_ring1,linear_ring2, ...)
   def polygon(coords)
     new_coords = parse_coordinates(coords)
     unless new_coords.size > 2
@@ -792,14 +678,6 @@ class Sparkql::FunctionResolver
     {
       :type => :character,
       :value => [start_str.to_s, end_str.to_s]
-    }
-  end
-
-  def cast_field(value, type)
-    {
-      :type => :function,
-      :value => "cast",
-      :args => [value, type]
     }
   end
 

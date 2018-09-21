@@ -102,7 +102,7 @@ rule
 # on filtering values
   condition
     : literal
-    | function
+    | literal_function
     | literal_list { result = tokenize_list(val[0]) }
     ;
     
@@ -115,6 +115,11 @@ rule
     : function_name LPAREN RPAREN { result = tokenize_function(val[0], []) }
     | function_name LPAREN function_args RPAREN { result = tokenize_function(val[0], val[2]) }
     ;
+
+  literal_function
+    : function_name LPAREN RPAREN { result = tokenize_function(val[0], []) }
+    | function_name LPAREN literal_function_args RPAREN { result = tokenize_function(val[0], val[2]) }
+    ;
     
   function_name
     : KEYWORD
@@ -126,20 +131,31 @@ rule
   function_args
     : function_arg
     | function_args COMMA function_arg { result = tokenize_function_args(val[0], val[2]) }
-    ; 
-    
+    ;
+
   function_arg
     : literal
     | literals
     | field { result = tokenize_field_arg(val[0]) }
     ;
-    
+
+  literal_function_args
+    : literal_function_arg
+    | literal_function_args COMMA literal_function_arg { result = tokenize_function_args(val[0], val[2]) }
+    ;
+
+  literal_function_arg
+    : literal
+    | literals
+    | literal_function
+    ;
+
 ##### Literal List
 # 
 # A comma delimited list of functions and values.
   literal_list
     : literals
-    | function
+    | literal_function
     | literal_list COMMA literals { result = tokenize_multiple(val[0], val[2]) }
     | literal_list COMMA function { result = tokenize_multiple(val[0], val[2]) }
     ;

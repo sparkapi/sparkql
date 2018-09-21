@@ -24,32 +24,33 @@ module Sparkql::ParserTools
   
   def tokenize_expression(field, op, val)
     operator = get_operator(val,op) unless val.nil?
-    field_args = {}
-    # Function support for fields is stapled in here. The function information
-    # is remapped to the expression
-    if field.is_a?(Hash) && field[:type] == :function
-      function = Sparkql::FunctionResolver::SUPPORTED_FUNCTIONS[field[:value].to_sym]
-      if !function.nil?
-        field_args[:field_function] = field[:value]
-        field_args[:args] = field[:args]
 
-        if field_args[:field_function] == 'cast'
-          field_args[:field_function_type] = field[:args].last.to_sym
-        else
-          field_args[:field_function_type] = function[:return_type]
-        end
-      else
-        tokenizer_error(:token => field[:value], 
+    field_manipulations = nil
+    if field.is_a?(Hash) && field[:type] == :function
+      function = Sparkql::FunctionResolver::SUPPORTED_FUNCTIONS[field[:function_name].to_sym]
+      if function.nil?
+        tokenizer_error(:token => field[:function_name],
           :message => "Unsupported function type", :status => :fatal )
       end
-      field = field[:args].first
+      field_manipulations = field
+      field = field[:field]
     end
-    custom_field = !field.nil? && field.start_with?('"')
+
+    custom_field = !field.nil? && field.is_a?(String) && field.start_with?('"')
+
     block_group = (@lexer.level == 0) ? 0 : @lexer.block_group_identifier
     expression = {:field => field, :operator => operator, :conjunction => 'And',
       :conjunction_level => 0, :level => @lexer.level,
-      :block_group => block_group, :custom_field => custom_field}.
-      merge!(field_args)
+      :block_group => block_group, :custom_field => custom_field}
+
+    if !field_manipulations.nil?
+      # Keeping field_function and field_function_type for backward compatibility with datacon
+      expression.merge!(field_manipulations: field_manipulations,
+                        field_function: field_manipulations[:function_name],
+                        field_function_type: field_manipulations[:return_type],
+                        args: field_manipulations[:function_parameters])
+    end
+
     expression = val.merge(expression) unless val.nil?
     expression[:condition] ||= expression[:value]
     validate_level_depth expression
@@ -145,10 +146,14 @@ module Sparkql::ParserTools
   end
   
   def tokenize_field_arg(field)
-    {
-      :type => :field,
-      :value => field,
-    }
+    if field.is_a?(Hash) && field[:type] == :function
+      field
+    else
+      {
+        :type => :field,
+        :value => field,
+      }
+    end
   end
   
   def tokenize_function(name, f_args)
@@ -180,7 +185,6 @@ module Sparkql::ParserTools
   def on_error(error_token_id, error_value, value_stack)
     token_name = token_to_str(error_token_id)
     token_name.downcase!
-    token = error_value.to_s.inspect
     tokenizer_error(:token => @lexer.current_token_value, 
                     :message => "Error parsing token #{token_name}",
                     :status => :fatal, 
