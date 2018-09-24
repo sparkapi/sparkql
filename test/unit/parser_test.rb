@@ -823,6 +823,22 @@ class ParserTest < Test::Unit::TestCase
     assert_equal({:type=>:field, :value=>"City"}, function2[:args].first)
   end
 
+  test 'nested functions with multiple params' do
+    filter = "concat(tolower(City), 'b') Eq 'fargob'"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert expression.key?(:field_manipulations)
+    function1 = expression[:field_manipulations]
+    assert_equal :function, function1[:type]
+    assert_equal 'concat', function1[:function_name]
+    assert_equal({type: :character, value: 'b'}, function1[:args].last)
+
+    function2 = function1[:args].first
+    assert_equal :function, function2[:type]
+    assert_equal 'tolower', function2[:function_name]
+    assert_equal({:type=>:field, :value=>"City"}, function2[:args].first)
+  end
+
   private
 
   def parser_errors(filter)  

@@ -346,6 +346,23 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     assert parser.errors?
   end
 
+  test "max out nested functions of 5" do
+    field = "tolower(City)"
+
+    4.times do
+      field = "tolower(#{field})"
+    end
+
+    parser = Parser.new
+    parser.parse("#{field} Eq 'Fargo'")
+    assert !parser.errors?
+
+    parser = Parser.new
+    field = "tolower(#{field})"
+    parser.parse("#{field} Eq 'Fargo'")
+    assert parser.errors?, 'should error on too many nested functions'
+  end
+
   test "max out function args" do
     parser = Parser.new
     to_the_max = []

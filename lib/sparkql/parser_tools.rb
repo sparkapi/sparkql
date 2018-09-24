@@ -54,6 +54,7 @@ module Sparkql::ParserTools
     expression = val.merge(expression) unless val.nil?
     expression[:condition] ||= expression[:value]
     validate_level_depth expression
+    validate_field_function_depth(expression[:field_manipulations])
     if operator.nil?
       tokenizer_error(:token => op, :expression => expression,
         :message => "Operator not supported for this type and value string", :status => :fatal )
@@ -198,7 +199,15 @@ module Sparkql::ParserTools
             :status => :fatal, :syntax => false, :constraint => true )
     end
   end
-  
+
+  def validate_field_function_depth(expression)
+    if nested_function_depth(expression) > max_function_depth
+      compile_error(:token => "(", :expression => expression,
+            :message => "You have exceeded the maximum function nesting level.  Please nest no more than #{max_function_depth} levels deep.",
+            :status => :fatal, :syntax => false, :constraint => true )
+    end
+  end
+
   def validate_expressions results
     if results.size > max_expressions 
       compile_error(:token => results[max_expressions][:field], :expression => results[max_expressions],
@@ -241,4 +250,26 @@ module Sparkql::ParserTools
     end
   end
 
+  def nested_function_depth(expression)
+    return 0 unless expression && expression[:type] == :function
+
+    height = 0
+    queue = []
+    queue.push(expression)
+
+    while true
+      count = queue.size
+      return height if count == 0
+
+      height += 1
+
+      while count > 0
+        node = queue.shift
+        node[:args].each do |child|
+          queue.push(child) if child[:type] == :function
+        end
+        count -= 1
+      end
+    end
+  end
 end

@@ -4,6 +4,7 @@ module Sparkql::ParserCompatibility
   MAXIMUM_MULTIPLE_VALUES = 200
   MAXIMUM_EXPRESSIONS = 75
   MAXIMUM_LEVEL_DEPTH = 2
+  MAXIMUM_FUNCTION_DEPTH = 5
 
   # Ordered by precedence.
   FILTER_VALUES = [
@@ -193,6 +194,10 @@ module Sparkql::ParserCompatibility
 
   def max_values
     MAXIMUM_MULTIPLE_VALUES
+  end
+
+  def max_function_depth
+    MAXIMUM_FUNCTION_DEPTH
   end
 
   private
