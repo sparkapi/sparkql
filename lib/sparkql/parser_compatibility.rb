@@ -4,61 +4,51 @@ module Sparkql::ParserCompatibility
   MAXIMUM_MULTIPLE_VALUES = 200
   MAXIMUM_EXPRESSIONS = 75
   MAXIMUM_LEVEL_DEPTH = 2
+  MAXIMUM_FUNCTION_DEPTH = 5
 
-  # TODO I Really don't think this is required anymore
   # Ordered by precedence.
   FILTER_VALUES = [
     {
       :type => :datetime,
-      :regex => /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}T[0-9]{2}\:[0-9]{2}\:[0-9]{2}\.[0-9]{6}$/,
       :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
     },
     {
       :type => :date,
-      :regex => /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/,
       :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
     },
     {
       :type => :time,
-      :regex => /^[0-9]{2}\:[0-9]{2}(\:[0-9]{2})?(\.[0-9]{6)$/,
       :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
     },
     {
       :type => :character,
-      :regex => /^'([^'\\]*(\\.[^'\\]*)*)'$/, # Strings must be single quoted.  Any inside single quotes must be escaped.
       :multiple => /^'([^'\\]*(\\.[^'\\]*)*)'/,
       :operators => Sparkql::Token::EQUALITY_OPERATORS
     },
     {
       :type => :integer,
-      :regex => /^\-?[0-9]+$/,
       :multiple => /^\-?[0-9]+/,
       :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
     },
     {
       :type => :decimal,
-      :regex => /^\-?[0-9]+\.[0-9]+$/,
       :multiple => /^\-?[0-9]+\.[0-9]+/,
       :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
     },
     {
       :type => :shape,
-      # This type is not parseable, so no regex
       :operators => Sparkql::Token::EQUALITY_OPERATORS
     },
     {
       :type => :boolean,
-      :regex => /^true|false$/,
       :operators => Sparkql::Token::EQUALITY_OPERATORS
     },
     {
       :type => :null,
-      :regex => /^NULL|Null|null$/,
       :operators => Sparkql::Token::EQUALITY_OPERATORS
     },
     {
       :type => :function,
-      # This type is not parseable, so no regex
       :operators => Sparkql::Token::OPERATORS + [Sparkql::Token::RANGE_OPERATOR]
     },
   ]
@@ -206,6 +196,10 @@ module Sparkql::ParserCompatibility
     MAXIMUM_MULTIPLE_VALUES
   end
 
+  def max_function_depth
+    MAXIMUM_FUNCTION_DEPTH
+  end
+
   private
 
   def tokenizer_error( error_hash )
@@ -224,11 +218,11 @@ module Sparkql::ParserCompatibility
       (supports_nulls && expression[:type] == :null)
       return true
     # If the field will be passed into a function,
-    # check the type of the return value (:field_function_type),
+    # check the type of the return value of the function
     # and coerce if necessary.
-    elsif expression[:field_function_type] &&
-          expression[:type] == :integer && 
-          expression[:field_function_type] == :decimal
+    elsif expression[:field_manipulations] &&
+          expression[:type] == :integer &&
+          expression[:field_manipulations][:return_type] == :decimal
       expression[:type] = :decimal
       expression[:cast] = :integer
       return true
@@ -264,9 +258,9 @@ module Sparkql::ParserCompatibility
   # the function matches what is expected, and that the function supports the
   # field type as the first argument.
   def check_function_type?(expression, expected)
-    return false unless expression[:field_function_type] == expression[:type]
+    return false unless expression.key?(:field_manipulations) && expression[:field_manipulations][:return_type] == expression[:type]
     # Lookup the function arguments
-    function = Sparkql::FunctionResolver::SUPPORTED_FUNCTIONS[expression[:field_function].to_sym]
+    function = Sparkql::FunctionResolver::SUPPORTED_FUNCTIONS[expression[:field_manipulations][:function_name].to_sym]
     return false if function.nil?
 
     Array(function[:args].first).include?(expected)

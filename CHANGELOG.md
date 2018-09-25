@@ -1,3 +1,7 @@
+v1.2.0, 2018-09-24
+-------------------
+  * [IMPROVEMENT] Support Nested field functions via `field_manipulations` attribute.
+
 v1.1.17, 2018-08-01
 -------------------
   * [IMPROVEMENT] New Function: concat()

@@ -170,6 +170,11 @@ class ParserTest < Test::Unit::TestCase
     assert_equal 'City', expression[:field]
     assert_equal '13', expression[:value]
     assert_equal '4131800000000', expression[:args].last
+
+    assert_equal 'indexof', expression[:field_manipulations][:function_name]
+    assert_equal :function, expression[:field_manipulations][:type]
+    assert_equal :integer, expression[:field_manipulations][:return_type]
+    assert_equal ['City', '4131800000000'], expression[:field_manipulations][:args].map {|v| v[:value]}
   end
 
   test "function data preserved in expression" do
@@ -207,8 +212,6 @@ class ParserTest < Test::Unit::TestCase
   end
 
   test "mixed list" do
-    # TODO This is an unrealistic example. We need number functions or support 
-    # for dates in lists
     filter = "OriginalEntryTimestamp Eq 2014,days(-7)"
     @parser = Parser.new
     expressions = @parser.parse(filter)
@@ -217,14 +220,11 @@ class ParserTest < Test::Unit::TestCase
     assert_equal '2014,days(-7)', expressions.first[:condition]
   end
 
+  def test_errors_on_left_hand_field_function
+    parser_errors("Field Eq ceiling(Field)")
+  end
+
   def test_function_date
-    filter = "OnMarketDate Eq date(OriginalEntryTimestamp)"
-    @parser = Parser.new
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-    assert_equal 'date(OriginalEntryTimestamp)', expressions.first[:condition]
-    assert_equal 'date', expressions.first[:value]
-    assert_equal :function, expressions.first[:type]
     # Run using a static value, we just resolve the type
     filter = "OnMarketDate Eq date(2013-07-26T10:22:15.111-0100)"
     @parser = Parser.new
@@ -685,14 +685,17 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_round_with_field
-    filter = "ListPrice Eq round(FieldName)"
+    filter = "round(ListPrice) Eq 1"
     @parser = Parser.new
     expression = @parser.parse(filter).first
     assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
 
-    assert_equal 'round', expression[:function_name]
-    assert_equal 'round(FieldName)', expression[:condition]
-    assert_equal(["FieldName"], expression[:function_parameters])
+    assert_equal 'round', expression[:field_function]
+    assert_equal(["ListPrice"], expression[:args])
+
+    assert_equal 'round', expression[:field_manipulations][:function_name]
+    assert_equal :function, expression[:field_manipulations][:type]
+    assert_equal ['ListPrice'], expression[:field_manipulations][:args].map {|v| v[:value]}
   end
 
   def test_ceiling_with_literal
@@ -714,14 +717,13 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_ceiling_with_field
-    filter = "ListPrice Eq ceiling(FieldName)"
+    filter = "ceiling(ListPrice) Eq 4"
     @parser = Parser.new
     expression = @parser.parse(filter).first
     assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
 
-    assert_equal 'ceiling', expression[:function_name]
-    assert_equal 'ceiling(FieldName)', expression[:condition]
-    assert_equal(["FieldName"], expression[:function_parameters])
+    assert_equal 'ceiling', expression[:field_function]
+    assert_equal(["ListPrice"], expression[:args])
   end
 
   def test_floor_with_literal
@@ -743,26 +745,33 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_floor_with_field
-    filter = "ListPrice Eq floor(FieldName)"
+    filter = "floor(ListPrice) Eq 1"
     @parser = Parser.new
     expression = @parser.parse(filter).first
     assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
 
-    assert_equal 'floor', expression[:function_name]
-    assert_equal 'floor(FieldName)', expression[:condition]
-    assert_equal(["FieldName"], expression[:function_parameters])
+    assert_equal 'floor', expression[:field_function]
+    assert_equal(["ListPrice"], expression[:args])
+
+    assert_equal 'floor', expression[:field_manipulations][:function_name]
+    assert_equal :function, expression[:field_manipulations][:type]
+    assert_equal ['ListPrice'], expression[:field_manipulations][:args].map {|v| v[:value]}
   end
 
   def test_concat_with_field
-    filter = "City Eq concat(City, 'b')"
+    filter = "concat(City, 'b') Eq 'Fargob'"
     @parser = Parser.new
     expression = @parser.parse(filter).first
     assert !@parser.errors?, "Filter '#{filter}' failed: #{@parser.errors.first.inspect}"
 
-    assert_equal :function, expression[:type]
-    assert_equal 'concat', expression[:function_name]
-    assert_equal(["City", 'b'], expression[:function_parameters])
+    assert_equal :character, expression[:type]
+    assert_equal 'concat', expression[:field_function]
+    assert_equal(["City", 'b'], expression[:args])
     assert_equal("City", expression[:field])
+
+    assert_equal 'concat', expression[:field_manipulations][:function_name]
+    assert_equal :function, expression[:field_manipulations][:type]
+    assert_equal ['City', 'b'], expression[:field_manipulations][:args].map {|v| v[:value]}
   end
 
   def test_concat_with_literal
@@ -786,11 +795,48 @@ class ParserTest < Test::Unit::TestCase
     assert_equal 'cast', expression[:field_function]
     assert_equal "'100000'", expression[:condition]
     assert_equal(:character, expression[:field_function_type])
+
+    assert_equal 'cast', expression[:field_manipulations][:function_name]
+    assert_equal :function, expression[:field_manipulations][:type]
+    assert_equal ['ListPrice', 'character'], expression[:field_manipulations][:args].map {|v| v[:value]}
   end
 
   def test_cast_with_invalid_type
     parser_errors("cast(ListPrice, 'bogus') Eq '10'")
     parser_errors("ListPrice Eq cast('10', 'bogus')")
+  end
+
+  test 'nested functions on field side' do
+    @parser = Parser.new
+    filter = "tolower(toupper(City)) Eq 'Fargo'"
+    expression = @parser.parse(filter).first
+    assert_equal 'City', expression[:field]
+    assert expression.key?(:field_manipulations)
+    function1 = expression[:field_manipulations]
+    assert_equal :function, function1[:type]
+    assert_equal 'tolower', function1[:function_name]
+    assert_equal 'tolower', expression[:field_function]
+
+    function2 = function1[:args].first
+    assert_equal :function, function2[:type]
+    assert_equal 'toupper', function2[:function_name]
+    assert_equal({:type=>:field, :value=>"City"}, function2[:args].first)
+  end
+
+  test 'nested functions with multiple params' do
+    filter = "concat(tolower(City), 'b') Eq 'fargob'"
+    @parser = Parser.new
+    expression = @parser.parse(filter).first
+    assert expression.key?(:field_manipulations)
+    function1 = expression[:field_manipulations]
+    assert_equal :function, function1[:type]
+    assert_equal 'concat', function1[:function_name]
+    assert_equal({type: :character, value: 'b'}, function1[:args].last)
+
+    function2 = function1[:args].first
+    assert_equal :function, function2[:type]
+    assert_equal 'tolower', function2[:function_name]
+    assert_equal({:type=>:field, :value=>"City"}, function2[:args].first)
   end
 
   private

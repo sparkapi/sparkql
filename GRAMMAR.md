@@ -108,7 +108,7 @@ on filtering values
 ```
      condition
        : literal
-       | function
+       | literal_function
        | literal_list 
        ;
 ```
@@ -124,6 +124,10 @@ fields.
        : function_name LPAREN RPAREN 
        | function_name LPAREN function_args RPAREN 
        ;
+     literal_function
+       : function_name LPAREN RPAREN 
+       | function_name LPAREN literal_function_args RPAREN 
+       ;
      function_name
        : KEYWORD
        ;
@@ -137,11 +141,20 @@ Functions may optionally have a comma delimited list of parameters.
      function_args
        : function_arg
        | function_args COMMA function_arg 
-       ; 
+       ;
      function_arg
        : literal
        | literals
        | field 
+       ;
+     literal_function_args
+       : literal_function_arg
+       | literal_function_args COMMA literal_function_arg 
+       ;
+     literal_function_arg
+       : literal
+       | literals
+       | literal_function
        ;
 ```
 
@@ -152,7 +165,7 @@ A comma delimited list of functions and values.
 ```
      literal_list
        : literals
-       | function
+       | literal_function
        | literal_list COMMA literals 
        | literal_list COMMA function 
        ;

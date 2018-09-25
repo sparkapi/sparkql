@@ -16,9 +16,6 @@ class Sparkql::Lexer < StringScanner
   end
   
   # Lookup the next matching token
-  # 
-  # TODO the old implementation did value type detection conversion at a later date, we can perform
-  # this at parse time if we want!!!!
   def shift
     @token_index = self.pos
 

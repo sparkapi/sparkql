@@ -31,7 +31,7 @@ class FunctionResolverTest < Test::Unit::TestCase
 
     assert_equal :function, value[:type]
     assert_equal 'round', value[:value]
-    assert_equal "ListPrice", value[:args].first
+    assert_equal "ListPrice", value[:args].first[:value]
   end
 
   test "substring character one index" do
@@ -89,8 +89,8 @@ class FunctionResolverTest < Test::Unit::TestCase
 
     assert_equal :function, value[:type]
     assert_equal 'substring', value[:value]
-    assert_equal "ListPrice", value[:args].first
-    assert_nil value[:args].last
+    assert_equal "ListPrice", value[:args].first[:value]
+    assert_equal 2, value[:args].size
   end
 
   test "substring field two indexes" do
@@ -106,8 +106,8 @@ class FunctionResolverTest < Test::Unit::TestCase
 
     assert_equal :function, value[:type]
     assert_equal 'substring', value[:value]
-    assert_equal "ListPrice", value[:args].first
-    assert_equal 2, value[:args].last
+    assert_equal "ListPrice", value[:args].first[:value]
+    assert_equal 2, value[:args].last[:value]
   end
 
   test "substring with negative M is a parse error" do
@@ -145,7 +145,7 @@ class FunctionResolverTest < Test::Unit::TestCase
 
     assert_equal :function, value[:type]
     assert_equal 'trim', value[:value]
-    assert_equal "Name", value[:args].first
+    assert_equal "Name", value[:args].first[:value]
   end
 
   test 'trim with character' do
@@ -177,7 +177,7 @@ class FunctionResolverTest < Test::Unit::TestCase
     value = f.call
     assert_equal :function, value[:type]
     assert_equal 'toupper', value[:value]
-    assert_equal "City", value[:args].first
+    assert_equal "City", value[:args].first[:value]
   end
 
   test "toupper('string')" do
@@ -196,7 +196,7 @@ class FunctionResolverTest < Test::Unit::TestCase
     value = f.call
     assert_equal :function, value[:type]
     assert_equal 'length', value[:value]
-    assert_equal "City", value[:args].first
+    assert_equal "City", value[:args].first[:value]
   end
 
   test "length('string')" do
@@ -256,7 +256,7 @@ class FunctionResolverTest < Test::Unit::TestCase
 
     assert_equal :function, value[:type]
     assert_equal 'floor', value[:value]
-    assert_equal "ListPrice", value[:args].first
+    assert_equal "ListPrice", value[:args].first[:value]
   end
 
   test "ceiling(float)" do
@@ -276,7 +276,7 @@ class FunctionResolverTest < Test::Unit::TestCase
 
     assert_equal :function, value[:type]
     assert_equal 'ceiling', value[:value]
-    assert_equal "ListPrice", value[:args].first
+    assert_equal "ListPrice", value[:args].first[:value]
   end
 
   test "days()" do
@@ -325,7 +325,7 @@ class FunctionResolverTest < Test::Unit::TestCase
       value = f.call
       assert_equal :function, value[:type]
       assert_equal function, value[:value]
-      assert_equal "OriginalEntryTimestamp", value[:args].first
+      assert_equal "OriginalEntryTimestamp", value[:args].first[:value]
     end
   end
 
@@ -337,7 +337,7 @@ class FunctionResolverTest < Test::Unit::TestCase
       value = f.call
       assert_equal :function, value[:type]
       assert_equal function, value[:value]
-      assert_equal "OriginalEntryTimestamp", value[:args].first
+      assert_equal "OriginalEntryTimestamp", value[:args].first[:value]
     end
   end
 
@@ -348,7 +348,7 @@ class FunctionResolverTest < Test::Unit::TestCase
     value = f.call
     assert_equal :function, value[:type]
     assert_equal 'fractionalseconds', value[:value]
-    assert_equal "OriginalEntryTimestamp", value[:args].first
+    assert_equal "OriginalEntryTimestamp", value[:args].first[:value]
   end
 
   # Polygon searches
@@ -544,7 +544,7 @@ class FunctionResolverTest < Test::Unit::TestCase
 
     assert_equal :function, value[:type]
     assert_equal 'cast', value[:value]
-    assert_equal ['Bedrooms', 'character'], value[:args]
+    assert_equal ['Bedrooms', 'character'], value[:args].map { |v| v[:value]}
   end
 
   test "invalid cast returns null" do
@@ -593,7 +593,7 @@ class FunctionResolverTest < Test::Unit::TestCase
     value = f.call
     assert_equal :function, value[:type]
     assert_equal 'time', value[:value]
-    assert_equal "OriginalEntryTimestamp", value[:args].first
+    assert_equal "OriginalEntryTimestamp", value[:args].first[:value]
   end
   
   test "date(field)" do
@@ -603,7 +603,7 @@ class FunctionResolverTest < Test::Unit::TestCase
     value = f.call
     assert_equal :function, value[:type]
     assert_equal 'date', value[:value]
-    assert_equal "OriginalEntryTimestamp", value[:args].first
+    assert_equal "OriginalEntryTimestamp", value[:args].first[:value]
   end
 
   test "startswith(), endswith() and contains()" do
