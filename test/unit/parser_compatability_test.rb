@@ -132,7 +132,6 @@ class ParserCompatabilityTest < Test::Unit::TestCase
         :type => :boolean,
         :operator => "Eq"
       }]
-      
   end
 
   def compare_expression_to_tokens( expression, tokens )
@@ -560,5 +559,10 @@ class ParserCompatabilityTest < Test::Unit::TestCase
                  parser.escape_value(expression).map { |i| i.strftime(Sparkql::FunctionResolver::STRFTIME_DATE_FORMAT)}
   end
 
-  
+  test "nested function with altering types" do
+    parser = Parser.new
+    expression = parser.tokenize("cast(month(OriginalEntryTimestamp), 'character') Eq '3'").first
+    assert parser.send(:check_type!, expression, :datetime)
+    assert_equal '3', parser.escape_value(expression)
+  end
 end
