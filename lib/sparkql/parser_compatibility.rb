@@ -260,10 +260,19 @@ module Sparkql::ParserCompatibility
   def check_function_type?(expression, expected)
     return false unless expression.key?(:field_manipulations) && expression[:field_manipulations][:return_type] == expression[:type]
     # Lookup the function arguments
-    function = Sparkql::FunctionResolver::SUPPORTED_FUNCTIONS[expression[:field_manipulations][:function_name].to_sym]
+    function = Sparkql::FunctionResolver::SUPPORTED_FUNCTIONS[deepest_function(expression[:field_manipulations])[:function_name].to_sym]
     return false if function.nil?
 
     Array(function[:args].first).include?(expected)
+  end
+
+
+  def deepest_function(function)
+    if function[:args].first[:type] == :function
+      deepest_function(function[:args].first)
+    else
+      function
+    end
   end
 
   # Builds the correct operator based on the type and the value.

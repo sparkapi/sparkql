@@ -1,3 +1,7 @@
+v1.2.1, 2018-10-09
+-------------------
+  * [BUGFIX] Check deepest function when type checking field arguments.
+
 v1.2.0, 2018-09-24
 -------------------
   * [IMPROVEMENT] Support Nested field functions via `field_manipulations` attribute.
