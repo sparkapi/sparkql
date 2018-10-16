@@ -193,7 +193,7 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
   def parses(sparkql, msg = 'Expected sparkql to parse: ')
     parser = Sparkql::Parser.new
     ast = parser.parse(sparkql)
-    assert !parser.errors?, "#{msg}: #{sparkql}"
+    assert !parser.errors?, "#{msg}: #{sparkql}: #{parser.errors.inspect}"
     ast
   end
 

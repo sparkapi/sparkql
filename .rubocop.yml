@@ -8,6 +8,9 @@ AllCops:
 Style/SymbolArray:
     EnforcedStyle: brackets
 
+Style/WordArray:
+    EnforcedStyle: brackets
+
 Metrics/LineLength:
     Max: 90
     Exclude:

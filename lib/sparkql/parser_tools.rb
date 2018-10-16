@@ -109,7 +109,7 @@ module Sparkql::ParserTools
   end
 
   def tokenize_function(name, f_args)
-    method = name.to_sym
+    method = name
 
     unless Sparkql::FUNCTION_METADATA.key?(method)
       tokenizer_error(token: name,

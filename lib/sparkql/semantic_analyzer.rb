@@ -304,11 +304,11 @@ module Sparkql
     end
 
     def function_type(name, _args)
-      Sparkql::FUNCTION_METADATA[name.to_sym][:return_type].to_s
+      Sparkql::FUNCTION_METADATA[name]['return_type']
     end
 
     def visit_function(function)
-      arg_meta = Sparkql::FUNCTION_METADATA[function['name'].to_sym][:arguments]
+      arg_meta = Sparkql::FUNCTION_METADATA[function['name']]['arguments']
       args = function['args'].map { |arg| visit(arg) }
 
       new_node = function.dup.merge(
@@ -327,91 +327,112 @@ module Sparkql
       coord_string.split(' ').size > 1
     end
 
-    def basic_arg_validation?(args, arg_meta)
-      min_args = arg_meta.reject { |arg| arg.key?(:default) }.size
-      max_args = arg_meta.size
+    def min_args(arg_meta)
+      arg_meta.reject { |arg| arg.key?('default') }.size
+    end
+
+    def max_args(arg_meta)
+      arg_meta.size
+    end
+
+    def valid_arg_count?(args, arg_meta)
+      min_args = min_args(arg_meta)
+      max_args = max_args(arg_meta)
 
       if args.size < min_args || args.size > max_args
-        message = if min_args == max_args
-                    "requires #{min_args} arguments"
-                  else
-                    "requires between #{min_args} and #{max_args} arguments"
-                  end
-        @errors << {
-          token: 'name',
-          message: message,
-          status: :fatal
-        }
-        return false
-      end
-
-      arg_meta.each_with_index do |meta, index|
-        current_argument = args[index]
-
-        if !meta[:allow_field] && current_argument['name'] == 'field'
-          @errors << {
-            token: current_argument,
-            message: 'Argument does not support a field',
-            status: :fatal,
-            syntax: false,
-            constraint: true
-          }
-          return false
-        end
-
-        next unless current_argument.key?('type') && !meta[:types].include?(current_argument['type'].to_sym)
-
-        @errors << {
-          token: current_argument,
-          message: "Incorrect argument type: #{current_argument['type']}",
-          status: :fatal,
-          syntax: false,
-          constraint: true
-        }
+        message = "requires between #{min_args} and #{max_args} arguments"
+        @errors << { token: 'name', message: message, status: :fatal }
         return false
       end
       true
     end
 
+    def accepts_field_argument?(meta, current_argument)
+      return true unless !meta['allow_field'] && current_argument['name'] == 'field'
+
+      @errors << {
+        token: current_argument,
+        message: 'Argument does not support a field',
+        status: :fatal,
+        syntax: false,
+        constraint: true
+      }
+      false
+    end
+
+    def accepts_type?(meta, current_argument)
+      type = current_argument['type']
+      return true unless !type.nil? && !meta['types'].include?(current_argument['type'])
+
+      @errors << {
+        token: current_argument,
+        message: "Incorrect argument type: #{current_argument['type']}",
+        status: :fatal,
+        syntax: false,
+        constraint: true
+      }
+      false
+    end
+
+    def basic_arg_validation?(args, arg_meta)
+      return false unless valid_arg_count?(args, arg_meta)
+
+      arg_meta.each_with_index do |meta, index|
+        current_argument = args[index]
+
+        return false unless accepts_field_argument?(meta, current_argument)
+        return false unless accepts_type?(meta, current_argument)
+      end
+      true
+    end
+
+    def coerce_numbers(types, all_nodes)
+      return all_nodes unless types.all? { |type| NUMBER_TYPES.include?(type) }
+
+      all_nodes.map do |node|
+        coerce_to(node, NUMBER_TYPES.first)
+      end
+    end
+
+    def coerce_dates(types, all_nodes)
+      return all_nodes unless types.all? { |type| DATE_TYPES.include?(type) }
+
+      all_nodes.map do |node|
+        coerce_to(node, DATE_TYPES.first)
+      end
+    end
+
+    def coerce_to(node, type)
+      return node if node['type'] == type
+
+      {
+        'name' => 'coerce',
+        'lhs' => node,
+        'rhs' => type
+      }
+    end
+
     def coerce_if_necessary(all_nodes)
       types = all_nodes.map { |node| node['type'] }
+      return all_nodes if (types.uniq - ['null']).size <= 1
 
-      # Can compare null to other types
-      if (types.uniq - ['null']).size <= 1
-        return all_nodes
-      else
-        if types.all? { |type| NUMBER_TYPES.include?(type) }
-          all_nodes.map do |node|
-            if node['type'] != NUMBER_TYPES.first
-              {
-                'name' => 'coerce',
-                'lhs' => node,
-                'rhs' => NUMBER_TYPES.first
-              }
-            else
-              node
-            end
-          end
-        elsif types.all? { |type| DATE_TYPES.include?(type) }
-          all_nodes.map do |node|
-            if node['type'] != DATE_TYPES.first
-              {
-                'name' => 'coerce',
-                'lhs' => node,
-                'rhs' => DATE_TYPES.first
-              }
-            else
-              node
-            end
-          end
-        else
-          @errors << {
-            message: 'Type mismatch in comparison.',
-            status: :fatal
-          }
-          all_nodes
-        end
-      end
+      all_nodes = coerce_numbers(types, all_nodes)
+      all_nodes = coerce_dates(types, all_nodes)
+
+      type_mismatch?(all_nodes)
+      all_nodes
+    end
+
+    def type_mismatch?(all_nodes)
+      types = all_nodes.map { |node| node['type'] }.compact
+      return false if types.all? { |type| DATE_TYPES.include?(type) }
+      return false if types.all? { |type| NUMBER_TYPES.include?(type) }
+
+      @errors << {
+        message: 'Type mismatch in comparison.',
+        status: :fatal
+      }
+      true
     end
 
     def numeric?(type)
