@@ -12,5 +12,5 @@ Following are new node(s) which will be added to the parse tree:
 
 name | description | lhs | rhs
 ---- | ----------- | --- | ---
-`'coercion'` | Specifies what we will need to coerce a value to. Same as the `'cast'` function, but is done without user explicitness and the `'function'` attribute is not set. | the expression to coerce | the type as a symbol to coerce to.
+`'coercion'` | Specifies what we will need to coerce a value to. Same as the `'cast'` function, but is done without user explicitness and the `'function'` attribute is not set. | the expression to coerce | the type as a string to coerce to.
 
