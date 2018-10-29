@@ -109,15 +109,6 @@ module Sparkql::ParserTools
   end
 
   def tokenize_function(name, f_args)
-    method = name
-
-    unless Sparkql::FUNCTION_METADATA.key?(method)
-      tokenizer_error(token: name,
-                      message: "Unsupported function call '#{name}' for expression",
-                      status: :fatal)
-      return
-    end
-
     {
       'function' => true,
       'name' => name,

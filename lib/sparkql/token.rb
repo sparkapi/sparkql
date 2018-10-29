@@ -21,9 +21,9 @@ module Sparkql
     NULL = /NULL|null|Null/
     # Reserved words
     RANGE_OPERATOR = 'Bt'.freeze
-    EQUALITY_OPERATORS = %w[Eq Ne].freeze
-    OPERATORS = %w[Gt Ge Lt Le] + EQUALITY_OPERATORS
+    EQUALITY_OPERATORS = ['Eq', 'Ne'].freeze
+    OPERATORS = ['Gt', 'Ge', 'Lt', 'Le'] + EQUALITY_OPERATORS
     UNARY_CONJUNCTIONS = ['Not'].freeze
-    CONJUNCTIONS = %w[And Or].freeze
+    CONJUNCTIONS = ['And', 'Or'].freeze
   end
 end

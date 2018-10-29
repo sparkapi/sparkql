@@ -262,12 +262,6 @@ class FunctionTest < Test::Unit::TestCase
     assert_equal ['20100000000000000000000000', 1], expressions['rhs']['args'].map { |v| v['value'] }
   end
 
-  test 'undefined function' do
-    filter = 'Location Eq bugus(1)'
-    @parser.parse(filter)
-    assert @parser.errors?, @parser.errors.inspect
-  end
-
   test 'indexof with field' do
     filter = "indexof(City, '4131800000000') Eq 13"
     expressions = @parser.parse(filter)

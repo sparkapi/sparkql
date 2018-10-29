@@ -9,7 +9,6 @@ require 'sparkql/lexer'
 require 'sparkql/parser_tools'
 require 'sparkql/parser_compatibility'
 require 'sparkql/parser'
-require 'sparkql/semantic_analyzer'
 require 'sparkql/geo'
 
 # Parse
@@ -18,6 +17,12 @@ require 'sparkql/geo'
 # Literal Folding
 # Custom Optimizations (Tree reordering)
 module Sparkql
-  FUNCTION_FILE = 'config/functions.yml'.freeze
-  FUNCTION_METADATA = YAML.load_file(File.join(__dir__, FUNCTION_FILE))
+  def self.root
+    File.dirname __dir__
+  end
+
+  def self.config
+    File.join root, 'config'
+  end
 end
+require 'sparkql/semantic_analyzer'

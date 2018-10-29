@@ -9,6 +9,12 @@ class ParserTest < Test::Unit::TestCase
     @parser = Parser.new
   end
 
+  test 'stack-level' do
+    asdf = (['Test Eq 11'] * 10).join(' And ')
+    puts @parser.parse(asdf).inspect
+
+  end
+
   test 'simple' do
     parse 'Test Eq 10'
     parse 'Test Eq 10.0'

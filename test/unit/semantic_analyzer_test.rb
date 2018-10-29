@@ -174,7 +174,7 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
       parser = Sparkql::Parser.new
       ast = parser.parse(f)
 
-      analyzer = Sparkql::SemanticAnalyzer.new('Field' => {})
+      analyzer = Sparkql::SemanticAnalyzer.new('Field' => {'Searchable' => true, 'Type' => 'DateTime'})
       analyzer.visit(ast)
 
       assert analyzer.errors?
@@ -182,10 +182,25 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
     end
   end
 
+  test 'non-searchable field throws error' do
+    parser = Sparkql::Parser.new
+    ast = parser.parse("Field Eq 10")
+
+    analyzer = Sparkql::SemanticAnalyzer.new('Field' => {'Searchable' => false, 'Type' => 'Integer'})
+    analyzer.visit(ast)
+
+    assert analyzer.errors?
+    assert_match(/not searchable/, analyzer.errors.first[:message])
+  end
+
   test 'No extra function validations break on invalid field types within parameters' do
     assert_nothing_raised do
       assert_errors("Location Eq radius('46.8 -96.8','-20.0')")
     end
+  end
+
+  test 'undefined function' do
+    assert_errors 'Location Eq bugus(1)'
   end
 
   private
