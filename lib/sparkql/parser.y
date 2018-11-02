@@ -2,7 +2,7 @@
 #
 # SparkQL grammar
 
-class Sparkql::Parser
+class Sparkql::V2::Parser
 
 ###############################################################################
 # READ THIS!
@@ -190,8 +190,8 @@ end
 ---- header
 # $Id$
 ---- inner
-  include Sparkql::ParserTools
-  include Sparkql::ParserCompatibility
+  include Sparkql::V2::ParserTools
+  include Sparkql::V2::ParserCompatibility
 
 ---- footer
 

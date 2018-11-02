@@ -3,7 +3,7 @@ require 'sparkql/version'
 
 Gem::Specification.new do |s|
   s.name        = 'sparkql'
-  s.version     = Sparkql::VERSION
+  s.version     = Sparkql::V2::VERSION
   s.authors     = ['Wade McEwen']
   s.email       = ['wade@fbsdata.com']
   s.homepage    = ''

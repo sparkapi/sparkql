@@ -8,10 +8,11 @@ require 'racc/parser.rb'
 
 # $Id$
 module Sparkql
-  class Parser < Racc::Parser
+  module V2
+    class Parser < Racc::Parser
 
-  include Sparkql::ParserTools
-  include Sparkql::ParserCompatibility
+  include Sparkql::V2::ParserTools
+  include Sparkql::V2::ParserCompatibility
 
 ##### State transition tables begin ###
 
@@ -366,7 +367,8 @@ def _reduce_none(val, _values, result)
   val[0]
 end
 
-  end   # class Parser
+    end   # class Parser
+    end   # module V2
   end   # module Sparkql
 
 
