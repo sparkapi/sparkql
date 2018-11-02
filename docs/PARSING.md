@@ -18,7 +18,7 @@ The return value will be the abstract syntax tree containing the query informati
     'name' => 'field',
     'value' => "Hello"
   },
-  :rhs => {
+  'rhs' => {
     'name' => 'literal',
     'value' => "World",
     'type' => 'character'
@@ -48,7 +48,7 @@ name | description | value | type
 name | description | lhs | rhs
 ---- | ----------- | --- | ---
 `'and'` | True if left and right results in true | left expression | right expression
-`:or` | True if left or right results in true | left expression | right expression
+`'or'` | True if left or right results in true | left expression | right expression
 
 ## Operators
 name | description | lhs | rhs
