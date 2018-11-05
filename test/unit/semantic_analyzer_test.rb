@@ -158,7 +158,7 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
   end
 
   test 'invalid operators' do
-    (Sparkql::V2::Token::OPERATORS - Sparkql::V2::Token::EQUALITY_OPERATORS).each do |o|
+    (SparkqlV2::Token::OPERATORS - SparkqlV2::Token::EQUALITY_OPERATORS).each do |o|
       ['NULL', 'true', "'My String'"].each do |v|
         assert_errors("StringField #{o} #{v}").inspect
       end
@@ -171,10 +171,10 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
 
   test 'non-coercible types in list throws errors' do
     ['Field Bt 2012-12-31,1', 'Field Bt 10,2012-12-31'].each do |f|
-      parser = Sparkql::V2::Parser.new
+      parser = SparkqlV2::Parser.new
       ast = parser.parse(f)
 
-      analyzer = Sparkql::V2::SemanticAnalyzer.new('Field' => {'Searchable' => true, 'Type' => 'DateTime'})
+      analyzer = SparkqlV2::SemanticAnalyzer.new('Field' => {'Searchable' => true, 'Type' => 'DateTime'})
       analyzer.visit(ast)
 
       assert analyzer.errors?
@@ -183,10 +183,10 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
   end
 
   test 'non-searchable field throws error' do
-    parser = Sparkql::V2::Parser.new
+    parser = SparkqlV2::Parser.new
     ast = parser.parse("Field Eq 10")
 
-    analyzer = Sparkql::V2::SemanticAnalyzer.new('Field' => {'Searchable' => false, 'Type' => 'Integer'})
+    analyzer = SparkqlV2::SemanticAnalyzer.new('Field' => {'Searchable' => false, 'Type' => 'Integer'})
     analyzer.visit(ast)
 
     assert analyzer.errors?
@@ -206,7 +206,7 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
   private
 
   def parses(sparkql, msg = 'Expected sparkql to parse: ')
-    parser = Sparkql::V2::Parser.new
+    parser = SparkqlV2::Parser.new
     ast = parser.parse(sparkql)
     assert !parser.errors?, "#{msg}: #{sparkql}: #{parser.errors.inspect}"
     ast
@@ -214,7 +214,7 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
 
   def assert_errors(sparkql)
     ast = parses(sparkql)
-    analyzer = Sparkql::V2::SemanticAnalyzer.new(@fields)
+    analyzer = SparkqlV2::SemanticAnalyzer.new(@fields)
     analyzer.visit(ast)
     assert(analyzer.errors?, sparkql.inspect)
     analyzer.errors
@@ -222,7 +222,7 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
 
   def assert_success(sparkql)
     ast = parses(sparkql)
-    analyzer = Sparkql::V2::SemanticAnalyzer.new(@fields)
+    analyzer = SparkqlV2::SemanticAnalyzer.new(@fields)
     parse_tree = analyzer.visit(ast)
     assert(!analyzer.errors?, "sparkql: #{sparkql}, #{analyzer.errors.inspect}")
     parse_tree

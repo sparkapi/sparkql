@@ -3,7 +3,6 @@
 require 'test_helper'
 
 class ParserTest < Test::Unit::TestCase
-  include Sparkql
 
   def test_error_defaults
     errors = ParserError.new

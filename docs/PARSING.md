@@ -6,7 +6,7 @@ So, you want to parse some sparkql? Well, you are in the right place.
 Here is a basic example:
 
 ```
-ast = Sparkql::V2::Parser.new.parse("Hello Eq 'World'")
+ast = SparkqlV2::Parser.new.parse("Hello Eq 'World'")
 ```
 
 The return value will be the abstract syntax tree containing the query information.
@@ -29,7 +29,7 @@ The return value will be the abstract syntax tree containing the query informati
 Alternatively you can check if there was invalid syntax by checking errors on the parser object.
 
 ```ruby
-parser = Sparkql::V2::Parser.new
+parser = SparkqlV2::Parser.new
 parser.parse("Hello Eq world")
 
 parser.errors? # true

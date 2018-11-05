@@ -16,15 +16,13 @@ require 'sparkql/geo'
 # Intermediate Code Gen
 # Literal Folding
 # Custom Optimizations (Tree reordering)
-module Sparkql
-  module V2
-    def self.root
-      File.dirname __dir__
-    end
+module SparkqlV2
+  def self.root
+    File.dirname __dir__
+  end
 
-    def self.config
-      File.join root, 'config'
-    end
+  def self.config
+    File.join root, 'config'
   end
 end
 require 'sparkql/semantic_analyzer'

@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class LexerTest < Test::Unit::TestCase
-  include Sparkql::V2
+  include SparkqlV2
 
   test 'record the current token and current oken position' do
     @lexer = Lexer.new "City Eq 'Fargo'"

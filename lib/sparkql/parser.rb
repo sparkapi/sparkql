@@ -7,46 +7,45 @@
 require 'racc/parser.rb'
 
 # $Id$
-module Sparkql
-  module V2
-    class Parser < Racc::Parser
+module SparkqlV2
+  class Parser < Racc::Parser
 
-  include Sparkql::V2::ParserTools
-  include Sparkql::V2::ParserCompatibility
+  include SparkqlV2::ParserTools
+  include SparkqlV2::ParserCompatibility
 
 ##### State transition tables begin ###
 
 racc_action_table = [
-    48,    10,    11,    14,   -28,    31,    32,    33,    34,    35,
-    36,    37,    38,    10,    11,    14,    55,    31,    32,    33,
-    34,    35,    36,    37,    38,    14,    54,    31,    32,    33,
-    34,    35,    36,    37,    38,    14,    23,    41,    42,    22,
-    43,    44,    45,    14,    15,    41,    42,   nil,    43,    44,
+    48,    10,    11,    14,    15,    31,    32,    33,    34,    35,
+    36,    37,    38,    10,    11,    14,    22,    31,    32,    33,
+    34,    35,    36,    37,    38,    14,    23,    31,    32,    33,
+    34,    35,    36,    37,    38,    14,    54,    41,    42,   -28,
+    43,    44,    45,    14,    55,    41,    42,   nil,    43,    44,
     45,     8,   nil,     9,   nil,    10,    11,    14,     8,   nil,
      9,   nil,    10,    11,    14,     9,   nil,    10,    11,    14,
-     9,    56,    10,    11,    14,    57,    14,   nil,    31,    32,
-    33,     9,   nil,    10,    11,    14,    17,    16,   nil,    47,
-    18,    19,    17,    16 ]
+     9,   nil,    10,    11,    14,     9,    56,    10,    11,    14,
+    57,    14,   nil,    31,    32,    33,    17,    16,   nil,    47,
+    17,    16,    18,    19 ]
 
 racc_action_check = [
-    22,    22,    22,    22,    29,    22,    22,    22,    22,    22,
-    22,    22,    22,    57,    57,    57,    40,    57,    57,    57,
-    57,    57,    57,    57,    57,    18,    27,    18,    18,    18,
-    18,    18,    18,    18,    18,    55,    15,    55,    55,    13,
-    55,    55,    55,    19,     1,    19,    19,   nil,    19,    19,
-    19,     9,   nil,     9,   nil,     9,     9,     9,     0,   nil,
-     0,   nil,     0,     0,     0,    17,   nil,    17,    17,    17,
-     8,    49,     8,     8,     8,    49,    54,   nil,    54,    54,
-    54,    16,   nil,    16,    16,    16,    21,    21,   nil,    21,
-     6,     6,     2,     2 ]
+    22,    22,    22,    22,     1,    22,    22,    22,    22,    22,
+    22,    22,    22,    57,    57,    57,    13,    57,    57,    57,
+    57,    57,    57,    57,    57,    18,    15,    18,    18,    18,
+    18,    18,    18,    18,    18,    19,    27,    19,    19,    29,
+    19,    19,    19,    55,    40,    55,    55,   nil,    55,    55,
+    55,     0,   nil,     0,   nil,     0,     0,     0,     9,   nil,
+     9,   nil,     9,     9,     9,     8,   nil,     8,     8,     8,
+    16,   nil,    16,    16,    16,    17,    49,    17,    17,    17,
+    49,    54,   nil,    54,    54,    54,    21,    21,   nil,    21,
+     2,     2,     6,     6 ]
 
 racc_action_pointer = [
-    53,    44,    87,   nil,   nil,   nil,    87,   nil,    63,    46,
-   nil,   nil,   nil,    32,   nil,    36,    74,    58,    14,    32,
-   nil,    81,    -8,   nil,   nil,   nil,   nil,    14,   nil,    -8,
+    46,     4,    85,   nil,   nil,   nil,    89,   nil,    58,    53,
+   nil,   nil,   nil,     9,   nil,    26,    63,    68,    14,    24,
+   nil,    81,    -8,   nil,   nil,   nil,   nil,    24,   nil,    27,
    nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
-     4,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,    63,
-   nil,   nil,   nil,   nil,    65,    24,   nil,     4,   nil,   nil,
+    32,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,    68,
+   nil,   nil,   nil,   nil,    70,    32,   nil,     4,   nil,   nil,
    nil,   nil ]
 
 racc_action_default = [
@@ -59,22 +58,22 @@ racc_action_default = [
    -31,   -23 ]
 
 racc_goto_table = [
-    29,    46,    30,    40,     2,    50,    53,    20,    39,    26,
-    27,     1,    28,    21,    49,    24,    25,   nil,   nil,   nil,
+    29,    46,    30,    40,     2,    53,    50,    20,     1,    26,
+    27,    39,    28,    21,    49,    24,    25,   nil,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,    59,    46,    58,    60,
-    61,    53 ]
+    53,    61 ]
 
 racc_goto_check = [
-    11,    11,    16,    17,     2,    15,     6,     3,     9,     7,
-     8,     1,    12,     2,    14,     3,     3,   nil,   nil,   nil,
+    11,    11,    16,    17,     2,     6,    15,     3,     1,     7,
+     8,     9,    12,     2,    14,     3,     3,   nil,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
    nil,   nil,   nil,   nil,   nil,   nil,    11,    11,    16,    17,
-    15,     6 ]
+     6,    15 ]
 
 racc_goto_pointer = [
-   nil,    11,     4,    -1,   nil,   nil,   -16,    -9,    -8,   -11,
-   nil,   -18,    -6,   nil,    -8,   -17,   -16,   -16 ]
+   nil,     8,     4,    -1,   nil,   nil,   -17,    -9,    -8,    -8,
+   nil,   -18,    -6,   nil,    -8,   -16,   -16,   -16 ]
 
 racc_goto_default = [
    nil,   nil,   nil,     3,     4,     5,     6,   nil,   nil,   nil,
@@ -367,9 +366,8 @@ def _reduce_none(val, _values, result)
   val[0]
 end
 
-    end   # class Parser
-    end   # module V2
-  end   # module Sparkql
+  end   # class Parser
+  end   # module SparkqlV2
 
 
 # END PARSER

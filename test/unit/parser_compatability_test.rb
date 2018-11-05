@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class ParserCompatabilityTest < Test::Unit::TestCase
-  include Sparkql::V2
+  include SparkqlV2
 
   def setup
     @expression_keys = ['field', :operator, 'value']

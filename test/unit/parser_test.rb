@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class ParserTest < Test::Unit::TestCase
-  include Sparkql::V2
+  include SparkqlV2
 
   def setup
     @parser = Parser.new
