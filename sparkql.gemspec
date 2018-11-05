@@ -2,15 +2,13 @@ $LOAD_PATH.push File.expand_path('lib', __dir__)
 require 'sparkql/version'
 
 Gem::Specification.new do |s|
-  s.name        = 'sparkql'
+  s.name        = 'sparkql_v2'
   s.version     = Sparkql::V2::VERSION
   s.authors     = ['Wade McEwen']
   s.email       = ['wade@fbsdata.com']
   s.homepage    = ''
   s.summary     = 'API Parser engine for filter searching'
   s.description = 'Specification and base implementation of the Spark API parsing system.'
-
-  s.rubyforge_project = 'sparkql'
 
   s.license       = 'Apache 2.0'
 
