@@ -4,6 +4,14 @@ module Sparkql::Token
   LPAREN = /\(/
   RPAREN = /\)/
   KEYWORD = /[A-Za-z]+/
+
+  ADD = 'Add'
+  SUB = 'Sub'
+
+  MUL = 'Mul'
+  DIV = 'Div'
+  MOD = 'Mod'
+
   STANDARD_FIELD = /[A-Z]+[A-Za-z0-9]*/
   CUSTOM_FIELD = /^(\"([^$."][^."]+)\".\"([^$."][^."]*)\")/
   INTEGER = /^\-?[0-9]+/
@@ -20,5 +28,4 @@ module Sparkql::Token
   OPERATORS = ['Gt','Ge','Lt','Le'] + EQUALITY_OPERATORS
   UNARY_CONJUNCTIONS = ['Not']
   CONJUNCTIONS = ['And','Or']
-
 end

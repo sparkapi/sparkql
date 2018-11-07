@@ -28,6 +28,8 @@ class Sparkql::Parser
 # Unary minus is always tied to value, such as for negative numbers.
 prechigh
   nonassoc UMINUS
+  left MUL DIV MOD
+  left ADD SUB
 preclow
   
 
@@ -103,9 +105,18 @@ rule
   condition
     : literal
     | literal_function
+    | literal_arithmetic
     | literal_list { result = tokenize_list(val[0]) }
     ;
-    
+
+  literal_arithmetic
+    : literal_arithmetic ADD literal_arithmetic { result = add_fold(val[0], val[2]) }
+    | literal_arithmetic SUB literal_arithmetic { result = sub_fold(val[0], val[2]) }
+    | literal_arithmetic MUL literal_arithmetic { result = mul_fold(val[0], val[2]) }
+    | literal_arithmetic DIV literal_arithmetic { result = div_fold(val[0], val[2]) }
+    | literal_arithmetic MOD literal_arithmetic { result = mod_fold(val[0], val[2]) }
+    | numeric
+
 ##### Function
 # 
 # Functions may replace static values for conditions with supported field 
@@ -120,7 +131,7 @@ rule
     : function_name LPAREN RPAREN { result = tokenize_function(val[0], []) }
     | function_name LPAREN literal_function_args RPAREN { result = tokenize_function(val[0], val[2]) }
     ;
-    
+
   function_name
     : KEYWORD
     ;
@@ -194,13 +205,16 @@ rule
 # 
 # Functions, and literals that can be used in a range                                                       
   rangeable
-    : INTEGER
-    | DECIMAL
+    : numeric
     | DATE
     | DATETIME
     | TIME
     | function
     ;
+
+  numeric
+  : INTEGER
+  | DECIMAL
 
 #STOP_MARKDOWN
 

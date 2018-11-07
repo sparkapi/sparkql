@@ -182,7 +182,47 @@ module Sparkql::ParserTools
       result.nil? ? result : result.merge(:condition => "#{name}(#{condition_list.join(',')})")
     end
   end
-  
+
+  def add_fold(n1, n2)
+    { type: arithmetic_type(n1, n2), value: (escape_value(n1) + escape_value(n2)).to_s }
+  end
+
+  def sub_fold(n1, n2)
+    { type: arithmetic_type(n1, n2), value: (escape_value(n1) - escape_value(n2)).to_s }
+  end
+
+  def mul_fold(n1, n2)
+    { type: arithmetic_type(n1, n2), value: (escape_value(n1) * escape_value(n2)).to_s }
+  end
+
+  def div_fold(n1, n2)
+    return if zero_error?(n2)
+
+    { type: arithmetic_type(n1, n2), value: (escape_value(n1) / escape_value(n2)).to_s }
+  end
+
+  def mod_fold(n1, n2)
+    return if zero_error?(n2)
+
+    { type: arithmetic_type(n1, n2), value: (escape_value(n1) % escape_value(n2)).to_s }
+  end
+
+  def arithmetic_type(num1, num2)
+    if (num1[:type] == :decimal || num2[:type] == :decimal)
+      :decimal
+    else
+      :integer
+    end
+  end
+
+  def zero_error?(number)
+    return unless escape_value(number) == 0
+
+    compile_error(:token => "#{number[:value]}", :expression => number,
+          :message => "Error attempting to divide by zero",
+          :status => :fatal, :syntax => false, :constraint => true )
+  end
+
   def on_error(error_token_id, error_value, value_stack)
     token_name = token_to_str(error_token_id)
     token_name.downcase!

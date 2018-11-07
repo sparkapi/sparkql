@@ -11,6 +11,8 @@ Unary minus is always tied to value, such as for negative numbers.
 ```
    prechigh
      nonassoc UMINUS
+     left MUL DIV MOD
+     left ADD SUB
    preclow
 ```
 
@@ -109,8 +111,16 @@ on filtering values
      condition
        : literal
        | literal_function
+       | literal_arithmetic
        | literal_list 
        ;
+     literal_arithmetic
+       : literal_arithmetic ADD literal_arithmetic 
+       | literal_arithmetic SUB literal_arithmetic 
+       | literal_arithmetic MUL literal_arithmetic 
+       | literal_arithmetic DIV literal_arithmetic 
+       | literal_arithmetic MOD literal_arithmetic 
+       | numeric
 ```
 
 #### Function
@@ -216,12 +226,14 @@ Functions, and literals that can be used in a range
 
 ```
      rangeable
-       : INTEGER
-       | DECIMAL
+       : numeric
        | DATE
        | DATETIME
        | TIME
        | function
        ;
+     numeric
+     : INTEGER
+     | DECIMAL
 ```
 
