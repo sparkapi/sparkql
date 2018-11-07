@@ -1,5 +1,5 @@
 $LOAD_PATH.push File.expand_path('lib', __dir__)
-require 'sparkql/version'
+require 'sparkql_v2/version'
 
 Gem::Specification.new do |s|
   s.name        = 'sparkql_v2'

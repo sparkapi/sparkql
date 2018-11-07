@@ -72,12 +72,8 @@ module SparkqlV2
       true
     end
 
-    def type_for(meta)
-      meta['Type'].downcase if meta['Type']
-    end
-
     def field_searchable?(meta)
-      return true if meta['Searchable']
+      return true if meta['searchable']
 
       @errors << {
         message: 'Field is not searchable',
@@ -92,9 +88,7 @@ module SparkqlV2
       return node.dup unless field_exists?(node, meta)
       return node.dup unless field_searchable?(meta)
 
-      node.dup.merge(
-        'type' => type_for(meta)
-      )
+      node.dup.merge(meta)
     end
 
     def visit_custom_field(node)
@@ -102,9 +96,7 @@ module SparkqlV2
 
       return node.dup.merge('type' => 'drop') unless custom_field_exists?(node, meta)
 
-      node.dup.merge(
-        'type' => type_for(meta)
-      )
+      node.dup.merge(meta)
     end
 
     def visit_and(node)

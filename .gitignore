@@ -1,7 +1,7 @@
 *.gem
 .bundle
 Gemfile.lock
-lib/sparkql/*.output
+lib/sparkql_v2/*.output
 pkg/*
 *.swp
 test/reports

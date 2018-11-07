@@ -15,7 +15,7 @@ rule '.rb' => '.y' do |t|
 end
 
 desc 'Compile the racc parser from the grammar'
-task compile: ['lib/sparkql/parser.rb', 'grammar']
+task compile: ['lib/sparkql_v2/parser.rb', 'grammar']
 
 desc 'Generate grammar Documenation'
 task :grammar do
@@ -23,7 +23,7 @@ task :grammar do
   sh 'ruby script/markdownify.rb > GRAMMAR.md'
 end
 
-Rake::Task[:test].prerequisites.unshift 'lib/sparkql/parser.rb'
+Rake::Task[:test].prerequisites.unshift 'lib/sparkql_v2/parser.rb'
 Rake::Task[:test].prerequisites.unshift 'grammar'
 
 desc 'Default: run unit tests.'

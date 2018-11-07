@@ -2,4 +2,4 @@
 
 require 'test/unit'
 require 'mocha'
-require 'sparkql'
+require 'sparkql_v2'

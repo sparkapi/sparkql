@@ -53,4 +53,4 @@ class Markdownify
   end
 end
 
-Markdownify.new('lib/sparkql/parser.y').format!
+Markdownify.new('lib/sparkql_v2/parser.y').format!

@@ -1,7 +1,7 @@
 
 AllCops:
   Exclude:
-    - 'lib/sparkql/parser.rb'
+    - 'lib/sparkql_v2/parser.rb'
     - 'vendor/**/*'
     - '.git/**/*'
 
