@@ -94,10 +94,21 @@ filter.
 
 ```
      field
-     	: STANDARD_FIELD
-     	| CUSTOM_FIELD
-     	| function
-     	;
+       : STANDARD_FIELD
+       | CUSTOM_FIELD
+       | field_arithmetic
+       ;
+     field_arithmetic
+       : field_arithmetic ADD field_arithmetic 
+       | field_arithmetic SUB field_arithmetic 
+       | field_arithmetic MUL field_arithmetic 
+       | field_arithmetic DIV field_arithmetic 
+       | field_arithmetic MOD field_arithmetic 
+       | STANDARD_FIELD 
+       | CUSTOM_FIELD 
+       | numeric
+       | function
+       ;
 ```
 
 #### Condition
@@ -120,7 +131,9 @@ on filtering values
        | literal_arithmetic MUL literal_arithmetic 
        | literal_arithmetic DIV literal_arithmetic 
        | literal_arithmetic MOD literal_arithmetic 
+       | literal_function
        | numeric
+       ;
 ```
 
 #### Function

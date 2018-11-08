@@ -90,11 +90,24 @@ rule
 # Keyword for searching on, these fields should be discovered using the metadata 
 # rules. In general, Keywords that cannot be found will be dropped from the 
 # filter.
+
   field
-  	: STANDARD_FIELD
-  	| CUSTOM_FIELD
-  	| function
-  	;
+    : STANDARD_FIELD
+    | CUSTOM_FIELD
+    | field_arithmetic
+    ;
+
+  field_arithmetic
+    : field_arithmetic ADD field_arithmetic { result = tokenize_arithmetic(val[0], val[1], val[2]) }
+    | field_arithmetic SUB field_arithmetic { result = tokenize_arithmetic(val[0], val[1], val[2]) }
+    | field_arithmetic MUL field_arithmetic { result = tokenize_arithmetic(val[0], val[1], val[2]) }
+    | field_arithmetic DIV field_arithmetic { result = tokenize_arithmetic(val[0], val[1], val[2]) }
+    | field_arithmetic MOD field_arithmetic { result = tokenize_arithmetic(val[0], val[1], val[2]) }
+    | STANDARD_FIELD { result = tokenize_field_arg(val[0]) }
+    | CUSTOM_FIELD { result = tokenize_field_arg(val[0]) }
+    | numeric
+    | function
+    ;
   
 ##### Condition
 # 
@@ -115,7 +128,9 @@ rule
     | literal_arithmetic MUL literal_arithmetic { result = mul_fold(val[0], val[2]) }
     | literal_arithmetic DIV literal_arithmetic { result = div_fold(val[0], val[2]) }
     | literal_arithmetic MOD literal_arithmetic { result = mod_fold(val[0], val[2]) }
+    | literal_function
     | numeric
+    ;
 
 ##### Function
 # 
