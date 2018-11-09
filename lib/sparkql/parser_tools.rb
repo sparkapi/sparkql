@@ -25,13 +25,22 @@ module Sparkql::ParserTools
 
   def arithmetic_field(nested_representation)
     lhs = nested_representation[:lhs]
+    rhs = nested_representation[:rhs]
 
     if lhs[:type] == :arithmetic
       arithmetic_field(lhs)
+    elsif rhs[:type] == :arithmetic
+      arithmetic_field(rhs)
     elsif lhs[:type] == :field
-      return lhs[:value]
+      lhs[:value]
+    elsif rhs[:type] == :field
+      rhs[:value]
+    elsif lhs.key?(:field)
+      lhs[:field]
+    elsif rhs.key?(:field)
+      rhs[:field]
     else
-      return nil
+      nil
     end
   end
 

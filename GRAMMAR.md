@@ -101,8 +101,8 @@ filter.
        | field MOD field 
        | STANDARD_FIELD
        | CUSTOM_FIELD
-       | numeric
        | function
+       | numeric
        ;
 ```
 
