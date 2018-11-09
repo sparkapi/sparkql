@@ -92,21 +92,15 @@ rule
 # filter.
 
   field
-    : STANDARD_FIELD
+    : field ADD field { result = tokenize_arithmetic(val[0], val[1], val[2]) }
+    | field SUB field { result = tokenize_arithmetic(val[0], val[1], val[2]) }
+    | field MUL field { result = tokenize_arithmetic(val[0], val[1], val[2]) }
+    | field DIV field { result = tokenize_arithmetic(val[0], val[1], val[2]) }
+    | field MOD field { result = tokenize_arithmetic(val[0], val[1], val[2]) }
+    | STANDARD_FIELD
     | CUSTOM_FIELD
-    | field_arithmetic
-    ;
-
-  field_arithmetic
-    : field_arithmetic ADD field_arithmetic { result = tokenize_arithmetic(val[0], val[1], val[2]) }
-    | field_arithmetic SUB field_arithmetic { result = tokenize_arithmetic(val[0], val[1], val[2]) }
-    | field_arithmetic MUL field_arithmetic { result = tokenize_arithmetic(val[0], val[1], val[2]) }
-    | field_arithmetic DIV field_arithmetic { result = tokenize_arithmetic(val[0], val[1], val[2]) }
-    | field_arithmetic MOD field_arithmetic { result = tokenize_arithmetic(val[0], val[1], val[2]) }
-    | STANDARD_FIELD { result = tokenize_field_arg(val[0]) }
-    | CUSTOM_FIELD { result = tokenize_field_arg(val[0]) }
-    | numeric
     | function
+    | numeric
     ;
   
 ##### Condition
@@ -116,20 +110,13 @@ rule
 # Functions are also supported on some field types, and provide more flexibility
 # on filtering values
   condition
-    : literal
-    | literal_function
-    | literal_arithmetic
+    : condition ADD condition { result = add_fold(val[0], val[2]) }
+    | condition SUB condition { result = sub_fold(val[0], val[2]) }
+    | condition MUL condition { result = mul_fold(val[0], val[2]) }
+    | condition DIV condition { result = div_fold(val[0], val[2]) }
+    | condition MOD condition { result = mod_fold(val[0], val[2]) }
     | literal_list { result = tokenize_list(val[0]) }
-    ;
-
-  literal_arithmetic
-    : literal_arithmetic ADD literal_arithmetic { result = add_fold(val[0], val[2]) }
-    | literal_arithmetic SUB literal_arithmetic { result = sub_fold(val[0], val[2]) }
-    | literal_arithmetic MUL literal_arithmetic { result = mul_fold(val[0], val[2]) }
-    | literal_arithmetic DIV literal_arithmetic { result = div_fold(val[0], val[2]) }
-    | literal_arithmetic MOD literal_arithmetic { result = mod_fold(val[0], val[2]) }
-    | literal_function
-    | numeric
+    | literal
     ;
 
 ##### Function
@@ -173,7 +160,6 @@ rule
   literal_function_arg
     : literal
     | literals
-    | literal_function
     ;
 
 ##### Literal List

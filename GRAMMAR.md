@@ -94,18 +94,13 @@ filter.
 
 ```
      field
-       : STANDARD_FIELD
+       : field ADD field 
+       | field SUB field 
+       | field MUL field 
+       | field DIV field 
+       | field MOD field 
+       | STANDARD_FIELD
        | CUSTOM_FIELD
-       | field_arithmetic
-       ;
-     field_arithmetic
-       : field_arithmetic ADD field_arithmetic 
-       | field_arithmetic SUB field_arithmetic 
-       | field_arithmetic MUL field_arithmetic 
-       | field_arithmetic DIV field_arithmetic 
-       | field_arithmetic MOD field_arithmetic 
-       | STANDARD_FIELD 
-       | CUSTOM_FIELD 
        | numeric
        | function
        ;
@@ -120,19 +115,13 @@ on filtering values
 
 ```
      condition
-       : literal
-       | literal_function
-       | literal_arithmetic
+       : condition ADD condition 
+       | condition SUB condition 
+       | condition MUL condition 
+       | condition DIV condition 
+       | condition MOD condition 
        | literal_list 
-       ;
-     literal_arithmetic
-       : literal_arithmetic ADD literal_arithmetic 
-       | literal_arithmetic SUB literal_arithmetic 
-       | literal_arithmetic MUL literal_arithmetic 
-       | literal_arithmetic DIV literal_arithmetic 
-       | literal_arithmetic MOD literal_arithmetic 
-       | literal_function
-       | numeric
+       | literal
        ;
 ```
 
@@ -177,7 +166,6 @@ Functions may optionally have a comma delimited list of parameters.
      literal_function_arg
        : literal
        | literals
-       | literal_function
        ;
 ```
 

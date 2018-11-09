@@ -112,6 +112,7 @@ module Sparkql::ParserTools
   end
 
   def tokenize_list(list)
+    return if list.nil?
     validate_multiple_values list[:value]
     list[:condition] ||= list[:value]
     list
@@ -203,6 +204,9 @@ module Sparkql::ParserTools
   end
 
   def tokenize_arithmetic(lhs, operator, rhs)
+    lhs = {type: :field, value: lhs} if lhs.is_a?(String)
+    rhs = {type: :field, value: rhs} if rhs.is_a?(String)
+
     arithmetic_error?(lhs)
     arithmetic_error?(rhs)
     {
