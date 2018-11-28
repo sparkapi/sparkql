@@ -1,3 +1,7 @@
+v1.2.2, 2018-11-28
+-------------------
+  * [IMPROVEMENT] Support Arithmetic: Add, Sub, Mul, Div, Mod
+
 v1.2.1, 2018-10-09
 -------------------
   * [BUGFIX] Check deepest function when type checking field arguments.
