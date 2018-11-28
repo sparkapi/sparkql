@@ -58,8 +58,7 @@ rule
 # condition. The result of evaluating the expression on a resource is a true of
 # false for matching the criteria. We are separating functions and arithmetic
 # based on if we are acting on the field side or the literal side. This is to
-# allow literal folding on the literal side and to prevent unnecessary checks
-# to see if a field is in the expression.
+# allow literal folding on the literal side.
   expression
     : field_expression OPERATOR condition { result = tokenize_expression(val[0], val[1],val[2]) }
     | field_expression RANGE_OPERATOR range { result = tokenize_expression(val[0], val[1], val[2]) }
