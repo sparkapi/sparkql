@@ -1000,6 +1000,16 @@ class ParserTest < Test::Unit::TestCase
     assert_equal :decimal, expressions.first[:type]
   end
 
+  test 'field operator precedence' do
+    @parser = Parser.new
+    filter = "Baths add 5 mul 5 Eq 50"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal 'Add', expressions.first[:field_manipulations][:op]
+    assert_equal 'Mul', expressions.first[:field_manipulations][:rhs][:op]
+  end
+
   test 'operator precedence' do
     @parser = Parser.new
     filter = "Baths Eq 50 add 5 mul 5"

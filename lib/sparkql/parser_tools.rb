@@ -4,7 +4,7 @@ module Sparkql::ParserTools
   # Coercible types from highest precision to lowest
   DATE_TYPES = [:datetime, :date]
   NUMBER_TYPES = [:decimal, :integer]
-  ARITHMETIC_TYPES = [:decimal, :integer, :field]
+  ARITHMETIC_TYPES = [:decimal, :integer, :field, :arithmetic]
 
   def parse(str)
     @lexer = Sparkql::Lexer.new(str)
@@ -27,11 +27,7 @@ module Sparkql::ParserTools
     lhs = nested_representation[:lhs]
     rhs = nested_representation[:rhs]
 
-    if lhs[:type] == :arithmetic
-      arithmetic_field(lhs)
-    elsif rhs[:type] == :arithmetic
-      arithmetic_field(rhs)
-    elsif lhs[:type] == :field
+    if lhs[:type] == :field
       lhs[:value]
     elsif rhs[:type] == :field
       rhs[:value]
@@ -39,9 +35,19 @@ module Sparkql::ParserTools
       lhs[:field]
     elsif rhs.key?(:field)
       rhs[:field]
+    elsif lhs[:type] == :arithmetic
+      arithmetic_field(lhs)
+    elsif rhs[:type] == :arithmetic
+      arithmetic_field(rhs)
     else
       nil
     end
+  end
+
+  def no_field_error(field, operator)
+    tokenizer_error(:token => field,
+                    :expression => {operator: operator, conjuction: 'And', conjunction_level: 0, level: @lexer.level},
+                    :message => "Each expression must evaluate a field", :status => :fatal )
   end
 
   def tokenize_expression(field, op, val)
@@ -59,6 +65,9 @@ module Sparkql::ParserTools
     elsif field.is_a?(Hash) && field[:type] == :arithmetic
       field_manipulations = field
       field = arithmetic_field(field)
+      no_field_error(field, operator) if field.nil?
+    elsif field.is_a?(Hash)
+      no_field_error(field, operator)
     end
 
     custom_field = !field.nil? && field.is_a?(String) && field.start_with?('"')

@@ -44,7 +44,10 @@ One or more expressions
 The core of the filtering system, the expression requires a field, a condition
 and criteria for comparing the value of the field to the value(s) of the
 condition. The result of evaluating the expression on a resource is a true of
-false for matching the criteria.
+false for matching the criteria. We are separating functions and arithmetic
+based on if we are acting on the field side or the literal side. This is to
+allow literal folding on the literal side and to prevent unnecessary checks
+to see if a field is in the expression.
 
 
 ```
@@ -84,35 +87,17 @@ One or more expressions encased in parenthesis. There are limitations on nesting
      group
        : LPAREN expressions RPAREN 
        ;
-```
-
-#### Field
-Keyword for searching on, these fields should be discovered using the metadata
-rules. In general, Keywords that cannot be found will be dropped from the
-filter.
-
-
-```
      field_expression
-       : field_function_expression
-       | arithmetic_expression
+       : field_arithmetic_expression
        ;
-     field
-       : STANDARD_FIELD
-       | CUSTOM_FIELD
-       ;
-     arithmetic_expression
-       : field_function_expression arithmetic literal 
-       | literal arithmetic field_function_expression 
-       | field_function_expression arithmetic literals 
-       | literals arithmetic field_function_expression 
-       ;
-     arithmetic
-       : ADD
-       | SUB
-       | MUL
-       | DIV
-       | MOD
+     field_arithmetic_expression
+       : field_arithmetic_expression ADD field_arithmetic_expression 
+       | field_arithmetic_expression SUB field_arithmetic_expression 
+       | field_arithmetic_expression MUL field_arithmetic_expression 
+       | field_arithmetic_expression DIV field_arithmetic_expression 
+       | field_arithmetic_expression MOD field_arithmetic_expression 
+       | literals
+       | field_function_expression
        ;
      field_function_expression
        : field
@@ -243,14 +228,25 @@ Functions, and literals that can be used in a range
 
 ```
      rangeable
-       : numeric
+       : INTEGER
+       | DECIMAL
        | DATE
        | DATETIME
        | TIME
        | function
        ;
-     numeric
-     : INTEGER
-     | DECIMAL
+```
+
+#### Field
+Keyword for searching on, these fields should be discovered using the metadata
+rules. In general, Keywords that cannot be found will be dropped from the
+filter.
+
+
+```
+     field
+       : STANDARD_FIELD
+       | CUSTOM_FIELD
+       ;
 ```
 
