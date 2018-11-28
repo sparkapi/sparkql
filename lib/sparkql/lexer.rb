@@ -62,7 +62,7 @@ class Sparkql::Lexer < StringScanner
 
     token.freeze
   end
-  
+
   def check_reserved_words(value)
     u_value = value.capitalize
     if OPERATORS.include?(u_value)
@@ -73,6 +73,16 @@ class Sparkql::Lexer < StringScanner
       [:CONJUNCTION,u_value]
     elsif UNARY_CONJUNCTIONS.include?(u_value)
       [:UNARY_CONJUNCTION,u_value]
+    elsif ADD == u_value
+      [:ADD, u_value]
+    elsif SUB == u_value
+      [:SUB, u_value]
+    elsif MUL == u_value
+      [:MUL, u_value]
+    elsif DIV == u_value
+      [:DIV, u_value]
+    elsif MOD == u_value
+      [:MOD, u_value]
     else
       [:UNKNOWN, "ERROR: '#{self.string}'"]
     end

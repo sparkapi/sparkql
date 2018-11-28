@@ -1,9 +1,9 @@
 ## SparkQL BNF Grammar
 This document explains the rules for the Spark API filter language syntax and
-is a living document generated from the reference implementation at 
+is a living document generated from the reference implementation at
 https://github.com/sparkapi/sparkql.
 ### Precedence Rules
-Unless otherwise specified, SparkQL follows SQL precendence conventions for 
+Unless otherwise specified, SparkQL follows SQL precendence conventions for
 operators and conjunctions.
 Unary minus is always tied to value, such as for negative numbers.
 
@@ -11,6 +11,8 @@ Unary minus is always tied to value, such as for negative numbers.
 ```
    prechigh
      nonassoc UMINUS
+     left MUL DIV MOD
+     left ADD SUB
    preclow
 ```
 
@@ -39,28 +41,31 @@ One or more expressions
 ```
 
 #### Expression
-The core of the filtering system, the expression requires a field, a condition 
-and criteria for comparing the value of the field to the value(s) of the 
-condition. The result of evaluating the expression on a resource is a true of 
-false for matching the criteria.
+The core of the filtering system, the expression requires a field, a condition
+and criteria for comparing the value of the field to the value(s) of the
+condition. The result of evaluating the expression on a resource is a true of
+false for matching the criteria. We are separating functions and arithmetic
+based on if we are acting on the field side or the literal side. This is to
+allow literal folding on the literal side and to prevent unnecessary checks
+to see if a field is in the expression.
 
 
 ```
      expression
-       : field OPERATOR condition 
-       | field RANGE_OPERATOR range 
+       : field_expression OPERATOR condition 
+       | field_expression RANGE_OPERATOR range 
        | group
        ;
 ```
 
 #### Unary Conjunction
-Some conjunctions don't need to expression at all times (e.g. 'NOT'). 
+Some conjunctions don't need to expression at all times (e.g. 'NOT').
 
 
 ```
      unary_conjunction
        : UNARY_CONJUNCTION expression 
-       ;  
+       ;
 ```
 
 #### Conjunction
@@ -80,42 +85,50 @@ One or more expressions encased in parenthesis. There are limitations on nesting
 
 ```
      group
-     	: LPAREN expressions RPAREN 
-     	;
-```
-
-#### Field
-Keyword for searching on, these fields should be discovered using the metadata 
-rules. In general, Keywords that cannot be found will be dropped from the 
-filter.
-
-
-```
-     field
-     	: STANDARD_FIELD
-     	| CUSTOM_FIELD
-     	| function
-     	;
+       : LPAREN expressions RPAREN 
+       ;
+     field_expression
+       : field_arithmetic_expression
+       ;
+     field_arithmetic_expression
+       : field_arithmetic_expression ADD field_arithmetic_expression 
+       | field_arithmetic_expression SUB field_arithmetic_expression 
+       | field_arithmetic_expression MUL field_arithmetic_expression 
+       | field_arithmetic_expression DIV field_arithmetic_expression 
+       | field_arithmetic_expression MOD field_arithmetic_expression 
+       | literals
+       | field_function_expression
+       ;
+     field_function_expression
+       : field
+       | function
+       ;
 ```
 
 #### Condition
-The determinant of the filter, this is typically a value or set of values of 
-a type that the field supports (review the field meta data for support). 
+The determinant of the filter, this is typically a value or set of values of
+a type that the field supports (review the field meta data for support).
 Functions are also supported on some field types, and provide more flexibility
 on filtering values
 
 
 ```
      condition
-       : literal
-       | literal_function
+       : arithmetic_condition
        | literal_list 
+       | literal
        ;
+     arithmetic_condition
+       : condition ADD condition 
+       | condition SUB condition 
+       | condition MUL condition 
+       | condition DIV condition 
+       | condition MOD condition 
 ```
 
 #### Function
-Functions may replace static values for conditions with supported field 
-types. Functions may have parameters that match types supported by 
+Functions may replace static values for conditions with supported field
+types. Functions may have parameters that match types supported by
 fields.
 
 
@@ -143,9 +156,9 @@ Functions may optionally have a comma delimited list of parameters.
        | function_args COMMA function_arg 
        ;
      function_arg
-       : literal
+       : field_function_expression 
+       | literal
        | literals
-       | field 
        ;
      literal_function_args
        : literal_function_arg
@@ -154,7 +167,6 @@ Functions may optionally have a comma delimited list of parameters.
      literal_function_arg
        : literal
        | literals
-       | literal_function
        ;
 ```
 
@@ -172,12 +184,12 @@ A comma delimited list of functions and values.
 ```
 
 #### Range List
-A comma delimited list of values that support ranges for the Between operator 
+A comma delimited list of values that support ranges for the Between operator
 (see rangeable).
 
 
 ```
-     range                                                                             
+     range
        : rangeable COMMA rangeable 
        ;
 ```
@@ -211,7 +223,7 @@ Literals only support a single value in a condition
 ```
 
 #### Range List
-Functions, and literals that can be used in a range                                                       
+Functions, and literals that can be used in a range
 
 
 ```
@@ -222,6 +234,19 @@ Functions, and literals that can be used in a range
        | DATETIME
        | TIME
        | function
+       ;
+```
+
+#### Field
+Keyword for searching on, these fields should be discovered using the metadata
+rules. In general, Keywords that cannot be found will be dropped from the
+filter.
+
+
+```
+     field
+       : STANDARD_FIELD
+       | CUSTOM_FIELD
        ;
 ```
 

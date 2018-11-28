@@ -177,6 +177,80 @@ class ParserTest < Test::Unit::TestCase
     assert_equal ['City', '4131800000000'], expression[:field_manipulations][:args].map {|v| v[:value]}
   end
 
+  test 'add' do
+    @parser = Parser.new
+    filter = "Baths Add 2 Eq 1"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    field_manipulations = expressions.first[:field_manipulations]
+    assert_equal :arithmetic, field_manipulations[:type]
+    assert_equal 'Add', field_manipulations[:op]
+  end
+
+  test 'Sub' do
+    @parser = Parser.new
+    filter = "Baths Sub 2 Eq 1"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    field_manipulations = expressions.first[:field_manipulations]
+    assert_equal :arithmetic, field_manipulations[:type]
+    assert_equal 'Sub', field_manipulations[:op]
+  end
+
+  test 'Mul' do
+    @parser = Parser.new
+    filter = "Baths Mul 2 Eq 1"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    field_manipulations = expressions.first[:field_manipulations]
+    assert_equal :arithmetic, field_manipulations[:type]
+    assert_equal 'Mul', field_manipulations[:op]
+  end
+
+  test 'Div' do
+    @parser = Parser.new
+    filter = "Baths Div 2 Eq 1"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    field_manipulations = expressions.first[:field_manipulations]
+    assert_equal :arithmetic, field_manipulations[:type]
+    assert_equal 'Div', field_manipulations[:op]
+  end
+
+  test 'Mod' do
+    @parser = Parser.new
+    filter = "Baths Mod 2 Eq 1"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    field_manipulations = expressions.first[:field_manipulations]
+    assert_equal :arithmetic, field_manipulations[:type]
+    assert_equal 'Mod', field_manipulations[:op]
+  end
+
+  test 'arithmetic with field function' do
+    @parser = Parser.new
+    filter = "floor(Baths) Add 2 Eq 1"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    field_manipulations = expressions.first[:field_manipulations]
+    assert_equal :arithmetic, field_manipulations[:type]
+    assert_equal 'Add', field_manipulations[:op]
+    assert_equal :function, field_manipulations[:lhs][:type]
+  end
+
+  test 'Bad type function with arithmetic' do
+    @parser = Parser.new
+    filter = "trim(Baths) Add 2 Eq 1"
+    @parser.parse(filter)
+    assert @parser.errors?
+  end
+
   test "function data preserved in expression" do
     filter = "OriginalEntryTimestamp Ge days(-7)"
     @parser = Parser.new
@@ -806,6 +880,185 @@ class ParserTest < Test::Unit::TestCase
     parser_errors("ListPrice Eq cast('10', 'bogus')")
   end
 
+  test 'arithmetic literals with functions' do
+    @parser = Parser.new
+    filter = "Baths Eq 1 Add floor(2.3)"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '3', expressions.first[:value]
+    assert_equal :integer, expressions.first[:type]
+
+    @parser = Parser.new
+    filter = "Baths Eq 1 Add length('asdf')"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '5', expressions.first[:value]
+    assert_equal :integer, expressions.first[:type]
+  end
+
+  test 'arithmetic literals with invalid type' do
+    @parser = Parser.new
+    filter = "Baths Eq 1 Add '2.3'"
+    @parser.parse(filter)
+    assert @parser.errors?
+  end
+
+  test 'arithmetic literals with invalid function type' do
+    @parser = Parser.new
+    filter = "Baths Eq 1 Add trim('2.3')"
+    @parser.parse(filter)
+    assert @parser.errors?
+  end
+
+  test 'Add literals' do
+    @parser = Parser.new
+    filter = "Baths Eq 1 Add 2"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '3', expressions.first[:value]
+    assert_equal :integer, expressions.first[:type]
+
+    @parser = Parser.new
+    filter = "Baths Eq 1 Add 2 Add 3"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '6', expressions.first[:value]
+    assert_equal :integer, expressions.first[:type]
+  end
+
+  test 'subtract literals' do
+    @parser = Parser.new
+    filter = "Baths Eq 10 sub 2"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '8', expressions.first[:value]
+    assert_equal :integer, expressions.first[:type]
+
+    @parser = Parser.new
+    filter = "Baths Eq 10 sub 2 sub 3"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '5', expressions.first[:value]
+    assert_equal :integer, expressions.first[:type]
+
+    @parser = Parser.new
+    filter = "Baths Eq 10 sub 2.0 sub 3"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '5.0', expressions.first[:value]
+    assert_equal :decimal, expressions.first[:type]
+  end
+
+  test 'add and subtract' do
+    @parser = Parser.new
+    filter = "Baths Eq 10 add 2 sub 2"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '10', expressions.first[:value]
+    assert_equal :integer, expressions.first[:type]
+
+    @parser = Parser.new
+    filter = "Baths Eq 10 add 2 sub 2.0"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '10.0', expressions.first[:value]
+    assert_equal :decimal, expressions.first[:type]
+  end
+
+  test 'mul' do
+    @parser = Parser.new
+    filter = "Baths Eq 5 mul 5"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '25', expressions.first[:value]
+    assert_equal :integer, expressions.first[:type]
+
+    @parser = Parser.new
+    filter = "Baths Eq 5 mul 5 mul 2"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '50', expressions.first[:value]
+    assert_equal :integer, expressions.first[:type]
+
+    @parser = Parser.new
+    filter = "Baths Eq 5.0 mul 5 mul 2"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '50.0', expressions.first[:value]
+    assert_equal :decimal, expressions.first[:type]
+  end
+
+  test 'field operator precedence' do
+    @parser = Parser.new
+    filter = "Baths add 5 mul 5 Eq 50"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal 'Add', expressions.first[:field_manipulations][:op]
+    assert_equal 'Mul', expressions.first[:field_manipulations][:rhs][:op]
+  end
+
+  test 'operator precedence' do
+    @parser = Parser.new
+    filter = "Baths Eq 50 add 5 mul 5"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '75', expressions.first[:value]
+    assert_equal :integer, expressions.first[:type]
+
+    @parser = Parser.new
+    filter = "Baths Eq 5 mul 5 add 50"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '75', expressions.first[:value]
+    assert_equal :integer, expressions.first[:type]
+
+    @parser = Parser.new
+    filter = "Baths Eq 50 add 5 div 5"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '51', expressions.first[:value]
+    assert_equal :integer, expressions.first[:type]
+  end
+
+  test 'modulo' do
+    @parser = Parser.new
+    filter = "Baths Eq 5 mod 5"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '0', expressions.first[:value]
+    assert_equal :integer, expressions.first[:type]
+
+    @parser = Parser.new
+    filter = "Baths Eq 5.0 mod 5"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+
+    assert_equal '0.0', expressions.first[:value]
+    assert_equal :decimal, expressions.first[:type]
+  end
+
+  test 'division by zero' do
+    parser_errors('Baths Eq 5 mod 0')
+    parser_errors('Baths Eq 5 div 0')
+  end
+
   test 'nested functions on field side' do
     @parser = Parser.new
     filter = "tolower(toupper(City)) Eq 'Fargo'"
@@ -837,6 +1090,11 @@ class ParserTest < Test::Unit::TestCase
     assert_equal :function, function2[:type]
     assert_equal 'tolower', function2[:function_name]
     assert_equal({:type=>:field, :value=>"City"}, function2[:args].first)
+  end
+
+  test 'parse error with no field' do
+    parser_errors("1 Eq 1")
+    parser_errors("1 Add 1 Eq 2")
   end
 
   private

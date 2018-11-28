@@ -4,7 +4,8 @@ module Sparkql::ParserTools
   # Coercible types from highest precision to lowest
   DATE_TYPES = [:datetime, :date]
   NUMBER_TYPES = [:decimal, :integer]
-  
+  ARITHMETIC_TYPES = [:decimal, :integer, :field, :arithmetic]
+
   def parse(str)
     @lexer = Sparkql::Lexer.new(str)
     @expression_count = 0
@@ -21,7 +22,34 @@ module Sparkql::ParserTools
     end
     t
   end
-  
+
+  def arithmetic_field(nested_representation)
+    lhs = nested_representation[:lhs]
+    rhs = nested_representation[:rhs]
+
+    if lhs[:type] == :field
+      lhs[:value]
+    elsif rhs[:type] == :field
+      rhs[:value]
+    elsif lhs.key?(:field)
+      lhs[:field]
+    elsif rhs.key?(:field)
+      rhs[:field]
+    elsif lhs[:type] == :arithmetic
+      arithmetic_field(lhs)
+    elsif rhs[:type] == :arithmetic
+      arithmetic_field(rhs)
+    else
+      nil
+    end
+  end
+
+  def no_field_error(field, operator)
+    tokenizer_error(:token => field,
+                    :expression => {operator: operator, conjuction: 'And', conjunction_level: 0, level: @lexer.level},
+                    :message => "Each expression must evaluate a field", :status => :fatal )
+  end
+
   def tokenize_expression(field, op, val)
     operator = get_operator(val,op) unless val.nil?
 
@@ -34,6 +62,12 @@ module Sparkql::ParserTools
       end
       field_manipulations = field
       field = field[:field]
+    elsif field.is_a?(Hash) && field[:type] == :arithmetic
+      field_manipulations = field
+      field = arithmetic_field(field)
+      no_field_error(field, operator) if field.nil?
+    elsif field.is_a?(Hash)
+      no_field_error(field, operator)
     end
 
     custom_field = !field.nil? && field.is_a?(String) && field.start_with?('"')
@@ -45,10 +79,13 @@ module Sparkql::ParserTools
 
     if !field_manipulations.nil?
       # Keeping field_function and field_function_type for backward compatibility with datacon
-      expression.merge!(field_manipulations: field_manipulations,
-                        field_function: field_manipulations[:function_name],
-                        field_function_type: field_manipulations[:return_type],
-                        args: field_manipulations[:function_parameters])
+      expression.merge!(field_manipulations: field_manipulations)
+
+      if field_manipulations[:type] == :function
+        expression.merge!(field_function: field_manipulations[:function_name],
+                          field_function_type: field_manipulations[:return_type],
+                          args: field_manipulations[:function_parameters])
+      end
     end
 
     expression = val.merge(expression) unless val.nil?
@@ -93,6 +130,7 @@ module Sparkql::ParserTools
   end
 
   def tokenize_list(list)
+    return if list.nil?
     validate_multiple_values list[:value]
     list[:condition] ||= list[:value]
     list
@@ -147,13 +185,13 @@ module Sparkql::ParserTools
   end
   
   def tokenize_field_arg(field)
-    if field.is_a?(Hash) && field[:type] == :function
-      field
-    else
+    if field.is_a?(String)
       {
         :type => :field,
         :value => field,
       }
+    else
+      field
     end
   end
   
@@ -182,7 +220,81 @@ module Sparkql::ParserTools
       result.nil? ? result : result.merge(:condition => "#{name}(#{condition_list.join(',')})")
     end
   end
-  
+
+  def tokenize_arithmetic(lhs, operator, rhs)
+    lhs = {type: :field, value: lhs} if lhs.is_a?(String)
+    rhs = {type: :field, value: rhs} if rhs.is_a?(String)
+
+    arithmetic_error?(lhs)
+    arithmetic_error?(rhs)
+    {
+      type: :arithmetic,
+      op: operator,
+      lhs: lhs,
+      rhs: rhs
+    }
+  end
+
+  def arithmetic_error?(side)
+    side_type = side[:type] == :function ? side[:return_type] : side[:type]
+    return false unless (!ARITHMETIC_TYPES.include?(side_type) || !ARITHMETIC_TYPES.include?(side_type))
+
+    compile_error(:token => side[:value], :expression => side,
+          :message => "Error attempting arithmetic with type: #{side_type}",
+          :status => :fatal, :syntax => false, :constraint => true )
+    true
+  end
+
+  def add_fold(n1, n2)
+    return if arithmetic_error?(n1) || arithmetic_error?(n2)
+
+    { type: arithmetic_type(n1, n2), value: (escape_value(n1) + escape_value(n2)).to_s }
+  end
+
+  def sub_fold(n1, n2)
+    return if arithmetic_error?(n1) || arithmetic_error?(n2)
+
+    { type: arithmetic_type(n1, n2), value: (escape_value(n1) - escape_value(n2)).to_s }
+  end
+
+  def mul_fold(n1, n2)
+    return if arithmetic_error?(n1) || arithmetic_error?(n2)
+
+    { type: arithmetic_type(n1, n2), value: (escape_value(n1) * escape_value(n2)).to_s }
+  end
+
+  def div_fold(n1, n2)
+    return if arithmetic_error?(n1) ||
+      arithmetic_error?(n2) ||
+      zero_error?(n2)
+
+    { type: arithmetic_type(n1, n2), value: (escape_value(n1) / escape_value(n2)).to_s }
+  end
+
+  def mod_fold(n1, n2)
+    return if arithmetic_error?(n1) ||
+      arithmetic_error?(n2) ||
+      zero_error?(n2)
+
+    { type: arithmetic_type(n1, n2), value: (escape_value(n1) % escape_value(n2)).to_s }
+  end
+
+  def arithmetic_type(num1, num2)
+    if (num1[:type] == :decimal || num2[:type] == :decimal)
+      :decimal
+    else
+      :integer
+    end
+  end
+
+  def zero_error?(number)
+    return unless escape_value(number) == 0
+
+    compile_error(:token => "#{number[:value]}", :expression => number,
+          :message => "Error attempting to divide by zero",
+          :status => :fatal, :syntax => false, :constraint => true )
+  end
+
   def on_error(error_token_id, error_value, value_stack)
     token_name = token_to_str(error_token_id)
     token_name.downcase!
