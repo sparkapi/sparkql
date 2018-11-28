@@ -1,9 +1,9 @@
 ## SparkQL BNF Grammar
 This document explains the rules for the Spark API filter language syntax and
-is a living document generated from the reference implementation at 
+is a living document generated from the reference implementation at
 https://github.com/sparkapi/sparkql.
 ### Precedence Rules
-Unless otherwise specified, SparkQL follows SQL precendence conventions for 
+Unless otherwise specified, SparkQL follows SQL precendence conventions for
 operators and conjunctions.
 Unary minus is always tied to value, such as for negative numbers.
 
@@ -41,28 +41,28 @@ One or more expressions
 ```
 
 #### Expression
-The core of the filtering system, the expression requires a field, a condition 
-and criteria for comparing the value of the field to the value(s) of the 
-condition. The result of evaluating the expression on a resource is a true of 
+The core of the filtering system, the expression requires a field, a condition
+and criteria for comparing the value of the field to the value(s) of the
+condition. The result of evaluating the expression on a resource is a true of
 false for matching the criteria.
 
 
 ```
      expression
-       : field OPERATOR condition 
-       | field RANGE_OPERATOR range 
+       : field_expression OPERATOR condition 
+       | field_expression RANGE_OPERATOR range 
        | group
        ;
 ```
 
 #### Unary Conjunction
-Some conjunctions don't need to expression at all times (e.g. 'NOT'). 
+Some conjunctions don't need to expression at all times (e.g. 'NOT').
 
 
 ```
      unary_conjunction
        : UNARY_CONJUNCTION expression 
-       ;  
+       ;
 ```
 
 #### Conjunction
@@ -82,52 +82,68 @@ One or more expressions encased in parenthesis. There are limitations on nesting
 
 ```
      group
-     	: LPAREN expressions RPAREN 
-     	;
+       : LPAREN expressions RPAREN 
+       ;
 ```
 
 #### Field
-Keyword for searching on, these fields should be discovered using the metadata 
-rules. In general, Keywords that cannot be found will be dropped from the 
+Keyword for searching on, these fields should be discovered using the metadata
+rules. In general, Keywords that cannot be found will be dropped from the
 filter.
 
 
 ```
+     field_expression
+       : field_function_expression
+       | arithmetic_expression
+       ;
      field
-       : field ADD field 
-       | field SUB field 
-       | field MUL field 
-       | field DIV field 
-       | field MOD field 
-       | STANDARD_FIELD
+       : STANDARD_FIELD
        | CUSTOM_FIELD
+       ;
+     arithmetic_expression
+       : field_function_expression arithmetic literal 
+       | literal arithmetic field_function_expression 
+       | field_function_expression arithmetic literals 
+       | literals arithmetic field_function_expression 
+       ;
+     arithmetic
+       : ADD
+       | SUB
+       | MUL
+       | DIV
+       | MOD
+       ;
+     field_function_expression
+       : field
        | function
-       | numeric
        ;
 ```
 
 #### Condition
-The determinant of the filter, this is typically a value or set of values of 
-a type that the field supports (review the field meta data for support). 
+The determinant of the filter, this is typically a value or set of values of
+a type that the field supports (review the field meta data for support).
 Functions are also supported on some field types, and provide more flexibility
 on filtering values
 
 
 ```
      condition
+       : arithmetic_condition
+       | literal_list 
+       | literal
+       ;
+     arithmetic_condition
        : condition ADD condition 
        | condition SUB condition 
        | condition MUL condition 
        | condition DIV condition 
        | condition MOD condition 
-       | literal_list 
-       | literal
-       ;
 ```
 
 #### Function
-Functions may replace static values for conditions with supported field 
-types. Functions may have parameters that match types supported by 
+Functions may replace static values for conditions with supported field
+types. Functions may have parameters that match types supported by
 fields.
 
 
@@ -155,9 +171,9 @@ Functions may optionally have a comma delimited list of parameters.
        | function_args COMMA function_arg 
        ;
      function_arg
-       : literal
+       : field_function_expression 
+       | literal
        | literals
-       | field 
        ;
      literal_function_args
        : literal_function_arg
@@ -183,12 +199,12 @@ A comma delimited list of functions and values.
 ```
 
 #### Range List
-A comma delimited list of values that support ranges for the Between operator 
+A comma delimited list of values that support ranges for the Between operator
 (see rangeable).
 
 
 ```
-     range                                                                             
+     range
        : rangeable COMMA rangeable 
        ;
 ```
@@ -222,7 +238,7 @@ Literals only support a single value in a condition
 ```
 
 #### Range List
-Functions, and literals that can be used in a range                                                       
+Functions, and literals that can be used in a range
 
 
 ```

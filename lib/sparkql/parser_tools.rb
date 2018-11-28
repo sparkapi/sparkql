@@ -176,13 +176,13 @@ module Sparkql::ParserTools
   end
   
   def tokenize_field_arg(field)
-    if field.is_a?(Hash) && field[:type] == :function
-      field
-    else
+    if field.is_a?(String)
       {
         :type => :field,
         :value => field,
       }
+    else
+      field
     end
   end
   

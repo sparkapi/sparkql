@@ -232,7 +232,7 @@ class ParserTest < Test::Unit::TestCase
     assert_equal 'Mod', field_manipulations[:op]
   end
 
-  test 'Arithmetic with function' do
+  test 'arithmetic with field function' do
     @parser = Parser.new
     filter = "floor(Baths) Add 2 Eq 1"
     expressions = @parser.parse(filter)
@@ -1080,6 +1080,11 @@ class ParserTest < Test::Unit::TestCase
     assert_equal :function, function2[:type]
     assert_equal 'tolower', function2[:function_name]
     assert_equal({:type=>:field, :value=>"City"}, function2[:args].first)
+  end
+
+  test 'parse error with no field' do
+    parser_errors("1 Eq 1")
+    parser_errors("1 Add 1 Eq 2")
   end
 
   private
