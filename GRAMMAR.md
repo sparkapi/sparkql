@@ -46,8 +46,7 @@ and criteria for comparing the value of the field to the value(s) of the
 condition. The result of evaluating the expression on a resource is a true of
 false for matching the criteria. We are separating functions and arithmetic
 based on if we are acting on the field side or the literal side. This is to
-allow literal folding on the literal side and to prevent unnecessary checks
-to see if a field is in the expression.
+allow literal folding on the literal side.
 
 
 ```
@@ -96,6 +95,8 @@ One or more expressions encased in parenthesis. There are limitations on nesting
        | field_arithmetic_expression MUL field_arithmetic_expression 
        | field_arithmetic_expression DIV field_arithmetic_expression 
        | field_arithmetic_expression MOD field_arithmetic_expression 
+       | LPAREN field_arithmetic_expression RPAREN 
+       | UMINUS field_arithmetic_expression 
        | literals
        | field_function_expression
        ;
@@ -117,6 +118,8 @@ on filtering values
        : arithmetic_condition
        | literal_list 
        | literal
+       | LPAREN condition RPAREN 
+       | UMINUS condition 
        ;
      arithmetic_condition
        : condition ADD condition 
@@ -203,8 +206,6 @@ Literals that support multiple values in a list for a condition
        : INTEGER
        | DECIMAL
        | CHARACTER
-       | LPAREN literals RPAREN 
-       | UMINUS literals 
        ;
 ```
 
