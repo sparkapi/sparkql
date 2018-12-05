@@ -732,6 +732,16 @@ class ParserTest < Test::Unit::TestCase
     parser_errors("Field Eq -'Stringval'")
   end
 
+
+  test "field negation" do
+    @parser = Parser.new
+    expressions = @parser.parse('-Test Eq 10')
+    assert !@parser.errors?
+
+    assert_equal 'Negation', expressions.first[:field_manipulations][:op]
+    assert_equal 'Test', expressions.first[:field]
+  end
+
   def test_substring
     filter = "Name Eq substring('Andy', 1)"
     @parser = Parser.new
@@ -1095,6 +1105,31 @@ class ParserTest < Test::Unit::TestCase
   test 'parse error with no field' do
     parser_errors("1 Eq 1")
     parser_errors("1 Add 1 Eq 2")
+  end
+
+  test "field grouping" do
+    @parser = Parser.new
+    expressions = @parser.parse('(Test) Eq 10')
+    assert !@parser.errors?
+
+    assert_equal 'Group', expressions.first[:field_manipulations][:op]
+  end
+
+  test "grouping arithmetic" do
+    @parser = Parser.new
+    expressions = @parser.parse('(Test mul 10) sub 2 Eq 10')
+    assert !@parser.errors?
+
+    assert_equal 'Sub', expressions.first[:field_manipulations][:op]
+    assert_equal 'Group', expressions.first[:field_manipulations][:lhs][:op]
+  end
+
+  test "grouping literal" do
+    @parser = Parser.new
+    expressions = @parser.parse('Test Eq (5 sub 5) mul 5 ')
+    assert !@parser.errors?
+
+    assert_equal '0', expressions.first[:value]
   end
 
   private

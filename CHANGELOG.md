@@ -1,3 +1,7 @@
+v1.2.3, 2018-12-05
+-------------------
+  * [IMPROVEMENT] Support Arithmetic Grouping and Negation
+
 v1.2.2, 2018-11-28
 -------------------
   * [IMPROVEMENT] Support Arithmetic: Add, Sub, Mul, Div, Mod

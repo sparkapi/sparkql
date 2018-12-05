@@ -5,6 +5,8 @@ module Sparkql::ParserTools
   DATE_TYPES = [:datetime, :date]
   NUMBER_TYPES = [:decimal, :integer]
   ARITHMETIC_TYPES = [:decimal, :integer, :field, :arithmetic]
+  GROUP = 'Group'.freeze
+  NEGATION = 'Negation'.freeze
 
   def parse(str)
     @lexer = Sparkql::Lexer.new(str)
@@ -24,24 +26,16 @@ module Sparkql::ParserTools
   end
 
   def arithmetic_field(nested_representation)
-    lhs = nested_representation[:lhs]
-    rhs = nested_representation[:rhs]
+    return if nested_representation.nil?
 
-    if lhs[:type] == :field
-      lhs[:value]
-    elsif rhs[:type] == :field
-      rhs[:value]
-    elsif lhs.key?(:field)
-      lhs[:field]
-    elsif rhs.key?(:field)
-      rhs[:field]
-    elsif lhs[:type] == :arithmetic
-      arithmetic_field(lhs)
-    elsif rhs[:type] == :arithmetic
-      arithmetic_field(rhs)
-    else
-      nil
-    end
+    return nested_representation[:value] if nested_representation[:type] == :field
+    return nested_representation[:field] if nested_representation.key?(:field)
+
+    field = arithmetic_field(nested_representation[:lhs])
+    return field unless field.nil?
+
+    field = arithmetic_field(nested_representation[:rhs])
+    return field unless field.nil?
   end
 
   def no_field_error(field, operator)
@@ -127,6 +121,24 @@ module Sparkql::ParserTools
   def tokenize_group(expressions)
     @lexer.leveldown
     expressions
+  end
+
+  def tokenize_arithmetic_group(lhs)
+    lhs = {type: :field, value: lhs} if lhs.is_a?(String)
+    {
+      type: :arithmetic,
+      op: GROUP,
+      lhs: lhs
+    }
+  end
+
+  def tokenize_arithmetic_negation(lhs)
+    lhs = {type: :field, value: lhs} if lhs.is_a?(String)
+    {
+      type: :arithmetic,
+      op: NEGATION,
+      lhs: lhs
+    }
   end
 
   def tokenize_list(list)
@@ -243,6 +255,10 @@ module Sparkql::ParserTools
           :message => "Error attempting arithmetic with type: #{side_type}",
           :status => :fatal, :syntax => false, :constraint => true )
     true
+  end
+
+  def group_fold(exp)
+    exp
   end
 
   def add_fold(n1, n2)

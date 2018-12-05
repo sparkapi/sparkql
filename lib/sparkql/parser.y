@@ -98,6 +98,8 @@ rule
     | field_arithmetic_expression MUL field_arithmetic_expression { result = tokenize_arithmetic(val[0], val[1], val[2]) }
     | field_arithmetic_expression DIV field_arithmetic_expression { result = tokenize_arithmetic(val[0], val[1], val[2]) }
     | field_arithmetic_expression MOD field_arithmetic_expression { result = tokenize_arithmetic(val[0], val[1], val[2]) }
+    | LPAREN field_arithmetic_expression RPAREN { result = tokenize_arithmetic_group(val[1]) }
+    | UMINUS field_arithmetic_expression { result = tokenize_arithmetic_negation(val[1]) }
     | literals
     | field_function_expression
     ;
@@ -117,6 +119,8 @@ rule
     : arithmetic_condition
     | literal_list { result = tokenize_list(val[0]) }
     | literal
+    | LPAREN condition RPAREN { result = group_fold(val[1]) }
+    | UMINUS condition { result = tokenize_literal_negation(val[1]) }
     ;
 
   arithmetic_condition
@@ -194,8 +198,6 @@ rule
     : INTEGER
     | DECIMAL
     | CHARACTER
-    | LPAREN literals RPAREN { result = val[1] }
-    | UMINUS literals { result = tokenize_literal_negation(val[1]) }
     ;
 
 ##### Literal
