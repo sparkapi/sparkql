@@ -10,11 +10,9 @@ require 'racc/parser.rb'
 module Sparkql
   class Parser < Racc::Parser
 
-module_eval(<<'...end parser.y/module_eval...', 'parser.y', 244)
   include Sparkql::ParserTools
   include Sparkql::ParserCompatibility
 
-...end parser.y/module_eval...
 ##### State transition tables begin ###
 
 racc_action_table = [
@@ -346,12 +344,10 @@ Racc_debug_parser = false
 
 # reduce 1 omitted
 
-module_eval(<<'.,.,', 'parser.y', 41)
-  def _reduce_2(val, _values, result)
-     result = 0 
+def _reduce_2(val, _values, result)
+ result = 0 
     result
-  end
-.,.,
+end
 
 # reduce 3 omitted
 
@@ -359,100 +355,74 @@ module_eval(<<'.,.,', 'parser.y', 41)
 
 # reduce 5 omitted
 
-module_eval(<<'.,.,', 'parser.y', 62)
-  def _reduce_6(val, _values, result)
-     result = tokenize_expression(val[0], val[1],val[2]) 
+def _reduce_6(val, _values, result)
+ result = tokenize_expression(val[0], val[1],val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 63)
-  def _reduce_7(val, _values, result)
-     result = tokenize_expression(val[0], val[1], val[2]) 
+def _reduce_7(val, _values, result)
+ result = tokenize_expression(val[0], val[1], val[2]) 
     result
-  end
-.,.,
+end
 
 # reduce 8 omitted
 
-module_eval(<<'.,.,', 'parser.y', 71)
-  def _reduce_9(val, _values, result)
-     result = tokenize_unary_conjunction(val[0], val[1]) 
+def _reduce_9(val, _values, result)
+ result = tokenize_unary_conjunction(val[0], val[1]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 78)
-  def _reduce_10(val, _values, result)
-     result = tokenize_conjunction(val[0], val[1],val[2]) 
+def _reduce_10(val, _values, result)
+ result = tokenize_conjunction(val[0], val[1],val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 79)
-  def _reduce_11(val, _values, result)
-     result = tokenize_conjunction(val[0], val[1],val[2]) 
+def _reduce_11(val, _values, result)
+ result = tokenize_conjunction(val[0], val[1],val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 87)
-  def _reduce_12(val, _values, result)
-     result = tokenize_group(val[1]) 
+def _reduce_12(val, _values, result)
+ result = tokenize_group(val[1]) 
     result
-  end
-.,.,
+end
 
 # reduce 13 omitted
 
-module_eval(<<'.,.,', 'parser.y', 95)
-  def _reduce_14(val, _values, result)
-     result = tokenize_arithmetic(val[0], val[1], val[2]) 
+def _reduce_14(val, _values, result)
+ result = tokenize_arithmetic(val[0], val[1], val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 96)
-  def _reduce_15(val, _values, result)
-     result = tokenize_arithmetic(val[0], val[1], val[2]) 
+def _reduce_15(val, _values, result)
+ result = tokenize_arithmetic(val[0], val[1], val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 97)
-  def _reduce_16(val, _values, result)
-     result = tokenize_arithmetic(val[0], val[1], val[2]) 
+def _reduce_16(val, _values, result)
+ result = tokenize_arithmetic(val[0], val[1], val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 98)
-  def _reduce_17(val, _values, result)
-     result = tokenize_arithmetic(val[0], val[1], val[2]) 
+def _reduce_17(val, _values, result)
+ result = tokenize_arithmetic(val[0], val[1], val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 99)
-  def _reduce_18(val, _values, result)
-     result = tokenize_arithmetic(val[0], val[1], val[2]) 
+def _reduce_18(val, _values, result)
+ result = tokenize_arithmetic(val[0], val[1], val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 100)
-  def _reduce_19(val, _values, result)
-     result = tokenize_arithmetic_group(val[1]) 
+def _reduce_19(val, _values, result)
+ result = tokenize_arithmetic_group(val[1]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 101)
-  def _reduce_20(val, _values, result)
-     result = tokenize_arithmetic_negation(val[1]) 
+def _reduce_20(val, _values, result)
+ result = tokenize_arithmetic_negation(val[1]) 
     result
-  end
-.,.,
+end
 
 # reduce 21 omitted
 
@@ -464,109 +434,81 @@ module_eval(<<'.,.,', 'parser.y', 101)
 
 # reduce 25 omitted
 
-module_eval(<<'.,.,', 'parser.y', 119)
-  def _reduce_26(val, _values, result)
-     result = tokenize_list(val[0]) 
+def _reduce_26(val, _values, result)
+ result = tokenize_list(val[0]) 
     result
-  end
-.,.,
+end
 
 # reduce 27 omitted
 
-module_eval(<<'.,.,', 'parser.y', 121)
-  def _reduce_28(val, _values, result)
-     result = group_fold(val[1]) 
+def _reduce_28(val, _values, result)
+ result = group_fold(val[1]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 122)
-  def _reduce_29(val, _values, result)
-     result = tokenize_literal_negation(val[1]) 
+def _reduce_29(val, _values, result)
+ result = tokenize_literal_negation(val[1]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 126)
-  def _reduce_30(val, _values, result)
-     result = add_fold(val[0], val[2]) 
+def _reduce_30(val, _values, result)
+ result = add_fold(val[0], val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 127)
-  def _reduce_31(val, _values, result)
-     result = sub_fold(val[0], val[2]) 
+def _reduce_31(val, _values, result)
+ result = sub_fold(val[0], val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 128)
-  def _reduce_32(val, _values, result)
-     result = mul_fold(val[0], val[2]) 
+def _reduce_32(val, _values, result)
+ result = mul_fold(val[0], val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 129)
-  def _reduce_33(val, _values, result)
-     result = div_fold(val[0], val[2]) 
+def _reduce_33(val, _values, result)
+ result = div_fold(val[0], val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 130)
-  def _reduce_34(val, _values, result)
-     result = mod_fold(val[0], val[2]) 
+def _reduce_34(val, _values, result)
+ result = mod_fold(val[0], val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 138)
-  def _reduce_35(val, _values, result)
-     result = tokenize_function(val[0], []) 
+def _reduce_35(val, _values, result)
+ result = tokenize_function(val[0], []) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 139)
-  def _reduce_36(val, _values, result)
-     result = tokenize_function(val[0], val[2]) 
+def _reduce_36(val, _values, result)
+ result = tokenize_function(val[0], val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 143)
-  def _reduce_37(val, _values, result)
-     result = tokenize_function(val[0], []) 
+def _reduce_37(val, _values, result)
+ result = tokenize_function(val[0], []) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 144)
-  def _reduce_38(val, _values, result)
-     result = tokenize_function(val[0], val[2]) 
+def _reduce_38(val, _values, result)
+ result = tokenize_function(val[0], val[2]) 
     result
-  end
-.,.,
+end
 
 # reduce 39 omitted
 
 # reduce 40 omitted
 
-module_eval(<<'.,.,', 'parser.y', 156)
-  def _reduce_41(val, _values, result)
-     result = tokenize_function_args(val[0], val[2]) 
+def _reduce_41(val, _values, result)
+ result = tokenize_function_args(val[0], val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 160)
-  def _reduce_42(val, _values, result)
-     result = tokenize_field_arg(val[0]) 
+def _reduce_42(val, _values, result)
+ result = tokenize_field_arg(val[0]) 
     result
-  end
-.,.,
+end
 
 # reduce 43 omitted
 
@@ -574,12 +516,10 @@ module_eval(<<'.,.,', 'parser.y', 160)
 
 # reduce 45 omitted
 
-module_eval(<<'.,.,', 'parser.y', 167)
-  def _reduce_46(val, _values, result)
-     result = tokenize_function_args(val[0], val[2]) 
+def _reduce_46(val, _values, result)
+ result = tokenize_function_args(val[0], val[2]) 
     result
-  end
-.,.,
+end
 
 # reduce 47 omitted
 
@@ -589,26 +529,20 @@ module_eval(<<'.,.,', 'parser.y', 167)
 
 # reduce 50 omitted
 
-module_eval(<<'.,.,', 'parser.y', 181)
-  def _reduce_51(val, _values, result)
-     result = tokenize_multiple(val[0], val[2]) 
+def _reduce_51(val, _values, result)
+ result = tokenize_multiple(val[0], val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 182)
-  def _reduce_52(val, _values, result)
-     result = tokenize_multiple(val[0], val[2]) 
+def _reduce_52(val, _values, result)
+ result = tokenize_multiple(val[0], val[2]) 
     result
-  end
-.,.,
+end
 
-module_eval(<<'.,.,', 'parser.y', 190)
-  def _reduce_53(val, _values, result)
-     result = tokenize_multiple(val[0], val[2]) 
+def _reduce_53(val, _values, result)
+ result = tokenize_multiple(val[0], val[2]) 
     result
-  end
-.,.,
+end
 
 # reduce 54 omitted
 
