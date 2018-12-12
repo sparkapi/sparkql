@@ -161,7 +161,7 @@ module Sparkql::ParserCompatibility
   def datetime_escape(string)
     DateTime.parse(string)
   end
-  
+
   def time_escape(string)
     DateTime.parse(string)
   end
@@ -214,7 +214,8 @@ module Sparkql::ParserCompatibility
 
   # Checks the type of an expression with what is expected.
   def check_type!(expression, expected, supports_nulls = true)
-    if expected == expression[:type] || check_function_type?(expression, expected) ||
+    if (expected == expression[:type] && !expression.key?(:field_manipulations)) ||
+        (expression.key?(:field_manipulations) && check_function_type?(expression, expected)) ||
       (supports_nulls && expression[:type] == :null)
       return true
     # If the field will be passed into a function,
@@ -230,7 +231,7 @@ module Sparkql::ParserCompatibility
       expression[:type] = :datetime
       expression[:cast] = :date
       return true
-    elsif expected == :date && expression[:type] == :datetime 
+    elsif expected == :date && expression[:type] == :datetime
       expression[:type] = :date
       expression[:cast] = :datetime
       if multiple_values?(expression[:value])
@@ -253,26 +254,44 @@ module Sparkql::ParserCompatibility
             :message => "expected #{expected} but found #{expression[:type]}",
             :status => :fatal )
   end
-  
+
   # If a function is being applied to a field, we check that the return type of
   # the function matches what is expected, and that the function supports the
   # field type as the first argument.
   def check_function_type?(expression, expected)
-    return false unless expression.key?(:field_manipulations) && expression[:field_manipulations][:return_type] == expression[:type]
-    # Lookup the function arguments
-    function = Sparkql::FunctionResolver::SUPPORTED_FUNCTIONS[deepest_function(expression[:field_manipulations])[:function_name].to_sym]
-    return false if function.nil?
-
-    Array(function[:args].first).include?(expected)
+    validate_manipulation_types(expression[:field_manipulations], expected)
   end
 
+  def validate_manipulation_types(field_manipulations, expected)
+    if field_manipulations[:type] == :function
+      function = Sparkql::FunctionResolver::SUPPORTED_FUNCTIONS[field_manipulations[:function_name].to_sym]
+      return false if function.nil?
+      field_manipulations[:args].each_with_index do |arg, index|
+        if arg[:type] == :field
+          return false unless function[:args][index].include?(:field)
+        end
+      end
+    elsif field_manipulations[:type] == :arithmetic
+      lhs = field_manipulations[:lhs]
+      return false unless validate_side(lhs, expected)
 
-  def deepest_function(function)
-    if function[:args].first[:type] == :function
-      deepest_function(function[:args].first)
-    else
-      function
+      rhs = field_manipulations[:rhs]
+      return false unless rhs.nil? || validate_side(rhs, expected)
     end
+    true
+  end
+
+  def validate_side(side, expected)
+    if side[:type] == :arithmetic
+      return validate_manipulation_types(side, expected)
+    elsif side[:type] == :field
+      return false unless [:decimal, :integer].include?(expected)
+    elsif side[:type] == :function
+      return false unless [:decimal, :integer].include?(side[:return_type])
+    elsif ![:decimal, :integer].include?(side[:type])
+      return false
+    end
+    true
   end
 
   # Builds the correct operator based on the type and the value.
@@ -305,7 +324,7 @@ module Sparkql::ParserCompatibility
   def operator_supports_multiples?(operator)
     OPERATORS_SUPPORTING_MULTIPLES.include?(operator)
   end
-  
+
   def coerce_datetime datetime
     if datestr = datetime.match(/^(\d{4}-\d{2}-\d{2})/)
       datestr[0]
