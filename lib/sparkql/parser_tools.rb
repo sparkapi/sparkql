@@ -1,4 +1,6 @@
 # This is the guts of the parser internals and is mixed into the parser for organization.
+require 'bigdecimal'
+
 module Sparkql::ParserTools
 
   # Coercible types from highest precision to lowest
@@ -264,19 +266,22 @@ module Sparkql::ParserTools
   def add_fold(n1, n2)
     return if arithmetic_error?(n1) || arithmetic_error?(n2)
 
-    { type: arithmetic_type(n1, n2), value: (escape_value(n1) + escape_value(n2)).to_s }
+    value = escape_arithmetic_value(n1) + escape_arithmetic_value(n2)
+    { type: arithmetic_type(n1, n2), value: unescape_arithmetic(value) }
   end
 
   def sub_fold(n1, n2)
     return if arithmetic_error?(n1) || arithmetic_error?(n2)
 
-    { type: arithmetic_type(n1, n2), value: (escape_value(n1) - escape_value(n2)).to_s }
+    value = escape_arithmetic_value(n1) - escape_arithmetic_value(n2)
+    { type: arithmetic_type(n1, n2), value: unescape_arithmetic(value) }
   end
 
   def mul_fold(n1, n2)
     return if arithmetic_error?(n1) || arithmetic_error?(n2)
 
-    { type: arithmetic_type(n1, n2), value: (escape_value(n1) * escape_value(n2)).to_s }
+    value = escape_arithmetic_value(n1) * escape_arithmetic_value(n2)
+    { type: arithmetic_type(n1, n2), value: unescape_arithmetic(value) }
   end
 
   def div_fold(n1, n2)
@@ -284,7 +289,8 @@ module Sparkql::ParserTools
       arithmetic_error?(n2) ||
       zero_error?(n2)
 
-    { type: arithmetic_type(n1, n2), value: (escape_value(n1) / escape_value(n2)).to_s }
+    value = escape_arithmetic_value(n1) / escape_arithmetic_value(n2)
+    { type: arithmetic_type(n1, n2), value: unescape_arithmetic(value) }
   end
 
   def mod_fold(n1, n2)
@@ -292,7 +298,8 @@ module Sparkql::ParserTools
       arithmetic_error?(n2) ||
       zero_error?(n2)
 
-    { type: arithmetic_type(n1, n2), value: (escape_value(n1) % escape_value(n2)).to_s }
+    value = escape_arithmetic_value(n1) % escape_arithmetic_value(n2)
+    { type: arithmetic_type(n1, n2), value: unescape_arithmetic(value) }
   end
 
   def arithmetic_type(num1, num2)
@@ -300,6 +307,23 @@ module Sparkql::ParserTools
       :decimal
     else
       :integer
+    end
+  end
+
+  def escape_arithmetic_value(expression)
+    case expression[:type]
+    when :decimal
+      BigDecimal.new(expression[:value])
+    else
+      escape_value(expression)
+    end
+  end
+
+  def unescape_arithmetic(value)
+    if value.is_a?(BigDecimal)
+      value.round(20).to_s('F')
+    else
+      value.to_s
     end
   end
 

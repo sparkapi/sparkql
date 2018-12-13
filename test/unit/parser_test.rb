@@ -232,6 +232,54 @@ class ParserTest < Test::Unit::TestCase
     assert_equal 'Mod', field_manipulations[:op]
   end
 
+  test 'Mod returns decimal precision' do
+    @parser = Parser.new
+    filter = "Baths Eq 32.7 Mod 20.7"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+    assert_equal '12.0', expressions.first[:value]
+  end
+
+  test 'Adding returns decimal precision' do
+    @parser = Parser.new
+    filter = "Baths Eq 0.1 Add 0.2"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+    assert_equal '0.3', expressions.first[:value]
+  end
+
+  test 'Subtracting returns decimal precision' do
+    @parser = Parser.new
+    filter = "Baths Eq 0.3 Sub 0.1"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+    assert_equal '0.2', expressions.first[:value]
+  end
+
+  test 'Division returns decimal precision' do
+    @parser = Parser.new
+    filter = "Baths Eq 0.6 Div 0.2"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+    assert_equal '3.0', expressions.first[:value]
+  end
+
+  test 'Arithmetic rounds to 20 decimal places' do
+    @parser = Parser.new
+    filter = "Baths Eq 7 Div 10.1"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+    assert_equal '0.69306930693069306931', expressions.first[:value]
+  end
+
+  test 'Multiplication returns decimal precision' do
+    @parser = Parser.new
+    filter = "Baths Eq 7 Mul 0.1"
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+    assert_equal '0.7', expressions.first[:value]
+  end
+
   test 'arithmetic with field function' do
     @parser = Parser.new
     filter = "floor(Baths) Add 2 Eq 1"

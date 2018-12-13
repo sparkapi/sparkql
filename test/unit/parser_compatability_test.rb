@@ -565,4 +565,19 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     assert parser.send(:check_type!, expression, :datetime)
     assert_equal '3', parser.escape_value(expression)
   end
+
+  test "function with field and arithmetic" do
+    filter = "year(CloseDate) add 1 Eq 2017"
+    parser = Parser.new
+    expression = parser.tokenize(filter).first
+    assert parser.send(:check_type!, expression, :datetime)
+  end
+
+  test "Cannot perform arithmetic on a String field" do
+    filter = "City Add 3.0 Eq 'Fargo'"
+    parser = Parser.new
+    expression = parser.tokenize(filter).first
+    # Type mismatch
+    assert !parser.send(:check_type!, expression, :datetime)
+  end
 end
