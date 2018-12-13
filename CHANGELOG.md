@@ -1,3 +1,8 @@
+v1.2.4, 2018-12-13
+-------------------
+  * [IMPROVEMENT] Support decimal arithmetic
+  * [BUGFIX] Correctly handle type checking with arithmetic
+
 v1.2.3, 2018-12-05
 -------------------
   * [IMPROVEMENT] Support Arithmetic Grouping and Negation
