@@ -1180,11 +1180,22 @@ class ParserTest < Test::Unit::TestCase
     assert_equal '0', expressions.first[:value]
   end
 
-  test 'Arithmetic grouping should not fail on nesting' do
-    filter = "BathroomsTotalDecimal Eq ((3.4 add 2.6) mul (1 add 1))"
+  test 'Arithmetic grouping should not influence expression grouping' do
+    filter = "(BathroomsTotalDecimal add (5 mul 5)) Eq ((3.4 add 2.6) mul (1 add 1))"
     @parser = Parser.new
-    @parser.parse(filter)
+    expressions = @parser.parse(filter)
     assert !@parser.errors?
+    assert_equal 0, expressions.first[:level]
+    assert_equal 0, expressions.first[:block_group]
+
+    filter = "((BathroomsTotalDecimal add (5 mul 5)) Eq ((3.4 add 2.6) mul (1 add 1))) And BathroomsTotalDecimal Eq 5"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?
+    assert_equal 1, expressions.first[:level]
+    assert_equal 1, expressions.first[:block_group]
+    assert_equal 0, expressions.last[:level]
+    assert_equal 0, expressions.last[:block_group]
   end
 
   private
