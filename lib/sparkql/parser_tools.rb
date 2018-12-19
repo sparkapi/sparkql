@@ -126,6 +126,8 @@ module Sparkql::ParserTools
   end
 
   def tokenize_arithmetic_group(lhs)
+    @lexer.leveldown
+    @lexer.block_group_identifier -= 1
     lhs = {type: :field, value: lhs} if lhs.is_a?(String)
     {
       type: :arithmetic,
@@ -260,6 +262,8 @@ module Sparkql::ParserTools
   end
 
   def group_fold(exp)
+    @lexer.leveldown
+    @lexer.block_group_identifier -= 1
     exp
   end
 

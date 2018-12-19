@@ -1,3 +1,7 @@
+v1.2.5, 2018-12-19
+-------------------
+  * [BUGFIX] Correctly handle arithmetic grouping
+
 v1.2.4, 2018-12-13
 -------------------
   * [IMPROVEMENT] Support decimal arithmetic
