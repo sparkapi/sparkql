@@ -1,6 +1,6 @@
 v1.2.6, 2019-04-01
 -------------------
-  * [IMPROVEMENT] hours() and minutes() functions
+  * [IMPROVEMENT] hours(), minutes(), and seconds() functions
 
 v1.2.5, 2018-12-19
 -------------------
