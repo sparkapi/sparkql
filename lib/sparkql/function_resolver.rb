@@ -10,7 +10,9 @@ require 'sparkql/geo'
 # Name and argument requirements for the function should match the function declaration in 
 # SUPPORTED_FUNCTIONS which will run validation on the function syntax prior to execution.
 class Sparkql::FunctionResolver
-  SECONDS_IN_DAY = 60 * 60 * 24
+  SECONDS_IN_MINUTE = 60
+  SECONDS_IN_HOUR = SECONDS_IN_MINUTE * 60
+  SECONDS_IN_DAY = SECONDS_IN_HOUR * 24
   STRFTIME_DATE_FORMAT = '%Y-%m-%d'
   STRFTIME_TIME_FORMAT = '%H:%M:%S.%N'
   VALID_REGEX_FLAGS = ["", "i"]
@@ -110,6 +112,18 @@ class Sparkql::FunctionResolver
     :linestring => {
       :args => [:character],
       :return_type => :shape
+    },
+    :seconds => {
+      :args => [:integer],
+      :return_type => :datetime
+    },
+    :minutes => {
+      :args => [:integer],
+      :return_type => :datetime
+    },
+    :hours => {
+      :args => [:integer],
+      :return_type => :datetime
     },
     :days => {
       :args => [:integer],
@@ -461,6 +475,33 @@ class Sparkql::FunctionResolver
       :function_parameters => [new_value, ''],
       :type => :character,
       :value => new_value
+    }
+  end
+
+  # Offset the current timestamp by a number of seconds
+  def seconds(num)
+    t = Time.now + num
+    {
+      :type => :datetime,
+      :value => t.iso8601
+    }
+  end
+
+  # Offset the current timestamp by a number of minutes
+  def minutes(num)
+    t = Time.now + num * SECONDS_IN_MINUTE
+    {
+      :type => :datetime,
+      :value => t.iso8601
+    }
+  end
+
+  # Offset the current timestamp by a number of hours
+  def hours(num)
+    t = Time.now + num * SECONDS_IN_HOUR
+    {
+      :type => :datetime,
+      :value => t.iso8601
     }
   end
 

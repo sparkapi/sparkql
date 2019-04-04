@@ -1,3 +1,7 @@
+v1.2.6, 2019-04-01
+-------------------
+  * [IMPROVEMENT] hours(), minutes(), and seconds() functions
+
 v1.2.5, 2018-12-19
 -------------------
   * [BUGFIX] Correctly handle arithmetic grouping
