@@ -6,32 +6,32 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
   def setup
     @fields = {
       'StringField' => {
-        'Searchable' => true,
-        'Type' => 'character'
+        'searchable' => true,
+        'type' => 'character'
       },
       'NoSearchStringField' => {
-        'Searchable' => false,
-        'Type' => 'character'
+        'searchable' => false,
+        'type' => 'character'
       },
       'IntField' => {
-        'Searchable' => true,
-        'Type' => 'integer'
+        'searchable' => true,
+        'type' => 'integer'
       },
       'DateField' => {
-        'Searchable' => true,
-        'Type' => 'date'
+        'searchable' => true,
+        'type' => 'date'
       },
       '"Custom"."DateField"' => {
-        'Searchable' => true,
-        'Type' => 'date'
+        'searchable' => true,
+        'type' => 'date'
       },
       'DecimalField' => {
-        'Searchable' => true,
-        'Type' => 'decimal'
+        'searchable' => true,
+        'type' => 'decimal'
       },
       'Location' => {
-        'Searchable' => true,
-        'Type' => 'shape'
+        'searchable' => true,
+        'type' => 'shape'
       }
     }
   end
@@ -174,7 +174,7 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
       parser = SparkqlV2::Parser.new
       ast = parser.parse(f)
 
-      analyzer = SparkqlV2::SemanticAnalyzer.new('Field' => {'Searchable' => true, 'Type' => 'DateTime'})
+      analyzer = SparkqlV2::SemanticAnalyzer.new('Field' => {'searchable' => true, 'type' => 'DateTime'})
       analyzer.visit(ast)
 
       assert analyzer.errors?
@@ -186,7 +186,7 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
     parser = SparkqlV2::Parser.new
     ast = parser.parse("Field Eq 10")
 
-    analyzer = SparkqlV2::SemanticAnalyzer.new('Field' => {'Searchable' => false, 'Type' => 'Integer'})
+    analyzer = SparkqlV2::SemanticAnalyzer.new('Field' => {'searchable' => false, 'type' => 'Integer'})
     analyzer.visit(ast)
 
     assert analyzer.errors?
