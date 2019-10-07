@@ -5,7 +5,7 @@ require 'test_helper'
 class FunctionTest < Test::Unit::TestCase
   include SparkqlV2
 
-  setup do
+  def setup
     @parser = Parser.new
   end
 
