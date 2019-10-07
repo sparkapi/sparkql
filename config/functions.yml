@@ -13,7 +13,6 @@ time:
   arguments:
   - types:
     - datetime
-    - date
     allow_field: true
 date:
   return_type: date

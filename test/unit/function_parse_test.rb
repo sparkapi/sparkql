@@ -2,44 +2,49 @@
 
 require 'test_helper'
 
-class FunctionTest < Test::Unit::TestCase
+# Functions are only validated to have valid parameter count and
+# that the function names are actually supported when parsing.
+# Type checking should be done within the semantic_analyzer tests.
+class FunctionParseTest < Test::Unit::TestCase
   include SparkqlV2
 
   def setup
     @parser = Parser.new
   end
 
-  test 'tolower takes field' do
-    f = get('tolower(City)')
+  test 'single arg functions only accept single arg' do
+    functions_single_value = ['tolower', 'length', 'toupper']
+
+    functions_single_value.each do |f|
+      assert_valid("#{f}(1)")
+      assert_invalid("#{f}(1, City)")
+      assert_invalid("#{f}(1, 1)")
+      assert_invalid("#{f}(Field1,Field2)")
+    end
+  end
+
+  test 'functions without args do not accept args' do
+    functions_without_args = ['now', 'mindatetime', 'maxdatetime']
+
+    functions_without_args.each do |f|
+      assert_valid("#{f}()")
+      assert_invalid("#{f}(City)")
+      assert_invalid("#{f}('1')")
+      assert_invalid("#{f}('')")
+      assert_invalid("#{f}(NULL)")
+    end
+  end
+
+  test 'non-existent function fails' do
+    assert_invalid('bogus()')
+    assert_invalid('bogus(1)')
+    assert_invalid('bogus(1,2)')
+  end
+
+  test 'tolower single argument' do
+    f = assert_valid('tolower(City)')
     assert_equal 'tolower', f['name']
     assert_equal 'field', f['args'].first['name']
-  end
-
-  test 'tolower with literal' do
-    f = get("tolower('Fargo')")
-    assert_equal 'literal', f['args'].first['name']
-  end
-
-  test 'toupper takes field' do
-    f = get('toupper(City)')
-    assert_equal 'toupper', f['name']
-    assert_equal 'field', f['args'].first['name']
-  end
-
-  test 'toupper with literal' do
-    f = get("toupper('Fargo')")
-    assert_equal 'literal', f['args'].first['name']
-  end
-
-  test 'length takes field' do
-    f = get('length(City)')
-    assert_equal 'length', f['name']
-    assert_equal 'field', f['args'].first['name']
-  end
-
-  test 'length with literal' do
-    f = get("length('Fargo')")
-    assert_equal 'literal', f['args'].first['name']
   end
 
   test 'function months' do
@@ -308,11 +313,11 @@ class FunctionTest < Test::Unit::TestCase
     assert @parser.errors?
   end
 
-  def get(function_call)
+  def assert_valid(function_call)
     @parser = Parser.new
     filter = "City Eq #{function_call}"
     ast = @parser.parse(filter)
-    assert !@parser.errors?
+    assert !@parser.errors?, @parser.errors
     ast['rhs']
   end
 end

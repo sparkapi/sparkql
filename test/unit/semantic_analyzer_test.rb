@@ -51,8 +51,6 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
 
   test 'toupper fails without 1 character parameter' do
     STRING_OPERATORS.each do |op|
-      assert_errors("StringField #{op} toupper()")
-      assert_errors("StringField #{op} toupper('First', 'Second')")
       assert_errors("StringField #{op} toupper(1)")
       assert_errors("StringField #{op} toupper(IntField)")
       assert_success("StringField #{op} toupper(StringField)")
@@ -62,8 +60,6 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
 
   test 'tolower fails without 1 character parameter' do
     STRING_OPERATORS.each do |op|
-      assert_errors("StringField #{op} tolower()")
-      assert_errors("StringField #{op} tolower('First', 'Second')")
       assert_errors("StringField #{op} tolower(1)")
       assert_errors("StringField #{op} tolower(IntField)")
       assert_success("StringField #{op} tolower(StringField)")
@@ -73,36 +69,10 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
 
   test 'length fails without bad parameters' do
     NUMBER_OPERATORS.each do |op|
-      assert_errors("IntField #{op} length()")
-      assert_errors("IntField #{op} length('First', 'Second')")
       assert_errors("IntField #{op} length(1)")
       assert_errors("IntField #{op} length(IntField)")
       assert_success("IntField #{op} length('a')")
       assert_success("IntField #{op} length(StringField)")
-    end
-  end
-
-  test 'now requires no parameters' do
-    NUMBER_OPERATORS.each do |op|
-      assert_errors("DateField #{op} now(1)")
-      assert_errors("DateField #{op} now('1')")
-      assert_success("DateField #{op} now()")
-    end
-  end
-
-  test 'mindatetime requires no parameters' do
-    NUMBER_OPERATORS.each do |op|
-      assert_errors("DateField #{op} mindatetime(1)")
-      assert_errors("DateField #{op} mindatetime('1')")
-      assert_success("DateField #{op} mindatetime()")
-    end
-  end
-
-  test 'maxdatetime requires no parameters' do
-    NUMBER_OPERATORS.each do |op|
-      assert_errors("DateField #{op} maxdatetime(1)")
-      assert_errors("DateField #{op} maxdatetime('1')")
-      assert_success("DateField #{op} maxdatetime()")
     end
   end
 
@@ -157,6 +127,14 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
     assert_success("Location Eq radius('20100000000000000000000000',1)")
   end
 
+  test 'some args do not allow fields' do
+    assert_errors("Location Eq radius('20100000000000000000000000',IntField)")
+    assert_errors("Location Eq radius('20100000000000000000000000',length(StringField))")
+    assert_errors("Location Eq radius(StringField,1)")
+    assert_errors("Location Eq radius(toupper(StringField),1)")
+    assert_errors("Location Eq radius(toupper(toupper(StringField)),1)")
+  end
+
   test 'invalid operators' do
     (SparkqlV2::Token::OPERATORS - SparkqlV2::Token::EQUALITY_OPERATORS).each do |o|
       ['NULL', 'true', "'My String'"].each do |v|
@@ -197,10 +175,6 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
     assert_nothing_raised do
       assert_errors("Location Eq radius('46.8 -96.8','-20.0')")
     end
-  end
-
-  test 'undefined function' do
-    assert_errors 'Location Eq bugus(1)'
   end
 
   private

@@ -72,16 +72,27 @@ module SparkqlV2
       end
 
       def accepts_field_argument?(meta, current_argument)
-        return true unless !meta['allow_field'] && current_argument['name'] == 'field'
+        return true unless !meta['allow_field']
 
-        @errors << {
-          token: current_argument,
-          message: 'Argument does not support a field',
-          status: :fatal,
-          syntax: false,
-          constraint: true
-        }
-        false
+        stack = [current_argument]
+
+        while stack.size > 0
+          arg = stack.pop
+          if arg['name'] == 'field'
+            @errors << {
+              token: current_argument,
+              message: 'Argument does not support a field',
+              status: :fatal,
+              syntax: false,
+              constraint: true
+            }
+            return false
+          elsif arg['function']
+            arg['args'].each {|a| stack.push(a)}
+          end
+        end
+
+        true
       end
 
       def accepts_type?(meta, current_argument)
