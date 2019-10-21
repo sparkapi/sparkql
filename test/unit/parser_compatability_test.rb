@@ -204,43 +204,6 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     end
   end
 
-  # TODO
-  #   test "max out values" do
-  #     parser = Parser.new
-  #     to_the_max = []
-  #     210.times do |x|
-  #       to_the_max << x
-  #     end
-  #     ex = parser.tokenize("City Eq #{to_the_max.join(',')}")
-  #     vals = ex.first['value']
-  #     assert_equal 200, vals.size
-  #     assert parser.errors?
-  #   end
-
-  # TODO
-  #   test "max out expressions" do
-  #     parser = Parser.new
-  #     to_the_max = []
-  #     80.times do |x|
-  #       to_the_max << "City Eq 'Fargo'"
-  #     end
-  #     vals = parser.tokenize(to_the_max.join(" And "))
-  #     assert_equal 75, vals.size
-  #     assert parser.errors?
-  #   end
-
-  # TODO
-  #   test "max out function args" do
-  #     parser = Parser.new
-  #     to_the_max = []
-  #     201.times do |x|
-  #       to_the_max << "1"
-  #     end
-  #     vals = parser.tokenize("Args Eq myfunc(#{to_the_max.join(",")})")
-  #     assert parser.errors?
-  #     assert parser.errors.first.constraint?
-  #   end
-
   test 'API-107 And/Or in string spiel' do
     search_strings = ['Tom And Jerry', 'Tom Or Jerry', 'And Or Eq', 'City Eq \\\'Fargo\\\'',
                       ' And Eq Or ', 'Or And Not']

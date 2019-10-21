@@ -115,8 +115,7 @@ module SparkqlV2
 
       if function.nil?
         msg = "function: #{name} does not exist"
-        # TODO: make sure token is correct
-        tokenizer_error(token: @lexer.current_token_value,
+        tokenizer_error(token: name,
                         message: msg,
                         status: :fatal,
                         syntax: true)
@@ -130,8 +129,7 @@ module SparkqlV2
       if !(min_args..max_args).include?(f_args.count)
         msg = "#{name} has wrong number of args! Expected between #{min_args} and #{max_args} but recieved #{f_args.count}"
 
-        # TODO: make sure token is correct
-        tokenizer_error(token: @lexer.current_token_value,
+        tokenizer_error(token: name,
                         message: msg,
                         status: :fatal,
                         syntax: true)

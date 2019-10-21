@@ -249,7 +249,7 @@ module SparkqlV2
 
     def coerce_if_necessary(all_nodes)
       types = all_nodes.map { |node| node['type'] }
-      # TODO: add test
+
       return all_nodes if (types.uniq - ['null']).size <= 1
 
       all_nodes = coerce_numbers(types, all_nodes)
