@@ -80,18 +80,24 @@ module SparkqlV2
         tokenize_operator(field, operator, values.first)
       else
 
+
         unless OPERATORS_SUPPORTING_MULTIPLES.include?(operator)
           tokenizer_error(token: operator,
                           message: "Operator #{operator} does not support multiple values",
                           status: :fatal)
         end
 
+        list = {
+          'name' => 'list',
+          'value' => values
+        }
+
         if operator == 'Bt'
-          tokenize_operator(field, operator, values)
+          tokenize_operator(field, operator, list)
         elsif operator == 'Eq'
-          tokenize_operator(field, 'In', values)
+          tokenize_operator(field, 'In', list)
         elsif operator == 'Ne'
-          tokenize_unary_not(tokenize_operator(field, 'In', values))
+          tokenize_unary_not(tokenize_operator(field, 'In', list))
         end
       end
     end
