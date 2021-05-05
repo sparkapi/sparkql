@@ -582,8 +582,8 @@ class FunctionResolverTest < Test::Unit::TestCase
     end
   end
 
-  test 'day_of_year() and day_of_week()' do
-    %w[day_of_year day_of_week].each do |function|
+  test 'day of week and day of year parse' do
+    %w[doy dow].each do |function|
       f = FunctionResolver.new(function, [{ type: :field, value: 'OriginalEntryTimestamp' }])
       f.validate
       assert !f.errors?, "Errors #{f.errors.inspect}"
