@@ -516,53 +516,48 @@ module Sparkql
     end
 
     # Offset the current timestamp by a number of days
-    def days(num)
+    def days(number_of_days)
       # date calculated as the offset from midnight tommorrow. Zero will provide values for all times
       # today.
-      d = current_date + num
+      d = current_date + number_of_days
       {
         type: :date,
         value: d.strftime(STRFTIME_DATE_FORMAT)
       }
     end
 
-    def weekdays(num)
-      dir = num < 0 ? -1 : 1
-
-      weeks = num.abs / 5
-      remaining = num.abs % 5
-
+    def weekdays(number_of_days)
       today = current_date
+      weekend_start = today.saturday? || today.sunday?
+      direction = number_of_days.positive? ? 1 : -1
+      weeks = (number_of_days / 5.0).to_i
+      remaining = number_of_days.abs % 5
+
+      # Jump ahead the number of weeks represented in the input
+      today += weeks * 7
+
+      # Now iterate on the remaining weekdays
       remaining.times do |i|
-        today += 1 * dir
-        if today.saturday? && dir > 0
-          today += 2
-        elsif today.sunday? && dir > 0
-          today += 1
-        elsif today.saturday? && dir < 0
-          today -= 1
-        elsif today.sunday? && dir < 0
-          today -= 2
-        end
-      end
-      if today.saturday?
-        if remaining == 0 && weeks > 0 && dir > 0
-          today -= 1
-        else
-          today += 2
-        end
-      elsif today.sunday?
-        if remaining == 0 && weeks > 0 && dir > 0
-          today -= 2
-        else
-          today += 1
+        today += direction
+        while today.saturday? || today.sunday?
+          today += direction
         end
       end
 
-      d = today + weeks * 7 * dir
+      # If we end on the weekend, bump accordingly
+      while today.saturday? || today.sunday?
+        # If we start and end on the weekend, wind things back to the next
+        # appropriate weekday.
+        if weekend_start && remaining == 0
+          today -= direction
+        else
+          today += direction
+        end
+      end
+
       {
         type: :date,
-        value: d.strftime(STRFTIME_DATE_FORMAT)
+        value: today.strftime(STRFTIME_DATE_FORMAT)
       }
     end
 
