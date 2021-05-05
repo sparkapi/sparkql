@@ -132,6 +132,10 @@ module Sparkql
         args: [:integer],
         return_type: :datetime
       },
+      weekdays: {
+        args: [:integer],
+        return_type: :datetime
+      },
       months: {
         args: [:integer],
         return_type: :datetime
@@ -167,12 +171,22 @@ module Sparkql
         resolve_for_type: true,
         return_type: :integer
       },
+      day_of_year: {
+        args: [%i[field datetime date]],
+        resolve_for_type: true,
+        return_type: :integer
+      },
       month: {
         args: [%i[field datetime date]],
         resolve_for_type: true,
         return_type: :integer
       },
       day: {
+        args: [%i[field datetime date]],
+        resolve_for_type: true,
+        return_type: :integer
+      },
+      day_of_week: {
         args: [%i[field datetime date]],
         resolve_for_type: true,
         return_type: :integer
@@ -476,7 +490,7 @@ module Sparkql
 
     # Offset the current timestamp by a number of seconds
     def seconds(num)
-      t = Time.now + num
+      t = current_time + num
       {
         type: :datetime,
         value: t.iso8601
@@ -485,7 +499,7 @@ module Sparkql
 
     # Offset the current timestamp by a number of minutes
     def minutes(num)
-      t = Time.now + num * SECONDS_IN_MINUTE
+      t = current_time + num * SECONDS_IN_MINUTE
       {
         type: :datetime,
         value: t.iso8601
@@ -494,7 +508,7 @@ module Sparkql
 
     # Offset the current timestamp by a number of hours
     def hours(num)
-      t = Time.now + num * SECONDS_IN_HOUR
+      t = current_time + num * SECONDS_IN_HOUR
       {
         type: :datetime,
         value: t.iso8601
@@ -505,7 +519,47 @@ module Sparkql
     def days(num)
       # date calculated as the offset from midnight tommorrow. Zero will provide values for all times
       # today.
-      d = Date.today + num
+      d = current_date + num
+      {
+        type: :date,
+        value: d.strftime(STRFTIME_DATE_FORMAT)
+      }
+    end
+
+    def weekdays(num)
+      dir = num < 0 ? -1 : 1
+
+      weeks = num.abs / 5
+      remaining = num.abs % 5
+
+      today = current_date
+      remaining.times do |i|
+        today += 1 * dir
+        if today.saturday? && dir > 0
+          today += 2
+        elsif today.sunday? && dir > 0
+          today += 1
+        elsif today.saturday? && dir < 0
+          today -= 1
+        elsif today.sunday? && dir < 0
+          today -= 2
+        end
+      end
+      if today.saturday?
+        if remaining == 0 && weeks > 0 && dir > 0
+          today -= 1
+        else
+          today += 2
+        end
+      elsif today.sunday?
+        if remaining == 0 && weeks > 0 && dir > 0
+          today -= 2
+        else
+          today += 1
+        end
+      end
+
+      d = today + weeks * 7 * dir
       {
         type: :date,
         value: d.strftime(STRFTIME_DATE_FORMAT)
@@ -516,7 +570,7 @@ module Sparkql
     def now
       {
         type: :datetime,
-        value: Time.now.iso8601
+        value: current_time.iso8601
       }
     end
 
@@ -569,22 +623,22 @@ module Sparkql
       }
     end
 
-    def date_datetime(dt)
+    def date_datetime(datetime)
       {
         type: :date,
-        value: dt.strftime(STRFTIME_DATE_FORMAT)
+        value: datetime.strftime(STRFTIME_DATE_FORMAT)
       }
     end
 
-    def time_datetime(dt)
+    def time_datetime(datetime)
       {
         type: :time,
-        value: dt.strftime(STRFTIME_TIME_FORMAT)
+        value: datetime.strftime(STRFTIME_TIME_FORMAT)
       }
     end
 
     def months(num_months)
-      d = DateTime.now >> num_months
+      d = current_timestamp >> num_months
       {
         type: :date,
         value: d.strftime(STRFTIME_DATE_FORMAT)
@@ -592,7 +646,7 @@ module Sparkql
     end
 
     def years(num_years)
-      d = DateTime.now >> (num_years * 12)
+      d = current_timestamp >> (num_years * 12)
       {
         type: :date,
         value: d.strftime(STRFTIME_DATE_FORMAT)
@@ -772,6 +826,18 @@ module Sparkql
       when :null
         'NULL'
       end
+    end
+
+    def current_date
+      current_timestamp.to_date
+    end
+
+    def current_time
+      current_timestamp.to_time
+    end
+
+    def current_timestamp
+      @current_timestamp ||= DateTime.now
     end
 
     private

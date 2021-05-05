@@ -283,187 +283,260 @@ class FunctionResolverTest < Test::Unit::TestCase
   end
 
   test 'seconds()' do
-    dt = Time.new(2019, 4, 1, 8, 30, 20, 0)
-
-    Time.expects(:now).returns(dt).times(3)
+    test_time = Time.new(2019, 4, 1, 8, 30, 20, 0)
 
     f = FunctionResolver.new('seconds', [{ type: :integer, value: 7 }])
+    f.expects(:current_time).returns(test_time)
     f.validate
     assert !f.errors?, "Errors #{f.errors.inspect}"
     value = f.call
 
     assert_equal :datetime, value[:type]
     d = DateTime.parse(value[:value])
-    assert_equal dt.year, d.year
-    assert_equal dt.month, d.month
-    assert_equal dt.mday, d.mday
-    assert_equal dt.hour, d.hour
-    assert_equal dt.min, d.min
-    assert_equal dt.sec + 7, d.sec
+    assert_equal test_time.year, d.year
+    assert_equal test_time.month, d.month
+    assert_equal test_time.mday, d.mday
+    assert_equal test_time.hour, d.hour
+    assert_equal test_time.min, d.min
+    assert_equal test_time.sec + 7, d.sec
 
     f = FunctionResolver.new('seconds', [{ type: :integer, value: -21 }])
+    f.expects(:current_time).returns(test_time)
     f.validate
     assert !f.errors?, "Errors #{f.errors.inspect}"
     value = f.call
 
     assert_equal :datetime, value[:type]
     d = DateTime.parse(value[:value])
-    assert_equal dt.year, d.year
-    assert_equal dt.month, d.month
-    assert_equal dt.mday, d.mday
-    assert_equal dt.hour, d.hour
-    assert_equal dt.min - 1, d.min
+    assert_equal test_time.year, d.year
+    assert_equal test_time.month, d.month
+    assert_equal test_time.mday, d.mday
+    assert_equal test_time.hour, d.hour
+    assert_equal test_time.min - 1, d.min
     assert_equal 29, d.min
     assert_equal 59, d.sec
 
     f = FunctionResolver.new('seconds', [{ type: :integer,
                                            value: -Sparkql::FunctionResolver::SECONDS_IN_DAY }])
+    f.expects(:current_time).returns(test_time)
     f.validate
     assert !f.errors?, "Errors #{f.errors.inspect}"
     value = f.call
 
     assert_equal :datetime, value[:type]
     d = DateTime.parse(value[:value])
-    assert_equal dt.year, d.year
-    assert_equal dt.month - 1, d.month
+    assert_equal test_time.year, d.year
+    assert_equal test_time.month - 1, d.month
     assert_equal 31, d.mday
-    assert_equal dt.hour, d.hour
-    assert_equal dt.min, d.min
-    assert_equal dt.min, d.min
-    assert_equal dt.sec, d.sec
+    assert_equal test_time.hour, d.hour
+    assert_equal test_time.min, d.min
+    assert_equal test_time.min, d.min
+    assert_equal test_time.sec, d.sec
   end
 
   test 'minutes()' do
-    dt = Time.new(2019, 4, 1, 8, 30, 20, 0)
-
-    Time.expects(:now).returns(dt).times(3)
+    test_time = Time.new(2019, 4, 1, 8, 30, 20, 0)
 
     f = FunctionResolver.new('minutes', [{ type: :integer, value: 7 }])
+    f.expects(:current_time).returns(test_time)
     f.validate
     assert !f.errors?, "Errors #{f.errors.inspect}"
     value = f.call
 
     assert_equal :datetime, value[:type]
     d = DateTime.parse(value[:value])
-    assert_equal dt.year, d.year
-    assert_equal dt.month, d.month
-    assert_equal dt.mday, d.mday
-    assert_equal dt.hour, d.hour
-    assert_equal dt.min + 7, d.min
-    assert_equal dt.sec, d.sec
+    assert_equal test_time.year, d.year
+    assert_equal test_time.month, d.month
+    assert_equal test_time.mday, d.mday
+    assert_equal test_time.hour, d.hour
+    assert_equal test_time.min + 7, d.min
+    assert_equal test_time.sec, d.sec
 
     f = FunctionResolver.new('minutes', [{ type: :integer, value: -37 }])
+    f.expects(:current_time).returns(test_time)
     f.validate
     assert !f.errors?, "Errors #{f.errors.inspect}"
     value = f.call
 
     assert_equal :datetime, value[:type]
     d = DateTime.parse(value[:value])
-    assert_equal dt.year, d.year
-    assert_equal dt.month, d.month
-    assert_equal dt.mday, d.mday
-    assert_equal dt.hour - 1, d.hour
+    assert_equal test_time.year, d.year
+    assert_equal test_time.month, d.month
+    assert_equal test_time.mday, d.mday
+    assert_equal test_time.hour - 1, d.hour
     assert_equal 53, d.min
 
     f = FunctionResolver.new('minutes', [{ type: :integer,
                                            value: -1440 }])
+    f.expects(:current_time).returns(test_time)
     f.validate
     assert !f.errors?, "Errors #{f.errors.inspect}"
     value = f.call
 
     assert_equal :datetime, value[:type]
     d = DateTime.parse(value[:value])
-    assert_equal dt.year, d.year
-    assert_equal dt.month - 1, d.month
+    assert_equal test_time.year, d.year
+    assert_equal test_time.month - 1, d.month
     assert_equal 31, d.mday
-    assert_equal dt.hour, d.hour
-    assert_equal dt.min, d.min
+    assert_equal test_time.hour, d.hour
+    assert_equal test_time.min, d.min
   end
 
   test 'hours(), same day' do
-    dt = Time.new(2019, 4, 1, 8, 30, 20, 0)
-
+    test_time = Time.new(2019, 4, 1, 8, 30, 20, 0)
     tests = [1, -1, 5, -5, 12]
-    Time.expects(:now).returns(dt).times(tests.count)
 
     tests.each do |offset|
       f = FunctionResolver.new('hours', [{ type: :integer,
                                            value: offset }])
+      f.expects(:current_time).returns(test_time)
       f.validate
       assert !f.errors?, "Errors #{f.errors.inspect}"
       value = f.call
 
       assert_equal :datetime, value[:type]
       d = DateTime.parse(value[:value])
-      assert_equal dt.year, d.year
-      assert_equal dt.month, d.month
-      assert_equal dt.mday, d.mday
-      assert_equal dt.hour + offset, d.hour
-      assert_equal dt.min, d.min
-      assert_equal dt.sec, d.sec
+      assert_equal test_time.year, d.year
+      assert_equal test_time.month, d.month
+      assert_equal test_time.mday, d.mday
+      assert_equal test_time.hour + offset, d.hour
+      assert_equal test_time.min, d.min
+      assert_equal test_time.sec, d.sec
     end
   end
 
   test 'hours(), wrap day' do
-    dt = Time.new(2019, 4, 1, 8, 30, 20, 0)
-    Time.expects(:now).returns(dt).times(3)
+    test_time = Time.new(2019, 4, 1, 8, 30, 20, 0)
 
     # Jump forward a few days, and a few hours.
     f = FunctionResolver.new('hours', [{ type: :integer, value: 52 }])
+    f.expects(:current_time).returns(test_time)
     f.validate
     assert !f.errors?, "Errors #{f.errors.inspect}"
     value = f.call
 
     assert_equal :datetime, value[:type]
     d = DateTime.parse(value[:value])
-    assert_equal dt.year, d.year
-    assert_equal dt.month, d.month
-    assert_equal dt.mday + 2, d.mday
-    assert_equal dt.hour + 4, d.hour
-    assert_equal dt.min, d.min
+    assert_equal test_time.year, d.year
+    assert_equal test_time.month, d.month
+    assert_equal test_time.mday + 2, d.mday
+    assert_equal test_time.hour + 4, d.hour
+    assert_equal test_time.min, d.min
 
     # Drop back to the previous day, which'll also hit the previous month
     f = FunctionResolver.new('hours', [{ type: :integer, value: -24 }])
+    f.expects(:current_time).returns(test_time)
     f.validate
     assert !f.errors?, "Errors #{f.errors.inspect}"
     value = f.call
 
     assert_equal :datetime, value[:type]
     d = DateTime.parse(value[:value])
-    assert_equal dt.year, d.year
-    assert_equal dt.month - 1, d.month
+    assert_equal test_time.year, d.year
+    assert_equal test_time.month - 1, d.month
     assert_equal 31, d.mday
-    assert_equal dt.hour, d.hour
-    assert_equal dt.min, d.min
+    assert_equal test_time.hour, d.hour
+    assert_equal test_time.min, d.min
 
     # Drop back one full year's worth of hours.
     f = FunctionResolver.new('hours', [{ type: :integer, value: -8760 }])
+    f.expects(:current_time).returns(test_time)
     f.validate
     assert !f.errors?, "Errors #{f.errors.inspect}"
     value = f.call
 
     assert_equal :datetime, value[:type]
     d = DateTime.parse(value[:value])
-    assert_equal dt.year - 1, d.year
-    assert_equal dt.month, d.month
-    assert_equal dt.mday, d.mday
-    assert_equal dt.hour, d.hour
-    assert_equal dt.min, d.min
+    assert_equal test_time.year - 1, d.year
+    assert_equal test_time.month, d.month
+    assert_equal test_time.mday, d.mday
+    assert_equal test_time.hour, d.hour
+    assert_equal test_time.min, d.min
   end
 
   test 'days()' do
-    d = Date.new(2012, 10, 20)
-    Date.expects(:today).returns(d)
-    dt = DateTime.new(d.year, d.month, d.day, 0, 0, 0, DateTime.now.offset)
-    start = Time.parse(dt.to_s)
+    test_date = Date.new(2012, 10, 20) # Sat, 20 Oct 2012 00:00:00 GMT
     f = FunctionResolver.new('days', [{ type: :integer, value: 7 }])
+    f.expects(:current_date).returns(test_date)
     f.validate
     assert !f.errors?, "Errors #{f.errors.inspect}"
     value = f.call
     assert_equal :date, value[:type]
-    test_time = Time.parse(value[:value])
-    assert (test_time - start < 615_000 && test_time - start > 600_000),
-           "Time range off by more than five seconds #{test_time - start} '#{test_time} - #{start}'"
+    assert_equal '2012-10-27', value[:value]
+  end
+
+  test 'weekdays()' do
+    friday = Date.new(2012, 10, 19)
+    saturday = Date.new(2012, 10, 20)
+    sunday = Date.new(2012, 10, 21)
+    monday = Date.new(2012, 10, 22)
+    {
+      friday => [
+        [-5, '2012-10-12'],
+        [-4, '2012-10-15'],
+        [-1, '2012-10-18'],
+        [0, '2012-10-19'],
+        [1, '2012-10-22'],
+        [2, '2012-10-23'],
+        [5, '2012-10-26'],
+        [6, '2012-10-29'],
+        [7, '2012-10-30'],
+        [31, '2012-12-03']
+      ],
+      saturday => [
+        [-6, '2012-10-12'],
+        [-5, '2012-10-15'],
+        [-1, '2012-10-19'],
+        [0, '2012-10-22'],
+        [1, '2012-10-22'],
+        [2, '2012-10-23'],
+        [3, '2012-10-24'],
+        [4, '2012-10-25'],
+        [5, '2012-10-26'],
+        [6, '2012-10-29'],
+        [7, '2012-10-30'],
+        [31, '2012-12-03']
+      ],
+      sunday => [
+        [-6, '2012-10-12'],
+        [-5, '2012-10-15'],
+        [-1, '2012-10-19'],
+        [0, '2012-10-22'],
+        [1, '2012-10-22'],
+        [2, '2012-10-23'],
+        [5, '2012-10-26'],
+        [6, '2012-10-29'],
+        [7, '2012-10-30'],
+        [31, '2012-12-03']
+      ],
+      monday => [
+        [-6, '2012-10-12'],
+        [-5, '2012-10-15'],
+        [-1, '2012-10-19'],
+        [0, '2012-10-22'],
+        [1, '2012-10-23'],
+        [2, '2012-10-24'],
+        [5, '2012-10-29'],
+        [6, '2012-10-30'],
+        [7, '2012-10-31'],
+        [31, '2012-12-04']
+      ]
+    }.each do |test_date, weekday_tests|
+      weekday_tests.each do |days, expected_value|
+        f = FunctionResolver.new('weekdays', [{ type: :integer, value: days }])
+        f.expects(:current_date).returns(test_date)
+        f.validate
+        assert !f.errors?, "#{test_date}: #{days} = #{expected_value}"
+        value = f.call
+        assert_equal :date, value[:type]
+        assert_equal expected_value, value[:value], "#{test_date}: #{days} = #{expected_value}"
+      end
+    end
+
+    # TODO: need to validate edges of the week and grab only weekdays.
+    # Test Friday, Saturday Sunday Monday, test multiple weeks
+    # 0 is either the current day, or the next weekday
+    # Can be negative
   end
 
   test 'months()' do
@@ -504,6 +577,18 @@ class FunctionResolverTest < Test::Unit::TestCase
 
   test 'hour(), minute(), and second()' do
     %w[year month day].each do |function|
+      f = FunctionResolver.new(function, [{ type: :field, value: 'OriginalEntryTimestamp' }])
+      f.validate
+      assert !f.errors?, "Errors #{f.errors.inspect}"
+      value = f.call
+      assert_equal :function, value[:type]
+      assert_equal function, value[:value]
+      assert_equal 'OriginalEntryTimestamp', value[:args].first[:value]
+    end
+  end
+
+  test 'day_of_year() and day_of_week()' do
+    %w[day_of_year day_of_week].each do |function|
       f = FunctionResolver.new(function, [{ type: :field, value: 'OriginalEntryTimestamp' }])
       f.validate
       assert !f.errors?, "Errors #{f.errors.inspect}"
@@ -727,7 +812,7 @@ class FunctionResolverTest < Test::Unit::TestCase
 
     assert_equal :function, value[:type]
     assert_equal 'cast', value[:value]
-    assert_equal %w[Bedrooms character], value[:args].map { |v| v[:value] }
+    assert_equal(%w[Bedrooms character], value[:args].map{ |v| v[:value] })
   end
 
   test 'invalid cast returns null' do
