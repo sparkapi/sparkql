@@ -532,11 +532,6 @@ class FunctionResolverTest < Test::Unit::TestCase
         assert_equal expected_value, value[:value], "#{test_date}: #{days} = #{expected_value}"
       end
     end
-
-    # TODO: need to validate edges of the week and grab only weekdays.
-    # Test Friday, Saturday Sunday Monday, test multiple weeks
-    # 0 is either the current day, or the next weekday
-    # Can be negative
   end
 
   test 'months()' do
