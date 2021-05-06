@@ -125,19 +125,23 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_function_days
-    d = Date.today
-    start = Time.utc(d.year,d.month,d.day,0,0,0)
-    filter = "OriginalEntryTimestamp Ge days(-7)"
+    dt = DateTime.new(2021, 2, 22, 0, 0, 0, 0)
+    DateTime.expects(:now).returns(dt)
     @parser = Parser.new
-    expressions = @parser.parse(filter)
-    assert !@parser.errors?, "errors #{@parser.errors.inspect}"
-    assert_equal 'days(-7)', expressions.first[:condition]
+    expressions = @parser.parse "ExpirationDate Gt days(10)"
+    assert !@parser.errors?
+    assert_equal "2021-03-04", expressions.first[:value]
+    assert_equal 'days(10)', expressions.first[:condition]
+  end
 
-    vals = expressions.first[:value].split('-')
-
-    test_time = Time.utc(vals[0].to_i, vals[1].to_i, vals[2].to_i)
-    
-    assert (-605000 < test_time - start && -604000 > test_time - start), "Time range off by more than five seconds #{test_time - start} '#{test_time} - #{start}'"
+  def test_function_weekdays
+    dt = DateTime.new(2021, 2, 22, 0, 0, 0, 0)
+    DateTime.expects(:now).returns(dt)
+    @parser = Parser.new
+    expressions = @parser.parse "ExpirationDate Gt weekdays(10)"
+    assert !@parser.errors?
+    assert_equal "2021-03-08", expressions.first[:value]
+    assert_equal 'weekdays(10)', expressions.first[:condition]
   end
 
   def test_function_now
@@ -388,8 +392,38 @@ class ParserTest < Test::Unit::TestCase
   test "invalid regex" do
     filter = "ParcelNumber Eq regex('[1234', '')"
     @parser = Parser.new
-    expressions = @parser.parse(filter)
+    @parser.parse(filter)
     assert @parser.errors?, "Parser error expected due to invalid regex"
+  end
+
+  test "dayofyear function parses" do
+    filter = "dayofyear(DatetimeField) Eq 2012"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+    function = expressions.first[:field_manipulations]
+    assert_equal 'dayofyear', function[:function_name]
+    assert_equal 'DatetimeField', function[:function_parameters].first
+  end
+
+  test "dayofweek function parses" do
+    filter = "dayofweek(DatetimeField) Eq 7"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+    function = expressions.first[:field_manipulations]
+    assert_equal 'dayofweek', function[:function_name]
+    assert_equal 'DatetimeField', function[:function_parameters].first
+  end
+
+  test "weekdays function resolves" do
+    filter = "DatetimeField Eq weekdays(10)"
+    @parser = Parser.new
+    expressions = @parser.parse(filter)
+    assert !@parser.errors?, @parser.errors.inspect
+    function = expressions.first
+    assert_equal 'weekdays', function[:function_name]
+    assert_equal 10, function[:function_parameters].first
   end
 
   test "allow timezone offsets" do
@@ -418,7 +452,7 @@ class ParserTest < Test::Unit::TestCase
       assert_equal expressions.first[:value], value, "#{value} failed"
     end
   end
-  
+
   test "Location Eq polygon()" do
     filter = "Location Eq polygon('35.12 -68.33, 35.13 -68.33, 35.13 -68.32, 35.12 -68.32')"
     @parser = Parser.new

@@ -1,3 +1,7 @@
+v1.2.7, 2021-05-06
+-------------------
+  * [IMPROVEMENT] dayofweek(), dayofyear(), and weekdays() functions
+
 v1.2.6, 2019-04-01
 -------------------
   * [IMPROVEMENT] hours(), minutes(), and seconds() functions

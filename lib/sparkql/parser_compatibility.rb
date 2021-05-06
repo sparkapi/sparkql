@@ -85,7 +85,7 @@ module Sparkql::ParserCompatibility
 
   # Delegator for methods to process the error list.
   def process_errors
-    Sparkql::ErrorsProcessor.new(@errors)
+    Sparkql::ErrorsProcessor.new(errors)
   end
 
   # delegate :errors?, :fatal_errors?, :dropped_errors?, :recovered_errors?, :to => :process_errors
