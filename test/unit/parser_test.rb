@@ -396,34 +396,34 @@ class ParserTest < Test::Unit::TestCase
     assert @parser.errors?, "Parser error expected due to invalid regex"
   end
 
-  test "doy function parses" do
-    filter = "doy(DatetimeField) Eq 2012"
+  test "dayofyear function parses" do
+    filter = "dayofyear(DatetimeField) Eq 2012"
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert !@parser.errors?, @parser.errors.inspect
     function = expressions.first[:field_manipulations]
-    assert_equal 'doy', function[:function_name]
+    assert_equal 'dayofyear', function[:function_name]
     assert_equal 'DatetimeField', function[:function_parameters].first
   end
 
-  test "dow function parses" do
-    filter = "dow(DatetimeField) Eq 7"
+  test "dayofweek function parses" do
+    filter = "dayofweek(DatetimeField) Eq 7"
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert !@parser.errors?, @parser.errors.inspect
     function = expressions.first[:field_manipulations]
-    assert_equal 'dow', function[:function_name]
+    assert_equal 'dayofweek', function[:function_name]
     assert_equal 'DatetimeField', function[:function_parameters].first
   end
 
   test "weekdays function resolves" do
-    filter = "doy(DatetimeField) Eq 2012"
+    filter = "DatetimeField Eq weekdays(10)"
     @parser = Parser.new
     expressions = @parser.parse(filter)
     assert !@parser.errors?, @parser.errors.inspect
-    function = expressions.first[:field_manipulations]
-    assert_equal 'doy', function[:function_name]
-    assert_equal 'DatetimeField', function[:function_parameters].first
+    function = expressions.first
+    assert_equal 'weekdays', function[:function_name]
+    assert_equal 10, function[:function_parameters].first
   end
 
   test "allow timezone offsets" do

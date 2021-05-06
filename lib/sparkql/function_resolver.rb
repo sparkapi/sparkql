@@ -171,7 +171,7 @@ module Sparkql
         resolve_for_type: true,
         return_type: :integer
       },
-      doy: {
+      dayofyear: {
         args: [%i[field datetime date]],
         resolve_for_type: true,
         return_type: :integer
@@ -186,7 +186,7 @@ module Sparkql
         resolve_for_type: true,
         return_type: :integer
       },
-      dow: {
+      dayofweek: {
         args: [%i[field datetime date]],
         resolve_for_type: true,
         return_type: :integer
