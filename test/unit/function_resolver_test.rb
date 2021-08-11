@@ -8,6 +8,20 @@ class FunctionResolverTest < Test::Unit::TestCase
 
   EXAMPLE_DATE = DateTime.parse('2013-07-26T10:22:15.422804')
 
+  test 'all with field' do
+    f = FunctionResolver.new('all', [
+                               { type: :field, value: 'Name' }
+                             ])
+
+    f.validate
+    assert !f.errors?, "Errors #{f.errors.inspect}"
+    value = f.call
+
+    assert_equal :function, value[:type]
+    assert_equal 'all', value[:value]
+    assert_equal 'Name', value[:args].first[:value]
+  end
+
   test 'function parameters and name preserved' do
     f = FunctionResolver.new('radius', [{ type: :character,
                                           value: '35.12 -68.33' }, { type: :decimal, value: 1.0 }])
