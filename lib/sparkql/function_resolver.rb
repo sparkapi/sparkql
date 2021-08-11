@@ -24,6 +24,10 @@ module Sparkql
     VALID_CAST_TYPES = %i[field character decimal integer].freeze
 
     SUPPORTED_FUNCTIONS = {
+      all: {
+        args: [:field],
+        return_type: :all
+      },
       polygon: {
         args: [:character],
         return_type: :shape

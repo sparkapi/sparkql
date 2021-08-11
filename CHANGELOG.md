@@ -1,3 +1,7 @@
+v1.2.8, 2021-08-11
+-------------------
+  * [IMPROVEMENT] all() function
+
 v1.2.7, 2021-05-06
 -------------------
   * [IMPROVEMENT] dayofweek(), dayofyear(), and weekdays() functions
