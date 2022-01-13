@@ -51,10 +51,10 @@ module Sparkql::ParserTools
 
     field_manipulations = nil
     if field.is_a?(Hash) && field[:type] == :function
-      function = Sparkql::FunctionResolver::SUPPORTED_FUNCTIONS[field[:function_name].to_sym]
-      if function.nil?
-        tokenizer_error(:token => field[:function_name],
-          :message => "Unsupported function type", :status => :fatal )
+      unless supported_function?(field[:function_name])
+        tokenizer_error(token: field[:function_name],
+          message: 'Unsupported function type',
+          status: :fatal)
       end
       field_manipulations = field
       field = field[:field]
@@ -222,8 +222,7 @@ module Sparkql::ParserTools
       condition_list << arg[:value] # Needs to be pure string value
       arg[:value] = escape_value(arg)
     end
-    resolver = Sparkql::FunctionResolver.new(name, args)
-    
+    resolver = function_resolver(name, args)
     resolver.validate
     if(resolver.errors?)
       tokenizer_error(:token => @lexer.last_field, 
@@ -427,5 +426,27 @@ module Sparkql::ParserTools
         count -= 1
       end
     end
+  end
+
+  def function_resolver(function_name, function_args = [])
+    Sparkql::FunctionResolver.new(function_name,
+      function_args,
+      current_timestamp: current_timestamp)
+  end
+
+  def supported_function? function_name
+    !lookup_function(function_name).nil?
+  end
+
+  def lookup_function(function_name)
+    Sparkql::FunctionResolver.lookup(function_name)
+  end
+
+  def current_timestamp
+    @current_timestamp ||= DateTime.now
+  end
+
+  def offset
+    @offset ||= current_timestamp.zone
   end
 end

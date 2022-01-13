@@ -225,14 +225,19 @@ module Sparkql
       }
     }.freeze
 
+    def self.lookup(function_name)
+      SUPPORTED_FUNCTIONS[function_name.to_sym]
+    end
+
     # Construct a resolver instance for a function
     # name: function name (String)
     # args: array of literal hashes of the format {:type=><literal_type>, :value=><escaped_literal_value>}.
     #       Empty arry for functions that have no arguments.
-    def initialize(name, args)
+    def initialize(name, args, options = {})
       @name = name
       @args = args
       @errors = []
+      @current_timestamp = options[:current_timestamp]
     end
 
     # Validate the function instance prior to calling it. All validation failures will show up in the
@@ -838,6 +843,7 @@ module Sparkql
     def current_timestamp
       @current_timestamp ||= DateTime.now
     end
+
 
     private
 
