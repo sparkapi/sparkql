@@ -546,18 +546,16 @@ module Sparkql
       today += weeks * 7
 
       # Now iterate on the remaining weekdays
-      remaining.times do |i|
+      remaining.times do |_i|
         today += direction
-        while today.saturday? || today.sunday?
-          today += direction
-        end
+        today += direction while today.saturday? || today.sunday?
       end
 
       # If we end on the weekend, bump accordingly
       while today.saturday? || today.sunday?
         # If we start and end on the weekend, wind things back to the next
         # appropriate weekday.
-        if weekend_start && remaining == 0
+        if weekend_start && remaining.zero?
           today -= direction
         else
           today += direction
@@ -843,7 +841,6 @@ module Sparkql
     def current_timestamp
       @current_timestamp ||= DateTime.now
     end
-
 
     private
 

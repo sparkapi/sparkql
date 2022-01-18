@@ -46,7 +46,7 @@ class EvaluatorTest < Test::Unit::TestCase
       assert !sample(filter), "Filter: #{filter}"
     end
   end
-  
+
   # One failing Not expression in a set should always fail. Here we ensure every
   # permutation of one failing
   def test_nots_stay_bad
@@ -56,7 +56,7 @@ class EvaluatorTest < Test::Unit::TestCase
         expressions << "Test Eq #{i == j}"
       end
       # Add the unary not to the front!
-      filter = "Not " + expressions.join(" Not ")
+      filter = "Not #{expressions.join(' Not ')}"
       assert !sample(filter), "Filter: #{filter}"
     end
   end
@@ -97,24 +97,23 @@ class EvaluatorTest < Test::Unit::TestCase
     assert !sample("Test Eq true Not (Not Test Eq false)")
     assert sample("Not (Not Test Eq true)")
     assert sample("Not (Not(Not Test Eq true))")
-    assert !sample("Test Eq false And Test Eq true Not Test Eq false") 
+    assert !sample("Test Eq false And Test Eq true Not Test Eq false")
   end
-  
+
   def test_examples
     # This one is based on a real life example that had problems.
     #
-    # CurrentPrice Bt 130000.00,180000.00 And PropertySubType Eq 'Single Family Residence' And 
-    # SchoolDistrict Eq 'Byron Center','Grandville','Jenison' And MlsStatus Eq 'Active' And 
-    # BathsTotal Bt 1.50,9999.00 And BedsTotal Bt 3,99 And PropertyType Eq 'A' 
-    # Not "Garage"."Garage2" Eq 'No' And "Pool"."OutdoorAbove" Eq true 
+    # CurrentPrice Bt 130000.00,180000.00 And PropertySubType Eq 'Single Family Residence' And
+    # SchoolDistrict Eq 'Byron Center','Grandville','Jenison' And MlsStatus Eq 'Active' And
+    # BathsTotal Bt 1.50,9999.00 And BedsTotal Bt 3,99 And PropertyType Eq 'A'
+    # Not "Garage"."Garage2" Eq 'No' And "Pool"."OutdoorAbove" Eq true
     # And "Pool"."OutdoorInground" Eq true Not "Substructure"."Michigan Basement" Eq true
 
-    assert !sample("Test Eq false And Test Eq true And " + 
-      "Test Eq false And Test Eq true And " + 
-      "Test Eq true And Test Eq true And Test Eq true " + 
-      "Not Test Eq false And Test Eq false " + 
-      "And Test Eq false Not Test Eq false"
-    )
+    assert !sample("Test Eq false And Test Eq true And " \
+      "Test Eq false And Test Eq true And " \
+      "Test Eq true And Test Eq true And Test Eq true " \
+      "Not Test Eq false And Test Eq false " \
+      "And Test Eq false Not Test Eq false")
   end
 
   def test_optimizations
@@ -133,10 +132,10 @@ class EvaluatorTest < Test::Unit::TestCase
     assert !sample("MlsStatus Eq false And PropertyType Eq true And (City Eq true Or City Eq false)")
   end
 
-  def sample filter
+  def sample(filter)
     @parser = Parser.new
     @expressions = @parser.parse(filter)
-    @evaluator = Evaluator.new(BooleanOrBustExpressionResolver.new())
+    @evaluator = Evaluator.new(BooleanOrBustExpressionResolver.new)
     @evaluator.evaluate(@expressions)
   end
 end

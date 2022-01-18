@@ -15,7 +15,7 @@ rule '.rb' => '.y' do |t|
 end
 
 desc "Compile the racc parser from the grammar"
-task :compile => ["lib/sparkql/parser.rb", "grammar"]
+task compile: ["lib/sparkql/parser.rb", "grammar"]
 
 desc "Generate grammar Documenation"
 task :grammar do
@@ -27,5 +27,4 @@ Rake::Task[:test].prerequisites.unshift "lib/sparkql/parser.rb"
 Rake::Task[:test].prerequisites.unshift "grammar"
 
 desc 'Default: run unit tests.'
-task :default => :test
-
+task default: :test

@@ -4,20 +4,20 @@ class LexerTest < Test::Unit::TestCase
   include Sparkql
 
   test "record the current token and current oken position" do
-      @lexer = Lexer.new "City Eq 'Fargo'"
-      token = @lexer.shift
-      assert_equal "City", @lexer.current_token_value
-      assert_equal 0, @lexer.token_index
+    @lexer = Lexer.new "City Eq 'Fargo'"
+    @lexer.shift
+    assert_equal "City", @lexer.current_token_value
+    assert_equal 0, @lexer.token_index
 
-      token = @lexer.shift
-      assert_equal " ", @lexer.current_token_value
-      assert_equal 4, @lexer.token_index
+    @lexer.shift
+    assert_equal " ", @lexer.current_token_value
+    assert_equal 4, @lexer.token_index
 
-      token = @lexer.shift
-      assert_equal "Eq", @lexer.current_token_value
-      assert_equal 5, @lexer.token_index
+    @lexer.shift
+    assert_equal "Eq", @lexer.current_token_value
+    assert_equal 5, @lexer.token_index
   end
-  
+
   def test_check_reserved_words_standard_fields
     ["OrOrOr Eq true", "Equador Eq true", "Oregon Ge 10"].each do |standard_field|
       @lexer = Lexer.new(standard_field)
@@ -27,7 +27,7 @@ class LexerTest < Test::Unit::TestCase
   end
 
   def test_standard_field_formats
-    ["City", "PostalCodePlus4", "Inb4ParserError"].each do |standard_field|
+    %w[City PostalCodePlus4 Inb4ParserError].each do |standard_field|
       @lexer = Lexer.new("#{standard_field} Eq true")
       token = @lexer.shift
       assert_equal :STANDARD_FIELD, token.first, standard_field
@@ -39,7 +39,7 @@ class LexerTest < Test::Unit::TestCase
     @lexer = Lexer.new("4PostalCodePlus4 Eq true")
     token = @lexer.shift
     assert_equal :INTEGER, token.first
-    assert_equal token[1][:value], "4" 
+    assert_equal token[1][:value], "4"
   end
 
   def test_check_reserved_words_conjunctions
@@ -62,7 +62,7 @@ class LexerTest < Test::Unit::TestCase
       assert_equal :OPERATOR, token.first, op
     end
 
-    ['Bt 1234','Bt 1234,12345'].each do |op|
+    ['Bt 1234', 'Bt 1234,12345'].each do |op|
       @lexer = Lexer.new(op)
       token = @lexer.shift
       assert_equal :RANGE_OPERATOR, token.first, op
@@ -78,7 +78,7 @@ class LexerTest < Test::Unit::TestCase
   end
 
   def test_dates_matches
-    ['2013-07-26', '1999-01-01'].each do |op|
+    %w[2013-07-26 1999-01-01].each do |op|
       @lexer = Lexer.new(op)
       token = @lexer.shift
       assert_equal :DATE, token.first, op
@@ -108,5 +108,4 @@ class LexerTest < Test::Unit::TestCase
       assert_equal :DECIMAL, token.first, op
     end
   end
-
 end

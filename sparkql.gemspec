@@ -27,6 +27,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'ci_reporter', '~> 1.6'
   s.add_development_dependency 'mocha', '~> 0.12.0'
   s.add_development_dependency 'racc', '~> 1.4.8'
-  s.add_development_dependency 'rake', '~> 0.9.2'
+  s.add_development_dependency 'rake', ">=12.3.3"
   s.add_development_dependency 'test-unit', '~> 2.1.0'
 end

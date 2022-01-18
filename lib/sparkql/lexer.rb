@@ -2,9 +2,9 @@ require 'strscan'
 
 class Sparkql::Lexer < StringScanner
   include Sparkql::Token
-  
+
   attr_accessor :level, :block_group_identifier
-  
+
   attr_reader :last_field, :current_token_value, :token_index
 
   def initialize(str)
@@ -14,51 +14,50 @@ class Sparkql::Lexer < StringScanner
     @block_group_identifier = 0
     @expression_count = 0
   end
-  
+
   # Lookup the next matching token
   def shift
     @token_index = self.pos
 
-    token = case
-      when @current_token_value = scan(SPACE)
-        [:SPACE, @current_token_value]
-      when @current_token_value = scan(LPAREN)
-        levelup
-        [:LPAREN, @current_token_value]
-      when @current_token_value = scan(RPAREN)
-        # leveldown: do this after parsing group
-        [:RPAREN, @current_token_value]
-      when @current_token_value = scan(/\,/)
-        [:COMMA,@current_token_value]
-      when @current_token_value = scan(NULL)
-        literal :NULL, "NULL"
-      when @current_token_value = scan(STANDARD_FIELD)
-        check_standard_fields(@current_token_value)
-      when @current_token_value = scan(DATETIME)
-        literal :DATETIME, @current_token_value
-      when @current_token_value = scan(DATE)
-        literal :DATE, @current_token_value
-      when @current_token_value = scan(TIME)
-        literal :TIME, @current_token_value
-      when @current_token_value = scan(DECIMAL)
-        literal :DECIMAL, @current_token_value
-      when @current_token_value = scan(INTEGER)
-        literal :INTEGER, @current_token_value
-      when @current_token_value = scan(/\-/)
-        [:UMINUS, @current_token_value]
-      when @current_token_value = scan(CHARACTER)
-        literal :CHARACTER, @current_token_value
-      when @current_token_value = scan(BOOLEAN)
-        literal :BOOLEAN, @current_token_value
-      when @current_token_value = scan(KEYWORD)
-        check_keywords(@current_token_value)
-      when @current_token_value = scan(CUSTOM_FIELD)
-        [:CUSTOM_FIELD,@current_token_value]
-      when eos?
-        [false, false] # end of file, \Z don't work with StringScanner
-      else
-        [:UNKNOWN, "ERROR: '#{self.string}'"]
-    end
+    token = if (@current_token_value = scan(SPACE))
+              [:SPACE, @current_token_value]
+            elsif (@current_token_value = scan(LPAREN))
+              levelup
+              [:LPAREN, @current_token_value]
+            elsif (@current_token_value = scan(RPAREN))
+              # leveldown: do this after parsing group
+              [:RPAREN, @current_token_value]
+            elsif (@current_token_value = scan(/,/))
+              [:COMMA, @current_token_value]
+            elsif (@current_token_value = scan(NULL))
+              literal :NULL, "NULL"
+            elsif (@current_token_value = scan(STANDARD_FIELD))
+              check_standard_fields(@current_token_value)
+            elsif (@current_token_value = scan(DATETIME))
+              literal :DATETIME, @current_token_value
+            elsif (@current_token_value = scan(DATE))
+              literal :DATE, @current_token_value
+            elsif (@current_token_value = scan(TIME))
+              literal :TIME, @current_token_value
+            elsif (@current_token_value = scan(DECIMAL))
+              literal :DECIMAL, @current_token_value
+            elsif (@current_token_value = scan(INTEGER))
+              literal :INTEGER, @current_token_value
+            elsif (@current_token_value = scan(/-/))
+              [:UMINUS, @current_token_value]
+            elsif (@current_token_value = scan(CHARACTER))
+              literal :CHARACTER, @current_token_value
+            elsif (@current_token_value = scan(BOOLEAN))
+              literal :BOOLEAN, @current_token_value
+            elsif (@current_token_value = scan(KEYWORD))
+              check_keywords(@current_token_value)
+            elsif (@current_token_value = scan(CUSTOM_FIELD))
+              [:CUSTOM_FIELD, @current_token_value]
+            elsif eos?
+              [false, false] # end of file, \Z don't work with StringScanner
+            else
+              [:UNKNOWN, "ERROR: '#{self.string}'"]
+            end
 
     token.freeze
   end
@@ -66,13 +65,13 @@ class Sparkql::Lexer < StringScanner
   def check_reserved_words(value)
     u_value = value.capitalize
     if OPERATORS.include?(u_value)
-      [:OPERATOR,u_value]
+      [:OPERATOR, u_value]
     elsif RANGE_OPERATOR == u_value
-      [:RANGE_OPERATOR,u_value]
+      [:RANGE_OPERATOR, u_value]
     elsif CONJUNCTIONS.include?(u_value)
-      [:CONJUNCTION,u_value]
+      [:CONJUNCTION, u_value]
     elsif UNARY_CONJUNCTIONS.include?(u_value)
-      [:UNARY_CONJUNCTION,u_value]
+      [:UNARY_CONJUNCTION, u_value]
     elsif ADD == u_value
       [:ADD, u_value]
     elsif SUB == u_value
@@ -87,12 +86,12 @@ class Sparkql::Lexer < StringScanner
       [:UNKNOWN, "ERROR: '#{self.string}'"]
     end
   end
-  
+
   def check_standard_fields(value)
     result = check_reserved_words(value)
     if result.first == :UNKNOWN
       @last_field = value
-      result = [:STANDARD_FIELD,value]
+      result = [:STANDARD_FIELD, value]
     end
     result
   end
@@ -100,26 +99,25 @@ class Sparkql::Lexer < StringScanner
   def check_keywords(value)
     result = check_reserved_words(value)
     if result.first == :UNKNOWN
-      result = [:KEYWORD,value]
+      result = [:KEYWORD, value]
     end
     result
   end
-  
+
   def levelup
     @level += 1
     @block_group_identifier += 1
   end
-  
+
   def leveldown
     @level -= 1
   end
-  
+
   def literal(symbol, value)
     node = {
-      :type => symbol.to_s.downcase.to_sym,
-      :value => value
+      type: symbol.to_s.downcase.to_sym,
+      value: value
     }
     [symbol, node]
   end
-  
 end
