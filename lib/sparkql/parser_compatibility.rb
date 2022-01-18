@@ -158,13 +158,18 @@ module Sparkql::ParserCompatibility
     Date.parse(string)
   end
 
+  # DateTime may have timezone info. Given that, we should honor it it when
+  # present or setting an appropriate default when not. Either way, we should
+  # convert to local appropriate for the parser when we're done.
   def datetime_escape(string)
     unlocalized_datetime = DateTime.parse(string)
     unlocalized_datetime.new_offset(offset)
   end
 
+  # Times don't have any timezone info. When parsing, pick the proper one to
+  # set things at.
   def time_escape(string)
-    datetime_escape(string)
+    DateTime.parse("#{string}#{offset}")
   end
 
   def boolean_escape(string)
