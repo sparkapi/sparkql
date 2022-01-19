@@ -105,8 +105,8 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_function_months
-    dt = DateTime.new(2014, 1, 5, 0, 0, 0, 0)
-    DateTime.expects(:now).returns(dt)
+    t = Time.new(2014, 1, 5, 0, 0, 0, 0)
+    Time.expects(:now).returns(t)
     @parser = Parser.new
     expressions = @parser.parse "ExpirationDate Gt months(-3)"
     assert !@parser.errors?, "errors :( #{@parser.errors.inspect}"
@@ -115,8 +115,8 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_function_years
-    dt = DateTime.new(2014, 1, 5, 0, 0, 0, 0)
-    DateTime.expects(:now).returns(dt)
+    t = Time.new(2014, 1, 5, 0, 0, 0, 0)
+    Time.expects(:now).returns(t)
     @parser = Parser.new
     expressions = @parser.parse "SoldDate Lt years(2)"
     assert !@parser.errors?, "errors :( #{@parser.errors.inspect}"
@@ -125,8 +125,8 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_function_days
-    dt = DateTime.new(2021, 2, 22, 0, 0, 0, 0)
-    DateTime.expects(:now).returns(dt)
+    t = Time.new(2021, 2, 22, 0, 0, 0, 0)
+    Time.expects(:now).returns(t)
     @parser = Parser.new
     expressions = @parser.parse "ExpirationDate Gt days(10)"
     assert !@parser.errors?
@@ -135,8 +135,8 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_function_weekdays
-    dt = DateTime.new(2021, 2, 22, 0, 0, 0, 0)
-    DateTime.expects(:now).returns(dt)
+    t = Time.new(2021, 2, 22, 0, 0, 0, 0)
+    Time.expects(:now).returns(t)
     @parser = Parser.new
     expressions = @parser.parse "ExpirationDate Gt weekdays(10)"
     assert !@parser.errors?

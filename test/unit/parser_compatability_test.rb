@@ -582,10 +582,10 @@ class ParserCompatabilityTest < Test::Unit::TestCase
   end
 
   test "#current_timestamp" do
-    before_time = DateTime.now
+    before_time = Time.now
     parser = Parser.new
     parser_time = parser.current_timestamp
-    after_time = DateTime.now
+    after_time = Time.now
 
     assert before_time < parser_time
     assert after_time > parser_time

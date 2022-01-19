@@ -443,10 +443,10 @@ module Sparkql::ParserTools
   end
 
   def current_timestamp
-    @current_timestamp ||= DateTime.now
+    @current_timestamp ||= Time.now
   end
 
   def offset
-    @offset ||= current_timestamp.zone
+    @offset ||= current_timestamp.strftime('%:z')
   end
 end

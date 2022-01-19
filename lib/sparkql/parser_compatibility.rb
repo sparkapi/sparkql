@@ -158,18 +158,22 @@ module Sparkql::ParserCompatibility
     Date.parse(string)
   end
 
-  # DateTime may have timezone info. Given that, we should honor it it when
+  # datetime may have timezone info. Given that, we should honor it it when
   # present or setting an appropriate default when not. Either way, we should
   # convert to local appropriate for the parser when we're done.
+  #
+  # DateTime in ruby is deprecated as of ruby 3.0. We've switched to the Time
+  # class to be future compatible. The :time type in sparkql != a ruby Time
+  # instance
   def datetime_escape(string)
-    unlocalized_datetime = DateTime.parse(string)
-    unlocalized_datetime.new_offset(offset)
+    unlocalized_time = Time.parse(string)
+    unlocalized_time.getlocal(offset)
   end
 
-  # Times don't have any timezone info. When parsing, pick the proper one to
-  # set things at.
+  # Per the lexer, times don't have any timezone info. When parsing, pick the
+  # proper offset to set things at.
   def time_escape(string)
-    DateTime.parse("#{string}#{offset}")
+    Time.parse("#{string}#{offset}")
   end
 
   def boolean_escape(string)
