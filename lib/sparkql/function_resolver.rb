@@ -640,7 +640,8 @@ module Sparkql
     end
 
     def months(num_months)
-      d = current_timestamp >> num_months
+      # DateTime usage. There's a better means to do this with Time via rails
+      d = (current_timestamp.to_datetime >> num_months).to_time
       {
         type: :date,
         value: d.strftime(STRFTIME_DATE_FORMAT)
@@ -648,7 +649,8 @@ module Sparkql
     end
 
     def years(num_years)
-      d = current_timestamp >> (num_years * 12)
+      # DateTime usage. There's a better means to do this with Time via rails
+      d = (current_timestamp.to_datetime >> (num_years * 12)).to_time
       {
         type: :date,
         value: d.strftime(STRFTIME_DATE_FORMAT)
@@ -835,11 +837,11 @@ module Sparkql
     end
 
     def current_time
-      current_timestamp.to_time
+      current_timestamp
     end
 
     def current_timestamp
-      @current_timestamp ||= DateTime.now
+      @current_timestamp ||= Time.now
     end
 
     private

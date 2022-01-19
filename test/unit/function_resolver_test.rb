@@ -15,7 +15,7 @@ class FunctionResolverTest < Test::Unit::TestCase
   MILLI = 123_456
   SECONDSF = 2.123456
 
-  EXAMPLE_DATE = DateTime.new(YEAR, MONTH, DAY, HOURS, MINUTES, SECONDSF)
+  EXAMPLE_DATE = Time.new(YEAR, MONTH, DAY, HOURS, MINUTES, SECONDSF)
   TIME_TESTS = {
     year: YEAR,
     month: MONTH,
@@ -27,7 +27,7 @@ class FunctionResolverTest < Test::Unit::TestCase
 
   def assert_times(call_value, expected_call_type = :datetime, overrides = {})
     assert_equal call_value[:type], expected_call_type
-    test_time = DateTime.parse(call_value[:value])
+    test_time = Time.parse(call_value[:value])
     tests = TIME_TESTS.merge(overrides)
     tests.each do |key, value|
       assert_equal value, test_time.send(key), "#{key}: #{test_time}"
