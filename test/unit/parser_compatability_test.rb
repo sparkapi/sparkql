@@ -594,13 +594,12 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     assert_equal parser_time, parser.current_timestamp
   end
 
-  test "datetime->date conversions based on parser timezone" do
+  test "datetime->date conversions" do
     conversions = {
-      '2022-01-18T01:00:00.000000+0200' => Date.new(2022, 1, 17),
-      '2022-01-18T01:00:00.000000-0100' => Date.new(2022, 1, 18)
+      '2022-01-18T23:00:00.000000-0600' => Date.new(2022, 1, 18),
+      '2022-01-18T00:00:00.000000-0500' => Date.new(2022, 1, 18)
     }
     parser = Parser.new
-    parser.expects(:offset).returns("+00:00").twice
     conversions.each do |timestamp, date|
       expression = parser.tokenize("DateField Eq #{timestamp}").first
       assert !parser.errors?
