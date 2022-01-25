@@ -428,14 +428,15 @@ class FunctionResolverTest < Test::Unit::TestCase
 
   test 'days()' do
     [
-      [-1, '2021-12-30'],
-      [0, '2021-12-31'],
-      [1, '2022-01-01'],
-      [7, '2022-01-07']
-    ].each do |val, result|
+      [-1, '2021-12-30', EXAMPLE_DATE],
+      [0, '2021-12-31', EXAMPLE_DATE],
+      [1, '2022-01-01', EXAMPLE_DATE],
+      [7, '2022-01-07', EXAMPLE_DATE],
+      [0, '2022-01-01', Time.parse('2022-01-01T00:00:00-0500')]
+    ].each do |val, result, current_timestamp|
       f = FunctionResolver.new('days',
                                [{ type: :integer, value: val }],
-                               current_timestamp: EXAMPLE_DATE)
+                               current_timestamp: current_timestamp)
       f.validate
       assert !f.errors?
       value = f.call

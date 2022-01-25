@@ -168,8 +168,7 @@ module Sparkql::ParserCompatibility
   # class to be future compatible. The :time type in sparkql != a ruby Time
   # instance
   def datetime_escape(string)
-    unlocalized_time = Time.parse(string)
-    unlocalized_time.getlocal(offset)
+    Time.parse(string)
   end
 
   # Per the lexer, times don't have any timezone info. When parsing, pick the
