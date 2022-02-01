@@ -158,12 +158,21 @@ module Sparkql::ParserCompatibility
     Date.parse(string)
   end
 
+  # datetime may have timezone info. Given that, we should honor it it when
+  # present or setting an appropriate default when not. Either way, we should
+  # convert to local appropriate for the parser when we're done.
+  #
+  # DateTime in ruby is deprecated as of ruby 3.0. We've switched to the Time
+  # class to be future compatible. The :time type in sparkql != a ruby Time
+  # instance
   def datetime_escape(string)
-    DateTime.parse(string)
+    Time.parse(string)
   end
 
+  # Per the lexer, times don't have any timezone info. When parsing, pick the
+  # proper offset to set things at.
   def time_escape(string)
-    DateTime.parse(string)
+    Time.parse("#{string}#{offset}")
   end
 
   def boolean_escape(string)
@@ -264,8 +273,9 @@ module Sparkql::ParserCompatibility
 
   def validate_manipulation_types(field_manipulations, expected)
     if field_manipulations[:type] == :function
-      function = Sparkql::FunctionResolver::SUPPORTED_FUNCTIONS[field_manipulations[:function_name].to_sym]
-      return false if function.nil?
+      return false unless supported_function?(field_manipulations[:function_name])
+
+      function = lookup_function(field_manipulations[:function_name])
       field_manipulations[:args].each_with_index do |arg, index|
         if arg[:type] == :field
           return false unless function[:args][index].include?(:field)
@@ -325,12 +335,16 @@ module Sparkql::ParserCompatibility
     OPERATORS_SUPPORTING_MULTIPLES.include?(operator)
   end
 
-  def coerce_datetime datetime
-    if datestr = datetime.match(/^(\d{4}-\d{2}-\d{2})/)
-      datestr[0]
+  # Datetime coercion to date factors in the current time zone when selecting a
+  # date.
+  def coerce_datetime datetime_string
+    if datetime_string.match(/^(\d{4}-\d{2}-\d{2})$/)
+      datetime_string
+    elsif datetime_string.match(/^(\d{4}-\d{2}-\d{2})/)
+      datetime = datetime_escape(datetime_string)
+      datetime.strftime(Sparkql::FunctionResolver::STRFTIME_DATE_FORMAT)
     else
-      datetime
+      datetime_string
     end
   end
-
 end

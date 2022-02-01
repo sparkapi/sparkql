@@ -580,4 +580,31 @@ class ParserCompatabilityTest < Test::Unit::TestCase
     # Type mismatch
     assert !parser.send(:check_type!, expression, :datetime)
   end
+
+  test "#current_timestamp" do
+    before_time = Time.now
+    parser = Parser.new
+    parser_time = parser.current_timestamp
+    after_time = Time.now
+
+    assert before_time < parser_time
+    assert after_time > parser_time
+
+    # Current time is locked to first call
+    assert_equal parser_time, parser.current_timestamp
+  end
+
+  test "datetime->date conversions" do
+    conversions = {
+      '2022-01-18T23:00:00.000000-0600' => Date.new(2022, 1, 18),
+      '2022-01-18T00:00:00.000000-0500' => Date.new(2022, 1, 18)
+    }
+    parser = Parser.new
+    conversions.each do |timestamp, date|
+      expression = parser.tokenize("DateField Eq #{timestamp}").first
+      assert !parser.errors?
+      assert parser.send(:check_type!, expression, :date)
+      assert_equal date, parser.escape_value(expression), "#{timestamp}: #{date}"
+    end
+  end
 end
