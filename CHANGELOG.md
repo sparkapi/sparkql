@@ -1,3 +1,7 @@
+v1.3.0, 2022-02-01
+-------------------
+  * [BUGFIX] Redesign FunctionResolver to better support other timezones
+
 v1.2.8, 2021-08-11
 -------------------
   * [IMPROVEMENT] all() function
