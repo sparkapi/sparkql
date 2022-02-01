@@ -1,7 +1,7 @@
 module Sparkql
   module Geo
     class RecordRadius
-      RECORD_ID_REGEX = /\A[0-9]{26}\z/
+      RECORD_ID_REGEX = /\A[0-9]{26}\z/.freeze
 
       attr_accessor :record_id, :radius
 

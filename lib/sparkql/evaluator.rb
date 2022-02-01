@@ -4,7 +4,6 @@
 # fields. Plus, it has some optimizations built in to skip the processing for
 # any expressions that don't contribute to the net result of the filter.
 class Sparkql::Evaluator
-
   # The struct here mimics some of the parser information about an expression,
   # but should not be confused for an expression. Nodes reduce the expressions
   # to a result based on conjunction logic, and only one exists per block group.
@@ -16,15 +15,17 @@ class Sparkql::Evaluator
     :match,
     :good_ors,
     :expressions,
-    :unary)
+    :unary
+  )
 
   attr_reader :processed_count
 
-  def initialize expression_resolver
+  def initialize(expression_resolver)
     @resolver = expression_resolver
   end
 
   def evaluate(expressions)
+    @dropped_expression = nil
     @processed_count = 0
     @index = Node.new(0, 0, "And", 0, true, false, 0, nil)
     @groups = [@index]
@@ -33,10 +34,11 @@ class Sparkql::Evaluator
       adjust_expression_for_dropped_field(expression)
       check_for_good_ors(expression)
       next if skip?(expression)
+
       evaluate_expression(expression)
     end
     cleanup
-    return @index[:match]
+    @index[:match]
   end
 
   private
@@ -58,9 +60,10 @@ class Sparkql::Evaluator
   # each block_group. This logic is re-used when merging the final result of one
   # block group with the previous.
   def evaluate_expression(expression)
-      @processed_count += 1
+    @processed_count += 1
     evaluate_node(expression, @resolver.resolve(expression))
   end
+
   def evaluate_node(node, result)
     if result == :drop
       @dropped_expression = node
@@ -73,7 +76,7 @@ class Sparkql::Evaluator
        (node[:conjunction_level] == node[:level] ||
         node[:conjunction_level] == @index[:level])
       @index[:match] = !result if @index[:match]
-    elsif node[:conjunction] == 'And' || @index[:expressions] == 0
+    elsif node[:conjunction] == 'And' || (@index[:expressions]).zero?
       @index[:match] = result if @index[:match]
     elsif node[:conjunction] == 'Or' && result
       @index[:match] = result
@@ -97,7 +100,7 @@ class Sparkql::Evaluator
           end
         end
       end
-      if !good_index.nil? && good_index[:expressions] > 0 && good_index[:match]
+      if !good_index.nil? && (good_index[:expressions]).positive? && good_index[:match]
         good_index[:good_ors] = true
       end
     end
@@ -112,8 +115,8 @@ class Sparkql::Evaluator
 
   def new_group(expression)
     Node.new(expression[:level], expression[:block_group],
-      expression[:conjunction], expression[:conjunction_level],
-      true, false, 0, nil)
+             expression[:conjunction], expression[:conjunction_level],
+             true, false, 0, nil)
   end
 
   # When the last expression was dropped, we need to repair the filter by
@@ -125,6 +128,7 @@ class Sparkql::Evaluator
       expression[:conjunction] = @dropped_expression[:conjunction]
       expression[:conjunction_level] = @dropped_expression[:conjunction_level]
     end
+
     @dropped_expression = nil
   end
 

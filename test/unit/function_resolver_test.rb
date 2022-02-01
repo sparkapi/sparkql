@@ -331,22 +331,22 @@ class FunctionResolverTest < Test::Unit::TestCase
 
   test 'seconds()' do
     f = FunctionResolver.new('seconds',
-      [{ type: :integer, value: 7 }],
-      current_timestamp: EXAMPLE_DATE)
+                             [{ type: :integer, value: 7 }],
+                             current_timestamp: EXAMPLE_DATE)
     f.validate
     assert !f.errors?
     assert_times f.call, :datetime, sec: SECONDS + 7
 
     f = FunctionResolver.new('seconds',
-      [{ type: :integer, value: -3 }],
-      current_timestamp: EXAMPLE_DATE)
+                             [{ type: :integer, value: -3 }],
+                             current_timestamp: EXAMPLE_DATE)
     f.validate
     assert !f.errors?
     assert_times f.call, :datetime, sec: 59, min: MINUTES - 1
 
     f = FunctionResolver.new('seconds',
-      [{ type: :integer, value: Sparkql::FunctionResolver::SECONDS_IN_DAY }],
-      current_timestamp: EXAMPLE_DATE)
+                             [{ type: :integer, value: Sparkql::FunctionResolver::SECONDS_IN_DAY }],
+                             current_timestamp: EXAMPLE_DATE)
     f.validate
     assert !f.errors?
 
@@ -355,22 +355,22 @@ class FunctionResolverTest < Test::Unit::TestCase
 
   test 'minutes()' do
     f = FunctionResolver.new('minutes',
-      [{ type: :integer, value: 7 }],
-      current_timestamp: EXAMPLE_DATE)
+                             [{ type: :integer, value: 7 }],
+                             current_timestamp: EXAMPLE_DATE)
     f.validate
     assert !f.errors?
     assert_times f.call, :datetime, min: MINUTES + 7
 
     f = FunctionResolver.new('minutes',
-      [{ type: :integer, value: -2 }],
-      current_timestamp: EXAMPLE_DATE)
+                             [{ type: :integer, value: -2 }],
+                             current_timestamp: EXAMPLE_DATE)
     f.validate
     assert !f.errors?
     assert_times f.call, :datetime, min: 59, hour: 23, mday: DAY - 1
 
     f = FunctionResolver.new('minutes',
-      [{ type: :integer, value: -1440 }],
-      current_timestamp: EXAMPLE_DATE)
+                             [{ type: :integer, value: -1440 }],
+                             current_timestamp: EXAMPLE_DATE)
     f.validate
     assert !f.errors?
     assert_times f.call, :datetime, mday: DAY - 1
@@ -380,8 +380,8 @@ class FunctionResolverTest < Test::Unit::TestCase
     tests = [1, 5, 12, 23, 0]
     tests.each do |offset|
       f = FunctionResolver.new('hours',
-        [{ type: :integer, value: offset }],
-        current_timestamp: EXAMPLE_DATE)
+                               [{ type: :integer, value: offset }],
+                               current_timestamp: EXAMPLE_DATE)
       f.validate
       assert !f.errors?
       assert_times f.call, :datetime, hour: HOURS + offset
@@ -392,36 +392,35 @@ class FunctionResolverTest < Test::Unit::TestCase
     tests = [-1, -5, -12]
     tests.each do |offset|
       f = FunctionResolver.new('hours',
-        [{ type: :integer, value: offset }],
-        current_timestamp: EXAMPLE_DATE)
+                               [{ type: :integer, value: offset }],
+                               current_timestamp: EXAMPLE_DATE)
       f.validate
       assert !f.errors?
       assert_times f.call, :datetime, hour: 24 + offset, mday: DAY - 1
     end
   end
 
-
   test 'hours(), wrap day' do
     # Jump forward a few days, and a few hours.
     f = FunctionResolver.new('hours',
-      [{ type: :integer, value: 52 }],
-      current_timestamp: EXAMPLE_DATE)
+                             [{ type: :integer, value: 52 }],
+                             current_timestamp: EXAMPLE_DATE)
     f.validate
     assert !f.errors?
     assert_times f.call, :datetime, hour: HOURS + 4, mday: 2, month: 1, year: 2022
 
     # Drop back to the previous day, which'll also hit the previous month
     f = FunctionResolver.new('hours',
-      [{ type: :integer, value: -24 }],
-      current_timestamp: EXAMPLE_DATE)
+                             [{ type: :integer, value: -24 }],
+                             current_timestamp: EXAMPLE_DATE)
     f.validate
     assert !f.errors?
     assert_times f.call, :datetime, mday: DAY - 1
 
     # Drop back one full year's worth of hours.
     f = FunctionResolver.new('hours',
-      [{ type: :integer, value: -8760 }],
-      current_timestamp: EXAMPLE_DATE)
+                             [{ type: :integer, value: -8760 }],
+                             current_timestamp: EXAMPLE_DATE)
     f.validate
     assert !f.errors?
     assert_times f.call, :datetime, year: 2020
@@ -517,8 +516,8 @@ class FunctionResolverTest < Test::Unit::TestCase
 
   test 'months()' do
     f = FunctionResolver.new('months',
-      [{ type: :integer, value: 3 }],
-      current_timestamp: EXAMPLE_DATE)
+                             [{ type: :integer, value: 3 }],
+                             current_timestamp: EXAMPLE_DATE)
     f.validate
     assert !f.errors?
     value = f.call
@@ -528,8 +527,8 @@ class FunctionResolverTest < Test::Unit::TestCase
 
   test 'years()' do
     f = FunctionResolver.new('years',
-      [{ type: :integer, value: -4 }],
-      current_timestamp: EXAMPLE_DATE)
+                             [{ type: :integer, value: -4 }],
+                             current_timestamp: EXAMPLE_DATE)
     f.validate
     assert !f.errors?
     value = f.call
@@ -786,7 +785,7 @@ class FunctionResolverTest < Test::Unit::TestCase
 
     assert_equal :function, value[:type]
     assert_equal 'cast', value[:value]
-    assert_equal(%w[Bedrooms character], value[:args].map{ |v| v[:value] })
+    assert_equal(%w[Bedrooms character], value[:args].map { |v| v[:value] })
   end
 
   test 'invalid cast returns null' do

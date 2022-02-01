@@ -1,0 +1,111 @@
+AllCops:
+  NewCops: disable
+  Exclude:
+    - 'bin/*'
+    - 'config/**/*'
+    - 'Rakefile'
+    - 'Capfile'
+    - 'Gemfile'
+    - 'Guardfile'
+    - 'test/factories/*'
+    - 'test/support/*'
+    - 'config/routes.rb'
+    - 'script/*'
+    - 'db/**/*'
+    - 'vendor/**/*'
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Layout/LineLength:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+# "Favor `unless` over `if` for negative conditions."
+Style/NegatedIf:
+  Enabled: false
+# safe_yaml seems to break all the things.
+Security/YAMLLoad:
+  Enabled: false
+
+# "Use a guard clause (`return unless extra_types.any?`) instead
+# of wrapping the code inside a conditional expression."
+#
+# Justification: guard clauses don't work very well with long lines.
+# Also, when there's an if check that (say) adds an error to a model
+# validation, it makes more sense to wrap the operation in an if block
+# than to guard the error entry with a double negative.
+Style/GuardClause:
+  Enabled: false
+
+# Justification:
+#
+# `class MyModule::ClassName` is a lot more concise, especially for tests
+# covering a class that is within a module, than having to wrap the whole
+# class in a module, and indent.
+#
+# "Use nested module/class definitions instead of compact style."
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+# Justification:
+#
+# A single-line guard clause isn't always a good thing.
+Style/IfUnlessModifier:
+  Enabled: false
+
+# Justification:
+#
+# Hundreds of existing infractions, and it's not really that confusion to
+# see regex without parens around it.
+Lint/AmbiguousRegexpLiteral:
+  Enabled: false
+
+# Justification:
+#
+# Is it so wrong to have a variable named fgo_listing_1, instead
+# of fgo_listing1?
+Naming/VariableNumber:
+  Enabled: false
+
+# Justification:
+#
+# Explicit else's are much clearer than
+# a branch that ends with an `elsif`, and presumes
+# a nil else.
+Style/EmptyElse:
+  Enabled: false
+
+# Justification:
+#
+# We've generally prefered this, and honestly, I find
+# this often makes readability much clearer to include
+# it.
+Style/RedundantSelf:
+  Enabled: false
+
+Style/StringLiterals:
+  Enabled: false
