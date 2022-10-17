@@ -1,0 +1,51 @@
+name: CI
+
+on: 
+  push:
+    branches: [ master ]
+  pull_request:
+  release:
+    types: published
+  
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ruby/setup-ruby@v1
+      with: 
+        ruby-version: '2.7'
+        bundler-cache: true
+  
+    - run: |
+       gem install bundler
+       ./script/ci_build
+
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      RUBYGEMS_API_KEY: ${{secrets.RUBYGEMS_API_KEY}}
+
+    # only run if this is a release event
+    if: github.event_name == 'release'
+
+    # require that the build job passed
+    needs: build
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-ruby@v1
+      with:
+        ruby-version: '2.7'
+
+    - run: |
+       ./script/bootstrap
+       bundle exec rake build
+
+       mkdir -p $HOME/.gem
+       touch $HOME/.gem/credentials
+       printf -- "---\n:rubygems_api_key: ${RUBYGEMS_API_KEY}\n" > $HOME/.gem/credentials
+       chmod 0600 $HOME/.gem/credentials
+       gem push pkg/*.gem
