@@ -72,4 +72,4 @@ name | description | value
 
 ## Functions
 
-Parsing will also yield function nodes which are documented in [FUNCTIONS.md](docs/FUNCTIONS.md).
+Parsing will also yield function nodes which are documented in [FUNCTIONS.md](FUNCTIONS.md).
