@@ -143,7 +143,6 @@ class FunctionParseTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
     assert !@parser.errors?, "errors #{@parser.errors.inspect}"
 
-    puts expressions.inspect
     assert_equal 'range', expressions['rhs']['name']
     assert_equal %w[M01 M04], expressions['rhs']['args'].map { |v| v['value'] }
   end
