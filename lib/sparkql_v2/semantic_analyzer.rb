@@ -136,7 +136,7 @@ module SparkqlV2
     end
 
     def visit_in(node)
-      all = ([node['lhs']] + node['rhs']['value']).map do |item|
+      all = ([node['lhs']] + node['rhs']).map do |item|
         visit(item)
       end
       all = coerce_if_necessary(all)
@@ -145,7 +145,7 @@ module SparkqlV2
       right = all
       node.merge(
         'lhs' => left,
-        'rhs' => { 'value' => right }
+        'rhs' => right
       )
     end
 
@@ -190,13 +190,13 @@ module SparkqlV2
     end
 
     def visit_bt(node)
-      nodes = [visit(node['lhs']), visit(node['rhs']['value'][0]), visit(node['rhs']['value'][1])]
+      nodes = [visit(node['lhs']), visit(node['rhs'][0]), visit(node['rhs'][1])]
       left, rhs1, rhs2 = coerce_if_necessary(nodes)
       require_range_type!(left, rhs1, rhs2)
 
       node.merge(
         'lhs' => left,
-        'rhs' => { 'value' => [rhs1, rhs2] }
+        'rhs' => [rhs1, rhs2]
       )
     end
 

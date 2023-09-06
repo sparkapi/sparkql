@@ -103,8 +103,8 @@ class SemanticAnalyzerTest < Test::Unit::TestCase
     parse_tree = assert_success('"Custom"."DateField" Bt days(-1),now()')
     assert_equal 'coerce', parse_tree['lhs']['name']
     assert_equal 'datetime', parse_tree['lhs']['rhs']
-    assert_equal 'days', parse_tree['rhs']['value'].first['name']
-    assert_equal 'now', parse_tree['rhs']['value'].last['name']
+    assert_equal 'days', parse_tree['rhs'].first['name']
+    assert_equal 'now', parse_tree['rhs'].last['name']
   end
 
   test 'inalid regex' do

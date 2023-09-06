@@ -55,12 +55,12 @@ name | description | lhs | rhs
 ---- | ----------- | --- | ---
 `'eq'` | check equality. | left hand expression | right hand expression
 `'ne'` | check inequality. | left hand expression | right hand expression
-`'in'` | check mass equality. rhs is any number of expressions to check against. | left hand expression | 'list' of items
+`'in'` | check mass equality. rhs is any number of expressions to check against. | left hand expression | [right hand expressions]
 `'gt'` | greater than. | left hand expression | right hand expression
 `'ge'` | greater than or equal to. | left hand expression| right hand expression
 `'lt'` | less than. | left hand expression| right hand expression
 `'le'` | less than or equal to. | left hand expression| right hand expression
-`'bt'` | between. rhs is an array with 2 expressions to check between. | left hand expression| 'list' of items (2)
+`'bt'` | between. rhs is an array with 2 expressions to check between. | left hand expression| [right hand expressions]
 
 
 ## Single Value Operators
@@ -68,7 +68,6 @@ name | description | value
 ---- | ----------- | -----
 `'group'` | A parenthesis wrapped expression. | Nested expression with precedence.
 `'unary_not'` | Unary not. | Expression to negate.
-`'list'` | list for in and bt operators. | A list of items.
 
 ## Functions
 

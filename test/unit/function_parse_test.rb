@@ -152,10 +152,9 @@ class FunctionParseTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
 
     assert_equal 'bt', expressions['name']
-    assert_equal 'list', expressions['rhs']['name']
-    assert_equal Array, expressions['rhs']['value'].class
-    assert_equal(-7, expressions['rhs']['value'].first['args'].first['value'])
-    assert_equal(-1, expressions['rhs']['value'].last['args'].first['value'])
+    assert_equal Array, expressions['rhs'].class
+    assert_equal(-7, expressions['rhs'].first['args'].first['value'])
+    assert_equal(-1, expressions['rhs'].last['args'].first['value'])
   end
 
   test 'multiple function list' do
@@ -165,9 +164,9 @@ class FunctionParseTest < Test::Unit::TestCase
     assert_equal 'in', expression['name']
 
     assert_equal 'OriginalEntryTimestamp', expression['lhs']['value']
-    assert_equal(-1, expression['rhs']['value'][0]['args'].first['value'])
-    assert_equal(-7, expression['rhs']['value'][1]['args'].first['value'])
-    assert_equal(-30, expression['rhs']['value'][2]['args'].first['value'])
+    assert_equal(-1, expression['rhs'][0]['args'].first['value'])
+    assert_equal(-7, expression['rhs'][1]['args'].first['value'])
+    assert_equal(-30, expression['rhs'][2]['args'].first['value'])
   end
 
   test 'function date' do

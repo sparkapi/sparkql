@@ -69,9 +69,9 @@ class ParserTest < Test::Unit::TestCase
     assert_equal 'in', expression['name']
 
     assert_equal 'Test', expression['lhs']['value']
-    assert_equal 10, expression['rhs']['value'][0]['value']
-    assert_equal 11, expression['rhs']['value'][1]['value']
-    assert_equal 12, expression['rhs']['value'][2]['value']
+    assert_equal 10, expression['rhs'][0]['value']
+    assert_equal 11, expression['rhs'][1]['value']
+    assert_equal 12, expression['rhs'][2]['value']
   end
 
   test 'multiple Ne' do
@@ -80,9 +80,9 @@ class ParserTest < Test::Unit::TestCase
     assert_equal 'in', expression['value']['name']
 
     assert_equal 'Test', expression['value']['lhs']['value']
-    assert_equal 10, expression['value']['rhs']['value'][0]['value']
-    assert_equal 11, expression['value']['rhs']['value'][1]['value']
-    assert_equal 12, expression['value']['rhs']['value'][2]['value']
+    assert_equal 10, expression['value']['rhs'][0]['value']
+    assert_equal 11, expression['value']['rhs'][1]['value']
+    assert_equal 12, expression['value']['rhs'][2]['value']
   end
 
   test 'invalid syntax' do
@@ -127,8 +127,8 @@ class ParserTest < Test::Unit::TestCase
     expressions = @parser.parse(filter)
 
     assert_equal 'bt', expressions['name']
-    assert_equal(-7, expressions['rhs']['value'].first['args'].first['value'])
-    assert_equal(Date.parse('2013-07-26'), expressions['rhs']['value'].last['value'])
+    assert_equal(-7, expressions['rhs'].first['args'].first['value'])
+    assert_equal(Date.parse('2013-07-26'), expressions['rhs'].last['value'])
   end
 
   test 'allow timezone offsets' do
