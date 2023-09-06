@@ -3,9 +3,8 @@ This document explains the rules for the Spark API filter language syntax and
 is a living document generated from the reference implementation at
 https://github.com/sparkapi/sparkql.
 ### Precedence Rules
-SparkQL And and Or both have the same precedence. Unless otherwise specified,
-SparkQL follows SQL precendence conventions for other operators and conjunctions.
-Unary minus is always tied to value, such as for negative numbers.
+Unless otherwise specified, SparkQL follows SQL precendence conventions for other
+operators and conjunctions. Unary minus is always tied to value, such as for negative numbers.
 
 
 ```
