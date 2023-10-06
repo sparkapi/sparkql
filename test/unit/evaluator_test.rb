@@ -98,6 +98,7 @@ class EvaluatorTest < Test::Unit::TestCase
     assert sample("Not (Not Test Eq true)")
     assert sample("Not (Not(Not Test Eq true))")
     assert !sample("Test Eq false And Test Eq true Not Test Eq false")
+    assert !sample("Test Eq true Not (Test Eq false Or Test Eq false) And (Test Eq false Or Test Eq false)")
   end
 
   def test_examples
