@@ -28,7 +28,6 @@ class Sparkql::Evaluator
 
   private
 
-
   # Take all the expressions and organize them into "chunks" appropriate for
   # evaluation. Each block group should process it's expressions, and every
   # block group injects itself as a placeholder expression in the block group a
@@ -124,11 +123,11 @@ class Sparkql::Evaluator
 
           case expression[:conjunction]
           when 'Not'
-            block_result = block_result & !expression_result
+            block_result &= !expression_result
           when 'And'
-            block_result = block_result & expression_result           
+            block_result &= expression_result
           when 'Or'
-            block_result = block_result | expression_result
+            block_result |= expression_result
           else
             # Not a supported conjunction. We skip over this for backwards
             # compatibility.
