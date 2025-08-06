@@ -1,3 +1,7 @@
+v1.3.1, 2025-08-06
+-------------------
+  * [BUGFIX] Evaluator fix for Not expressions
+
 v1.3.0, 2022-02-01
 -------------------
   * [BUGFIX] Redesign FunctionResolver to better support other timezones
