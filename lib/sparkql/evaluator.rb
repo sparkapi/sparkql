@@ -60,20 +60,22 @@ class Sparkql::Evaluator
         # with a level -1 here to turn the top level expressions into a block
         # group for processing.
         current_level = level
+        last_block_group = block_group
         while current_level >= 0
           current_level -= 1
           levels[current_level] ||= []
           last_block_group_id = levels[current_level].last
           if last_block_group_id
-            block_groups[last_block_group_id][:expressions] << block_group
+            block_groups[last_block_group_id][:expressions] << last_block_group
             break
           else
             block_id = "placeholder_for_#{block}_#{current_level}"
-            placeholder_block = block_builder(block_group, current_level)
-            placeholder_block[:expressions] << block_group
+            placeholder_block = block_builder(last_block_group, current_level)
+            placeholder_block[:expressions] << last_block_group
 
             levels[current_level] << block_id
             block_groups[block_id] = placeholder_block
+            last_block_group = placeholder_block
           end
         end
       end

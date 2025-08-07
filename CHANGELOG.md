@@ -1,3 +1,8 @@
+v1.3.2, 2025-08-06
+-------------------
+  * [BUGFIX] More Evaluator fixes
+  * [BUGFIX] fixed the build.
+
 v1.3.1, 2025-08-06
 -------------------
   * [BUGFIX] Evaluator fix for Not expressions
