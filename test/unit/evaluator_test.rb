@@ -81,6 +81,10 @@ class EvaluatorTest < Test::Unit::TestCase
     assert !sample("Test Eq true And ((Test Eq true And Test Eq false) Or Test Eq false) And Test Eq true")
     assert !sample("Test Eq true And ((Test Eq true And Test Eq false) Or Test Eq false) Or Test Eq false")
     assert sample("Test Eq true And ((Test Eq true And Test Eq false) Or Test Eq false) Or Test Eq true")
+    assert !sample("(Test Eq true Or Test Eq true) And Test Eq false")
+    assert !sample("(Test Eq true Or Test Eq true) And (Test Eq false)")
+    assert sample("(Test Eq true Or Test Eq true) And (Test Eq false Or Test Eq true)")
+    assert !sample("(Test Eq true Or Test Eq true) And (Test Eq false Or Test Eq false)")
   end
 
   def test_nots
