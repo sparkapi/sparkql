@@ -4,20 +4,6 @@
 # fields. Plus, it has some optimizations built in to skip the processing for
 # any expressions that don't contribute to the net result of the filter.
 class Sparkql::Evaluator
-  # The struct here mimics some of the parser information about an expression,
-  # but should not be confused for an expression. Nodes reduce the expressions
-  # to a result based on conjunction logic, and only one exists per block group.
-  Node = Struct.new(
-    :level,
-    :block_group,
-    :conjunction,
-    :conjunction_level,
-    :match,
-    :good_ors,
-    :expressions,
-    :unary
-  )
-
   attr_reader :processed_count
 
   def initialize(expression_resolver)
@@ -25,131 +11,145 @@ class Sparkql::Evaluator
   end
 
   def evaluate(expressions)
-    @dropped_expression = nil
     @processed_count = 0
-    @index = Node.new(0, 0, "And", 0, true, false, 0, nil)
-    @groups = [@index]
-    expressions.each do |expression|
-      handle_group(expression)
-      adjust_expression_for_dropped_field(expression)
-      check_for_good_ors(expression)
-      next if skip?(expression)
+    levels = {}
+    block_groups = {}
 
-      evaluate_expression(expression)
+    build_structures(levels, block_groups, expressions)
+
+    final_result = process_structures(levels, block_groups)
+    # If we didn't process anything, we consider that a success
+    if final_result.nil?
+      final_result = true
     end
-    cleanup
-    @index[:match]
+
+    final_result
   end
 
   private
 
-  # prepare the group stack for the next expression
-  def handle_group(expression)
-    if @index[:block_group] == expression[:block_group]
-      # Noop
-    elsif @index[:block_group] < expression[:block_group]
-      @index = new_group(expression)
-      @groups.push(@index)
-    else
-      # Turn the group into an expression, resolve down to previous group(s)
-      smoosh_group(expression)
-    end
-  end
+  # Take all the expressions and organize them into "chunks" appropriate for
+  # evaluation. Each block group should process it's expressions, and every
+  # block group injects itself as a placeholder expression in the block group a
+  # level above it.
+  #
+  # When no block groups exist above, we must stub one out for processing.
+  def build_structures(levels, block_groups, expressions)
+    expressions.each do |expression|
+      level = expression[:level]
+      block = expression[:block_group]
+      block_group = block_groups[block]
 
-  # Here's the real meat. We use an internal stack to represent the result of
-  # each block_group. This logic is re-used when merging the final result of one
-  # block group with the previous.
-  def evaluate_expression(expression)
-    @processed_count += 1
-    evaluate_node(expression, @resolver.resolve(expression))
-  end
+      unless block_group
+        block_groups[block] ||= block_builder(expression, level)
+        block_group = block_groups[block]
+        levels[level] ||= []
+        levels[level] << block
 
-  def evaluate_node(node, result)
-    if result == :drop
-      @dropped_expression = node
-      return result
-    end
-    if node[:unary] == "Not"
-      result = !result
-    end
-    if node[:conjunction] == 'Not' &&
-       (node[:conjunction_level] == node[:level] ||
-        node[:conjunction_level] == @index[:level])
-      @index[:match] = !result if @index[:match]
-    elsif node[:conjunction] == 'And' || (@index[:expressions]).zero?
-      @index[:match] = result if @index[:match]
-    elsif node[:conjunction] == 'Or' && result
-      @index[:match] = result
-    end
-    @index[:expressions] += 1
-    result
-  end
+        # When dealing with Not expression conjunctions at the block level,
+        # it's far simpler to convert it into the equivalent "And Not"
+        if block_group[:conjunction] == "Not"
+          block_group[:unary] = "Not"
+          block_group[:conjunction] = "And"
+        end
 
-  # Optimization logic, once we find any set of And'd expressions that pass and
-  # run into an Or at the same level, we can skip further processing at that
-  # level.
-  def check_for_good_ors(expression)
-    if expression[:conjunction] == 'Or'
-      good_index = @index
-      unless expression[:conjunction_level] == @index[:level]
-        good_index = nil
-        # Well crap, now we need to go back and find that level by hand
-        @groups.reverse_each do |i|
-          if i[:level] == expression[:conjunction_level]
-            good_index = i
+        # Every block group _must_ be seen as an expression in another block
+        # group.This aids in final resolution order when processing the levels
+        #
+        # This is even true if there's only one block group. We always end up
+        # with a level -1 here to turn the top level expressions into a block
+        # group for processing.
+        current_level = level
+        while current_level >= 0
+          current_level -= 1
+          levels[current_level] ||= []
+          last_block_group_id = levels[current_level].last
+          if last_block_group_id
+            block_groups[last_block_group_id][:expressions] << block_group
+            break
+          else
+            block_id = "placeholder_for_#{block}_#{current_level}"
+            placeholder_block = block_builder(block_group, current_level)
+            placeholder_block[:expressions] << block_group
+
+            levels[current_level] << block_id
+            block_groups[block_id] = placeholder_block
           end
         end
       end
-      if !good_index.nil? && (good_index[:expressions]).positive? && good_index[:match]
-        good_index[:good_ors] = true
+
+      block_group[:expressions] << expression
+    end
+  end
+
+  # Starting from the deepest levels, we process block groups expressions and
+  # reduce the block group to a result. This result is used in our placeholder
+  # block groups at levels above, ending in a single final result.
+  def process_structures(levels, block_groups)
+    final_result = nil
+
+    # Now go through each level starting with the deepest and working back up.
+    levels.keys.sort.reverse.each do |level|
+      # Process each block group  at this level and resolve the expressions in the group
+      levels[level].each do |block|
+        block_group = block_groups[block]
+
+        block_result = nil
+        block_group[:expressions].each do |expression|
+          # If we encounter any or's in the same block group, we can cheat at
+          # resolving the rest, if we are at a true
+          if block_result && expression[:conjunction] == 'Or'
+            break
+          end
+
+          expression_result = if expression.key?(:result)
+                                # This is a reduced block group, just pass on
+                                # the result
+                                expression[:result]
+                              else
+                                @processed_count += 1
+                                @resolver.resolve(expression) # true, false, :drop
+                              end
+          next if expression_result == :drop
+
+          if expression[:unary] == "Not"
+            expression_result = !expression_result
+          end
+
+          if block_result.nil?
+            block_result = expression_result
+            next
+          end
+
+          case expression[:conjunction]
+          when 'Not'
+            block_result &= !expression_result
+          when 'And'
+            block_result &= expression_result
+          when 'Or'
+            block_result |= expression_result
+          else
+            # Not a supported conjunction. We skip over this for backwards
+            # compatibility.
+          end
+        end
+
+        # block_group.delete(:expressions)
+        block_group[:result] = block_result
+        final_result = block_result
       end
     end
+
+    final_result
   end
 
-  # We can skip further expression processing when And-d with a false expression
-  # or a "good Or" was already encountered.
-  def skip?(expression)
-    @index[:good_ors] ||
-      !@index[:match] && expression[:conjunction] == 'And'
-  end
-
-  def new_group(expression)
-    Node.new(expression[:level], expression[:block_group],
-             expression[:conjunction], expression[:conjunction_level],
-             true, false, 0, nil)
-  end
-
-  # When the last expression was dropped, we need to repair the filter by
-  # stealing the conjunction of that dropped field.
-  def adjust_expression_for_dropped_field(expression)
-    if @dropped_expression.nil?
-      return
-    elsif @dropped_expression[:block_group] == expression[:block_group]
-      expression[:conjunction] = @dropped_expression[:conjunction]
-      expression[:conjunction_level] = @dropped_expression[:conjunction_level]
-    end
-
-    @dropped_expression = nil
-  end
-
-  # This is similar to the cleanup step, but happens when we return from a
-  # nesting level. Before we can proceed, we need wrap up the result of the
-  # nested group.
-  def smoosh_group(expression)
-    until  @groups.last[:block_group] == expression[:block_group]
-      last = @groups.pop
-      @index = @groups.last
-      evaluate_node(last, last[:match])
-    end
-  end
-
-  # pop off the group stack, evaluating each group with the previous as we go.
-  def cleanup
-    while @groups.size > 1
-      last = @groups.pop
-      @index = @groups.last
-      evaluate_node(last, last[:match])
-    end
-    @groups.last[:match]
+  def block_builder(expressionable, level)
+    {
+      conjunction: expressionable[:conjunction],
+      conjunction_level: expressionable[:conjunction_level],
+      level: level,
+      expressions: [],
+      result: nil
+    }
   end
 end

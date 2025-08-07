@@ -20,7 +20,7 @@ jobs:
         bundler-cache: true
   
     - run: |
-       gem install bundler
+       gem install bundler -v 2.2.31
        ./script/ci_build
 
   publish:

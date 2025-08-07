@@ -84,10 +84,6 @@ class EvaluatorTest < Test::Unit::TestCase
   end
 
   def test_nots
-    assert !sample("Not Test Eq true")
-    assert sample("Not Test Eq false")
-    assert !sample("Not (Test Eq true)")
-    assert sample("Not (Test Eq false)")
     assert sample("Test Eq true Not Test Eq false")
     assert !sample("Test Eq true Not Test Eq true")
     assert sample("Test Eq true Not (Test Eq false Or Test Eq false)")
@@ -95,9 +91,20 @@ class EvaluatorTest < Test::Unit::TestCase
     assert !sample("Test Eq true Not (Test Eq false Or Test Eq true)")
     assert !sample("Test Eq true Not (Test Eq true Or Test Eq false)")
     assert !sample("Test Eq true Not (Not Test Eq false)")
-    assert sample("Not (Not Test Eq true)")
-    assert sample("Not (Not(Not Test Eq true))")
     assert !sample("Test Eq false And Test Eq true Not Test Eq false")
+    assert !sample("Test Eq true Not (Test Eq false Or Test Eq false) And (Test Eq false Or Test Eq false)")
+  end
+
+  def test_unary_nots
+    assert !sample("Not Test Eq true")
+    assert sample("Not Test Eq false")
+    assert !sample("Not (Test Eq true)")
+    assert sample("Not (Test Eq false)")
+    assert sample("Not (Not Test Eq true)")
+  end
+
+  def test_unary_double_nots
+    assert sample("Not (Not(Not Test Eq true))")
   end
 
   def test_examples

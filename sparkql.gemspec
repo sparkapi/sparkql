@@ -29,4 +29,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'racc', '~> 1.4.8'
   s.add_development_dependency 'rake', ">=12.3.3"
   s.add_development_dependency 'test-unit', '~> 2.1.0'
+  s.add_development_dependency 'rubocop'
 end
