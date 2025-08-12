@@ -24,8 +24,15 @@ module Sparkql::Token
   NULL = /NULL|null|Null/.freeze
   # Reserved words
   RANGE_OPERATOR = 'Bt'.freeze
-  EQUALITY_OPERATORS = %w[Eq Ne].freeze
+  EQUAL = 'Eq'.freeze
+  NOT_EQUAL = 'Ne'.freeze
+  EQUALITY_OPERATORS = [EQUAL, NOT_EQUAL].freeze
+
   OPERATORS = %w[Gt Ge Lt Le] + EQUALITY_OPERATORS
-  UNARY_CONJUNCTIONS = ['Not'].freeze
-  CONJUNCTIONS = %w[And Or].freeze
+
+  NOT = 'Not'.freeze
+  AND = 'And'.freeze
+  OR = 'Or'.freeze
+  UNARY_CONJUNCTIONS = [NOT].freeze
+  CONJUNCTIONS = [AND, OR].freeze
 end
