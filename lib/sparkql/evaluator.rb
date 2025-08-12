@@ -40,6 +40,11 @@ class Sparkql::Evaluator
       block = expression[:block_group]
       block_group = block_groups[block]
 
+      if expression[:conjunction] == "Not" && expression[:conjunction_level] == level
+        expression[:conjunction] = "And"
+        expression[:unary] = "Not"
+      end
+
       unless block_group
         block_groups[block] ||= block_builder(expression, level)
         block_group = block_groups[block]
@@ -136,7 +141,7 @@ class Sparkql::Evaluator
           end
         end
 
-        # block_group.delete(:expressions)
+        block_group.delete(:expressions)
         block_group[:result] = block_result
         final_result = block_result
       end
