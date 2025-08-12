@@ -1,9 +1,12 @@
+
 # Using an instance of ExpressionResolver to resolve the individual expressions,
 # this class will evaluate the rest of a parsed sparkql string to true or false.
 # Namely, this class will handle all the nesting, boolean algebra, and dropped
 # fields. Plus, it has some optimizations built in to skip the processing for
 # any expressions that don't contribute to the net result of the filter.
 class Sparkql::Evaluator
+  include Sparkql::Token
+
   attr_reader :processed_count
 
   def initialize(expression_resolver)
@@ -40,9 +43,9 @@ class Sparkql::Evaluator
       block = expression[:block_group]
       block_group = block_groups[block]
 
-      if expression[:conjunction] == "Not" && expression[:conjunction_level] == level
-        expression[:conjunction] = "And"
-        expression[:unary] = "Not"
+      if expression[:conjunction] == NOT && expression[:conjunction_level] == level
+        expression[:conjunction] = AND
+        expression[:unary] = NOT
       end
 
       unless block_group
@@ -53,9 +56,9 @@ class Sparkql::Evaluator
 
         # When dealing with Not expression conjunctions at the block level,
         # it's far simpler to convert it into the equivalent "And Not"
-        if block_group[:conjunction] == "Not"
-          block_group[:unary] = "Not"
-          block_group[:conjunction] = "And"
+        if block_group[:conjunction] == NOT
+          block_group[:unary] = NOT
+          block_group[:conjunction] = AND
         end
 
         # Every block group _must_ be seen as an expression in another block
@@ -105,7 +108,7 @@ class Sparkql::Evaluator
         block_group[:expressions].each do |expression|
           # If we encounter any or's in the same block group, we can cheat at
           # resolving the rest, if we are at a true
-          if block_result && expression[:conjunction] == 'Or'
+          if block_result && expression[:conjunction] == OR
             break
           end
 
@@ -119,7 +122,7 @@ class Sparkql::Evaluator
                               end
           next if expression_result == :drop
 
-          if expression[:unary] == "Not"
+          if expression[:unary] == NOT
             expression_result = !expression_result
           end
 
@@ -129,11 +132,11 @@ class Sparkql::Evaluator
           end
 
           case expression[:conjunction]
-          when 'Not'
+          when NOT
             block_result &= !expression_result
-          when 'And'
+          when AND
             block_result &= expression_result
-          when 'Or'
+          when OR
             block_result |= expression_result
           else
             # Not a supported conjunction. We skip over this for backwards
