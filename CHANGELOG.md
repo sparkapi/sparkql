@@ -1,3 +1,8 @@
+
+v1.3.3, 2025-08-12
+-------------------
+  * [BUGFIX] Evaluator fix for Not regression
+
 v1.3.2, 2025-08-06
 -------------------
   * [BUGFIX] More Evaluator fixes
