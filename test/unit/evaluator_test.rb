@@ -64,39 +64,93 @@ class EvaluatorTest < Test::Unit::TestCase
   def test_dropped_field_handling
     assert sample("Test Eq 'Drop' And Test Eq true")
     assert !sample("Test Eq 'Drop' And Test Eq false")
-    assert !sample("Test Eq 'Drop' Or Test Eq false")
+
     assert sample("Test Eq 'Drop' Or Test Eq true")
+    assert !sample("Test Eq 'Drop' Or Test Eq false")
+
     assert sample("Test Eq false And Test Eq 'Drop' Or Test Eq true")
+    assert !sample("Test Eq false And Test Eq 'Drop' Or Test Eq false")
+
     assert sample("Test Eq false Or (Test Eq 'Drop' And Test Eq true)")
+    assert !sample("Test Eq false Or (Test Eq 'Drop' And Test Eq false)")
+
+    assert sample("Test Eq false Or (Not Test Eq 'Drop' And Test Eq true)")
+    assert !sample("Test Eq false Or (Not Test Eq 'Drop' And Test Eq false)")
+
+    assert sample("Test Eq true Not Test Eq 'Drop' And Test Eq true")
+    assert !sample("Test Eq true Not Test Eq 'Drop' And Test Eq false")
+    assert !sample("Test Eq false Not Test Eq 'Drop' And Test Eq false")
+
+    assert sample("Test Eq true And Test Eq 'Drop' Not Test Eq false")
+    assert !sample("Test Eq true And Test Eq 'Drop' Not Test Eq true")
+    assert !sample("Test Eq true And Test Eq 'Drop' Not Test Eq true")
+
+    assert sample("Test Eq true Not (Test Eq 'Drop' And Test Eq false)")
+    assert !sample("Test Eq true Not (Test Eq 'Drop' And Test Eq true)")
+    assert !sample("Test Eq true Not (Test Eq 'Drop' And Test Eq true)")
   end
 
   def test_nesting
     assert sample("Test Eq true Or (Test Eq true) And Test Eq false And (Test Eq true)")
+    assert sample("Test Eq true Or (Test Eq false) And Test Eq false And (Test Eq false)")
+    assert sample("Test Eq false Or (Test Eq true) And Test Eq true And (Test Eq true)")
+    assert !sample("Test Eq false Or (Test Eq false) And Test Eq false And (Test Eq false)")
+    assert !sample("Test Eq false Or (Test Eq true) And Test Eq false And (Test Eq false)")
+    assert !sample("Test Eq false Or (Test Eq false) And Test Eq true And (Test Eq false)")
+    assert !sample("Test Eq false Or (Test Eq false) And Test Eq false And (Test Eq true)")
+
     assert sample("Test Eq true Or ((Test Eq false) And Test Eq false) And (Test Eq false)")
     assert sample("(Test Eq false Or Test Eq true) Or (Test Eq false Or Test Eq false)")
     assert sample("(Test Eq true And Test Eq true) Or (Test Eq false)")
     assert sample("(Test Eq true And Test Eq true) Or (Test Eq false And Test Eq true)")
     assert !sample("(Test Eq false And Test Eq true) Or (Test Eq false)")
+
     assert sample("Test Eq true And ((Test Eq true And Test Eq false) Or Test Eq true)")
     assert !sample("Test Eq true And ((Test Eq true And Test Eq false) Or Test Eq false) And Test Eq true")
     assert !sample("Test Eq true And ((Test Eq true And Test Eq false) Or Test Eq false) Or Test Eq false")
     assert sample("Test Eq true And ((Test Eq true And Test Eq false) Or Test Eq false) Or Test Eq true")
     assert !sample("(Test Eq true Or Test Eq true) And Test Eq false")
     assert !sample("(Test Eq true Or Test Eq true) And (Test Eq false)")
+
     assert sample("(Test Eq true Or Test Eq true) And (Test Eq false Or Test Eq true)")
     assert !sample("(Test Eq true Or Test Eq true) And (Test Eq false Or Test Eq false)")
+
+    assert sample("(Test Eq true) Not Test Eq false And (Test Eq true)")
+    assert !sample("(Test Eq true) Not Test Eq true And (Test Eq true)")
+    assert !sample("(Test Eq false) Not Test Eq false And (Test Eq true)")
+    assert !sample("(Test1 Eq true) Not Test2 Eq false And (Test3 Eq false)")
   end
 
   def test_nots
     assert sample("Test Eq true Not Test Eq false")
     assert !sample("Test Eq true Not Test Eq true")
+    assert !sample("Test Eq false Not Test Eq true")
+    assert !sample("Test Eq false Not Test Eq false")
+
+    assert sample("Test Eq true And Test Eq true Not Test Eq false")
+    assert !sample("Test Eq false And Test Eq true Not Test Eq false")
+    assert !sample("Test Eq true And Test Eq true Not Test Eq true")
+    assert !sample("Test Eq true And Test Eq false Not Test Eq false")
+
     assert sample("Test Eq true Not (Test Eq false Or Test Eq false)")
-    assert sample("Test Eq true Not (Test Eq false And Test Eq false)")
     assert !sample("Test Eq true Not (Test Eq false Or Test Eq true)")
     assert !sample("Test Eq true Not (Test Eq true Or Test Eq false)")
-    assert !sample("Test Eq true Not (Not Test Eq false)")
-    assert !sample("Test Eq false And Test Eq true Not Test Eq false")
+    assert !sample("Test Eq true Not (Test Eq true Or Test Eq true)")
+    assert !sample("Test Eq false Not (Test Eq false Or Test Eq false)")
+
+    assert sample("Test Eq true Not (Test Eq false And Test Eq false)")
+    assert sample("Test Eq true Not (Test Eq true And Test Eq false)")
+    assert sample("Test Eq true Not (Test Eq false And Test Eq true)")
+    assert !sample("Test Eq true Not (Test Eq true And Test Eq true)")
+    assert !sample("Test Eq false Not (Test Eq false And Test Eq false)")
+
+    assert sample("Test Eq true Not (Test Eq false Or Test Eq false) And (Test Eq true Or Test Eq false)")
+    assert sample("Test Eq true Not (Test Eq false Or Test Eq false) And (Test Eq false Or Test Eq true)")
+    assert sample("Test Eq true Not (Test Eq false Or Test Eq false) And (Test Eq true Or Test Eq true)")
     assert !sample("Test Eq true Not (Test Eq false Or Test Eq false) And (Test Eq false Or Test Eq false)")
+    assert !sample("Test Eq true Not (Test Eq false Or Test Eq true) And (Test Eq true Or Test Eq false)")
+    assert !sample("Test Eq true Not (Test Eq true Or Test Eq false) And (Test Eq true Or Test Eq false)")
+    assert !sample("Test Eq false Not (Test Eq false Or Test Eq false) And (Test Eq true Or Test Eq false)")
   end
 
   def test_unary_nots
@@ -109,17 +163,14 @@ class EvaluatorTest < Test::Unit::TestCase
 
   def test_unary_double_nots
     assert sample("Not (Not(Not Test Eq true))")
+    assert !sample("Not (Not(Not Test Eq false))")
+
+    assert sample("Test Eq true Not (Not Test Eq true)")
+    assert !sample("Test Eq true Not (Not Test Eq false)")
+    assert !sample("Test Eq false Not (Not Test Eq true)")
   end
 
   def test_examples
-    # This one is based on a real life example that had problems.
-    #
-    # CurrentPrice Bt 130000.00,180000.00 And PropertySubType Eq 'Single Family Residence' And
-    # SchoolDistrict Eq 'Byron Center','Grandville','Jenison' And MlsStatus Eq 'Active' And
-    # BathsTotal Bt 1.50,9999.00 And BedsTotal Bt 3,99 And PropertyType Eq 'A'
-    # Not "Garage"."Garage2" Eq 'No' And "Pool"."OutdoorAbove" Eq true
-    # And "Pool"."OutdoorInground" Eq true Not "Substructure"."Michigan Basement" Eq true
-
     assert !sample("Test Eq false And Test Eq true And " \
       "Test Eq false And Test Eq true And " \
       "Test Eq true And Test Eq true And Test Eq true " \
