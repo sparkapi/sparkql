@@ -46,7 +46,6 @@ module Sparkql::ParserTools
 
   def tokenize_expression(field, op_token, val)
     operator = get_operator(val, op_token) unless val.nil?
-    Rails.logger.error("tokenize_expression #{field}, #{op_token}, #{val}, #{operator}")
 
     field_manipulations = nil
     if field.is_a?(Hash) && field[:type] == :function
