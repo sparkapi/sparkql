@@ -445,6 +445,24 @@ class FunctionResolverTest < Test::Unit::TestCase
     end
   end
 
+  test 'days - exceed max' do
+    f = FunctionResolver.new('days',
+                             [{ type: :integer, value: 365_001 }],
+                             current_timestamp: EXAMPLE_DATE)
+    f.validate
+    refute f.errors?
+    assert_nil f.call
+    assert f.errors?, "function 'days' limit 365000"
+
+    f = FunctionResolver.new('days',
+                             [{ type: :integer, value: -365_001 }],
+                             current_timestamp: EXAMPLE_DATE)
+    f.validate
+    refute f.errors?
+    assert_nil f.call
+    assert f.errors?, "function 'days' limit 365000"
+  end
+
   test 'weekdays()' do
     friday = Date.new(2012, 10, 19)
     saturday = Date.new(2012, 10, 20)
@@ -512,6 +530,24 @@ class FunctionResolverTest < Test::Unit::TestCase
         assert_equal expected_value, value[:value], "#{test_date}: #{days} = #{expected_value}"
       end
     end
+  end
+
+  test 'weekdays - exceed max' do
+    f = FunctionResolver.new('weekdays',
+                             [{ type: :integer, value: 365_001 }],
+                             current_timestamp: EXAMPLE_DATE)
+    f.validate
+    refute f.errors?
+    assert_nil f.call
+    assert f.errors?, "function 'weekdays' limit 365000"
+
+    f = FunctionResolver.new('weekdays',
+                             [{ type: :integer, value: -365_001 }],
+                             current_timestamp: EXAMPLE_DATE)
+    f.validate
+    refute f.errors?
+    assert_nil f.call
+    assert f.errors?, "function 'weekdays' limit 365000"
   end
 
   test 'months()' do

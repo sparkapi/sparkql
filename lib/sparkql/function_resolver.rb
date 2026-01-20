@@ -21,6 +21,7 @@ module Sparkql
     VALID_REGEX_FLAGS = ['', 'i'].freeze
     MIN_DATE_TIME = Time.new(1970, 1, 1, 0, 0, 0, '+00:00').iso8601
     MAX_DATE_TIME = Time.new(9999, 12, 31, 23, 59, 59, '+00:00').iso8601
+    MAX_DAYS = (365 * 1000).freeze # 1000 years ought to cover most cases
     VALID_CAST_TYPES = %i[field character decimal integer].freeze
 
     SUPPORTED_FUNCTIONS = {
@@ -43,16 +44,16 @@ module Sparkql
       regex: {
         args: [:character],
         opt_args: [{
-          type: :character,
-          default: ''
-        }],
+                     type: :character,
+                     default: ''
+                   }],
         return_type: :character
       },
       substring: {
         args: [%i[field character], :integer],
         opt_args: [{
-          type: :integer
-        }],
+                     type: :integer
+                   }],
         resolve_for_type: true,
         return_type: :character
       },
@@ -526,6 +527,13 @@ module Sparkql
 
     # Offset the current timestamp by a number of days
     def days(number_of_days)
+      if number_of_days.abs > MAX_DAYS
+        @errors << Sparkql::ParserError.new(token: number_of_days,
+                                            message: "Function call 'days' max offset #{MAX_DAYS} days",
+                                            status: :fatal)
+        return
+      end
+
       # date calculated as the offset from midnight tommorrow. Zero will provide values for all times
       # today.
       d = current_date + number_of_days
@@ -536,6 +544,13 @@ module Sparkql
     end
 
     def weekdays(number_of_days)
+      if number_of_days.abs > MAX_DAYS
+        @errors << Sparkql::ParserError.new(token: number_of_days,
+                                            message: "Function call 'weekdays' max offset #{MAX_DAYS} days",
+                                            status: :fatal)
+        return
+      end
+
       today = current_date
       weekend_start = today.saturday? || today.sunday?
       direction = number_of_days.positive? ? 1 : -1
