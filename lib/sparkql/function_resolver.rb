@@ -530,7 +530,9 @@ module Sparkql
       if number_of_days.abs > MAX_DAYS
         @errors << Sparkql::ParserError.new(token: number_of_days,
                                             message: "Function call 'days' max offset #{MAX_DAYS} days",
-                                            status: :fatal)
+                                            status: :fatal,
+                                            syntax: false,
+                                            constraint: true)
         return
       end
 
@@ -547,7 +549,9 @@ module Sparkql
       if number_of_days.abs > MAX_DAYS
         @errors << Sparkql::ParserError.new(token: number_of_days,
                                             message: "Function call 'weekdays' max offset #{MAX_DAYS} days",
-                                            status: :fatal)
+                                            status: :fatal,
+                                            syntax: false,
+                                            constraint: true)
         return
       end
 
