@@ -1,3 +1,5 @@
+v1.3.4, 20265-01-20
+  * [BUGFIX] Validate limit for days and weekdays
 
 v1.3.3, 2025-08-12
 -------------------
