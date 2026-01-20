@@ -450,7 +450,7 @@ class FunctionResolverTest < Test::Unit::TestCase
                              [{ type: :integer, value: 365_001 }],
                              current_timestamp: EXAMPLE_DATE)
     f.validate
-    refute f.errors?
+    assert !f.errors?
     assert_nil f.call
     assert f.errors?, "function 'days' limit 365000"
 
@@ -458,7 +458,7 @@ class FunctionResolverTest < Test::Unit::TestCase
                              [{ type: :integer, value: -365_001 }],
                              current_timestamp: EXAMPLE_DATE)
     f.validate
-    refute f.errors?
+    assert !f.errors?
     assert_nil f.call
     assert f.errors?, "function 'days' limit 365000"
   end
@@ -537,7 +537,7 @@ class FunctionResolverTest < Test::Unit::TestCase
                              [{ type: :integer, value: 365_001 }],
                              current_timestamp: EXAMPLE_DATE)
     f.validate
-    refute f.errors?
+    assert !f.errors?
     assert_nil f.call
     assert f.errors?, "function 'weekdays' limit 365000"
 
@@ -545,7 +545,7 @@ class FunctionResolverTest < Test::Unit::TestCase
                              [{ type: :integer, value: -365_001 }],
                              current_timestamp: EXAMPLE_DATE)
     f.validate
-    refute f.errors?
+    assert !f.errors?
     assert_nil f.call
     assert f.errors?, "function 'weekdays' limit 365000"
   end
