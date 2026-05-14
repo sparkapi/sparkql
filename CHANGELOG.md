@@ -1,4 +1,7 @@
-v1.3.4, 20265-01-20
+v1.3.5, 2026-04-30
+ * [IMPROVEMENT] add date_date() function
+
+v1.3.4, 2026-01-20
   * [BUGFIX] Validate limit for days and weekdays
 
 v1.3.3, 2025-08-12
