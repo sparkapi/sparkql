@@ -651,6 +651,10 @@ module Sparkql
       }
     end
 
+    def date_date(value)
+      date_datetime(value)
+    end
+
     def time_datetime(datetime)
       {
         type: :time,
