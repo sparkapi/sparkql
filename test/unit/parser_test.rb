@@ -1232,6 +1232,18 @@ class ParserTest < Test::Unit::TestCase
     assert_equal 0, expressions.last[:block_group]
   end
 
+  test 'oversized days() in Bt range returns parser error instead of raising' do
+    [
+      'OriginalEntryTimestamp Bt days(0),days(365001)',
+      'OpenHouses Bt days(0),days(9223372036854775807)'
+    ].each do |filter|
+      @parser = Parser.new
+      assert_nothing_raised { @parser.parse(filter) }
+      assert @parser.fatal_errors?, "Expected fatal error for #{filter}"
+      assert_match(/max offset/i, @parser.errors.first.message)
+    end
+  end
+
   private
 
   def parser_errors(filter)

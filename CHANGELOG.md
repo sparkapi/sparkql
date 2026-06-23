@@ -1,3 +1,6 @@
+v1.3.6, 2026-06-23
+  * [BUGFIX] Parser crash when days()/weekdays() exceed max offset
+
 v1.3.5, 2026-04-30
  * [IMPROVEMENT] add date_date() function
 
