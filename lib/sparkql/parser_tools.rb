@@ -171,6 +171,16 @@ module Sparkql::ParserTools
   end
 
   def tokenize_multiple(lit1, lit2)
+    if lit1.nil? || lit2.nil?
+      return nil if errors?
+
+      tokenizer_error(token: @lexer.last_field,
+                      message: 'Invalid value in field list.',
+                      status: :fatal,
+                      syntax: true)
+      return nil
+    end
+
     final_type = lit1[:type]
     if lit1[:type] != lit2[:type]
       final_type = coercible_types(lit1[:type], lit2[:type])
@@ -224,15 +234,17 @@ module Sparkql::ParserTools
     resolver = function_resolver(name, args)
     resolver.validate
     if resolver.errors?
-      tokenizer_error(token: @lexer.last_field,
-                      message: "Error parsing function #{resolver.errors.join(',')}",
-                      status: :fatal,
-                      syntax: true)
-      nil
-    else
-      result = resolver.call
-      result.nil? ? result : result.merge(condition: "#{name}(#{condition_list.join(',')})")
+      report_function_resolver_errors(resolver)
+      return nil
     end
+
+    result = resolver.call
+    if result.nil?
+      report_function_resolver_errors(resolver) if resolver.errors?
+      return nil
+    end
+
+    result.merge(condition: "#{name}(#{condition_list.join(',')})")
   end
 
   def tokenize_arithmetic(lhs, operator, rhs)
@@ -447,5 +459,17 @@ module Sparkql::ParserTools
 
   def offset
     @offset ||= current_timestamp.strftime('%:z')
+  end
+
+  private
+
+  def report_function_resolver_errors(resolver)
+    resolver.errors.each do |error|
+      tokenizer_error(token: error.token || @lexer.last_field,
+                      message: error.message,
+                      status: error.status,
+                      syntax: error.syntax?,
+                      constraint: error.constraint?)
+    end
   end
 end
