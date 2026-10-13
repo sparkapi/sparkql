@@ -4,6 +4,40 @@
 # Namely, this class will handle all the nesting, boolean algebra, and dropped
 # fields. Plus, it has some optimizations built in to skip the processing for
 # any expressions that don't contribute to the net result of the filter.
+#
+# == KNOWN ISSUES -- read before relying on this for nested filters
+#
+# Used by prospector's SparkqlReductor to decide whether a listing matches a
+# saved search (newsfeeds, listing matching), so a wrong answer here means a
+# listing matches in prospector but not in search, or vice versa.
+#
+# This class reconstructs the filter's structure from Parser#parse's *flat*
+# expression list (:level, :block_group, :conjunction, :unary, ...), and that
+# list can't always describe the structure. Two confirmed bugs follow (see the
+# pending tests in test/unit/evaluator_test.rb):
+#
+# 1. Sibling groups nested in a group with no expression of its own are
+#    attached to the wrong parent:
+#      "(A) And ((B) Or (C))" with A=false, B=true, C=true => true (should be false)
+#    The middle group never appears in the flat list, and :block_group is the
+#    most recently *opened* group, not the containing one, so #build_structures
+#    files (B)'s block under (A)'s.
+#
+# 2. A leading unary Not on a group of two or more expressions negates only
+#    the group's first expression:
+#      "Not (A Or B) And C" is evaluated as "((Not A) Or B) And C"
+#    The flat list records the Not on A with :unary_level 0 (outside the
+#    group), but #process_structures applies :unary per expression and
+#    ignores :unary_level. "Not (A)" -- a single expression -- is unaffected.
+#
+# And/Or precedence is *not* an issue: evaluating left to right, but stopping
+# at an Or once the result is true (and otherwise taking the Or's right side
+# afresh), gives the same result as SQL's And-before-Or.
+#
+# The fix is to evaluate Parser#parse_tree's syntax tree instead, which
+# represents both cases exactly -- a recursive walk over its
+# expression/conjunction/unary/group nodes, keeping this class's :drop and
+# short-circuit semantics.
 class Sparkql::Evaluator
   include Sparkql::Token
 

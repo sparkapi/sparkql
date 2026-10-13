@@ -1,3 +1,14 @@
+v1.4.0 2026-10-13
+-------------------
+  * [IMPROVEMENT] `Parser#parse_tree` returns the filter as a syntax tree, with And/Not
+    binding tighter than Or. `Parser#parse` is now built by flattening that tree; its
+    output is unchanged.
+  * [CHANGE] The grammar actions `tokenize_expression`, `tokenize_conjunction`,
+    `tokenize_unary_conjunction`, and `tokenize_group` now return tree nodes instead of
+    expression arrays. Only relevant to subclasses overriding them (none known).
+  * [DOCS] Documented two Evaluator bugs with nested groups (see Sparkql::Evaluator), with
+    pending tests.
+
 v1.3.6, 2026-06-23
   * [BUGFIX] Parser crash when days()/weekdays() exceed max offset
 
