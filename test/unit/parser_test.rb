@@ -11,6 +11,28 @@ class ParserTest < Test::Unit::TestCase
     parse "Test Eq 'false'", "'false'"
   end
 
+  # #parse is built by flattening #parse_tree's tree; these pin the flat
+  # nesting metadata to what the grammar has always produced, quirks
+  # included (block_group is the most recently opened group, not the
+  # containing one -- see D below), so existing consumers see no change.
+  def test_flat_nesting_metadata_is_unchanged
+    keys = %i[field conjunction conjunction_level level block_group unary unary_level]
+    flat = ->(filter) { Parser.new.parse(filter).map { |e| e.values_at(*keys).compact } }
+
+    assert_equal [['A', 'And', 0, 1, 1], ['B', 'And', 0, 2, 3], ['C', 'Or', 1, 2, 4]],
+                 flat.call('(A Eq 1) And ((B Eq 1) Or (C Eq 1))')
+    assert_equal [['A', 'And', 0, 1, 1], ['B', 'And', 1, 2, 2], ['C', 'Or', 0, 2, 4], ['D', 'And', 1, 1, 4]],
+                 flat.call('(A Eq 1 And (B Eq 1)) Or ((C Eq 1) And D Eq 1)')
+    # The outer Not becomes A's conjunction when A already has a unary Not.
+    assert_equal [['A', 'Not', 0, 1, 1, 'Not', 1]], flat.call('Not (Not A Eq 1)')
+    assert_equal [['A', 'And', 0, 1, 1, 'Not', 0], ['B', 'Or', 1, 1, 1], ['C', 'And', 0, 0, 0]],
+                 flat.call('Not (A Eq 1 Or B Eq 1) And C Eq 1')
+  end
+
+  def test_empty_filter_parses_to_zero
+    assert_equal 0, Parser.new.parse('')
+  end
+
   def test_conjunction
     @parser = Parser.new
     expression = @parser.parse('Test Eq 10 And Test Ne 11')

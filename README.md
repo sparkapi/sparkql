@@ -39,6 +39,23 @@ The return value will be an array with one expression element containing the que
 	  # ...
 	}
 
+That flat list describes nesting through each expression's `:level`, `:block_group`,
+`:conjunction`, and `:unary` keys, which can't express every filter's structure (e.g. the
+middle group in `(A) And ((B) Or (C))`). When a consumer needs the real structure, use
+`parse_tree`, which returns a syntax tree instead:
+
+	tree = Parser.new.parse_tree("A Eq 1 Or B Eq 2 And C Eq 3")
+	# { node: :conjunction, conjunction: "Or",
+	#   left:  { node: :expression, expression: { field: "A", ... } },
+	#   right: { node: :conjunction, conjunction: "And",
+	#            left:  { node: :expression, expression: { field: "B", ... } },
+	#            right: { node: :expression, expression: { field: "C", ... } } } }
+
+Nodes are `:expression` (a comparison -- the same Hash `parse` returns), `:conjunction`
+(`And`/`Or`/`Not`, where `Not` means "And Not"), `:unary` (`Not`), and `:group`
+(parentheses). And/Not bind tighter than Or, as in SQL. `parse` is itself built by
+flattening this tree, so the two always agree. See test/unit/parse_tree_test.rb.
+
 
 Development
 -------------

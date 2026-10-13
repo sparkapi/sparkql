@@ -9,14 +9,58 @@ module Sparkql::ParserTools
   GROUP = 'Group'.freeze
   NEGATION = 'Negation'.freeze
 
+  ##
+  # Parses a filter into the flat expression list every parser consumer
+  # (Parser#tokenize, Evaluator, the API's SQL parsers) has always used: one
+  # Hash per comparison, in source order, with nesting described by each
+  # expression's :level, :block_group, :conjunction, :conjunction_level,
+  # :unary, and :unary_level keys.
+  #
+  # Built by flattening the same syntax tree #parse_tree returns, so the two
+  # always agree; see #flatten_tree for how the flat metadata is derived.
+  #
+  # @return [Array<Hash>, nil, 0] the expressions; nil on a syntax error; 0
+  #   for an empty filter
   def parse(str)
-    @lexer = Sparkql::Lexer.new(str)
-    @expression_count = 0
-    results = do_parse
-    return if results.nil?
+    tree = build_tree(str)
+    return tree unless tree.is_a?(Hash)
 
+    results = flatten_tree(tree)
     validate_expressions results
     results
+  end
+
+  ##
+  # Parses a filter into a syntax tree, for consumers that need the filter's
+  # real structure -- the flat #parse list can't always be turned back into
+  # it (e.g. "(A) And ((B) Or (C))": the middle group has no expression of
+  # its own, so nothing in the list records it).
+  #
+  # Nodes are Hashes keyed by :node --
+  #   { node: :expression,  expression: <Hash> }  -- a comparison; the same
+  #                                                  Hash #parse would return
+  #   { node: :conjunction, conjunction: "And" | "Or" | "Not",
+  #     conjunction_level:, left: <node>, right: <node> }
+  #   { node: :unary,       unary: "Not", unary_level:, operand: <node> }
+  #   { node: :group,       operand: <node> }  -- parentheses
+  #
+  # A "Not" conjunction means "And Not": "A Not B" is A AND NOT B. And/Not
+  # bind tighter than Or, as in SQL -- "A Or B And C" is A OR (B AND C) --
+  # and chained conjunctions of the same strength group left to right. A
+  # unary Not applies to the single comparison or group that follows it.
+  #
+  # Errors are reported exactly as #parse reports them (see #errors).
+  #
+  # @return [Hash, nil] the root node; nil for an empty filter or a syntax error
+  def parse_tree(str)
+    tree = build_tree(str)
+    return unless tree.is_a?(Hash)
+
+    # Flattening also annotates each expression Hash with its flat metadata
+    # (so a tree's leaves match #parse's output) and enforces the expression
+    # count limit, same as #parse.
+    validate_expressions flatten_tree(tree)
+    apply_precedence(tree)
   end
 
   def next_token
@@ -91,36 +135,23 @@ module Sparkql::ParserTools
                       message: "Operator not supported for this type and value string", status: :fatal)
     end
     @expression_count += 1
-    [expression]
+    { node: :expression, expression: expression }
   end
 
-  def tokenize_conjunction(exp1, conj, exp2)
-    exp2.first[:conjunction] = conj
-    exp2.first[:conjunction_level] = @lexer.level
-    exp1 + exp2
+  # Grammar action for "expressions CONJUNCTION expression". The grammar
+  # chains conjunctions left to right; #apply_precedence regroups them.
+  # @lexer.level here is the level the conjunction itself sits at.
+  def tokenize_conjunction(left, conj, right)
+    { node: :conjunction, conjunction: conj, conjunction_level: @lexer.level, left: left, right: right }
   end
 
-  def tokenize_unary_conjunction(conj, exp)
-    # Handles the case when a SparkQL filter string
-    # begins with a unary operator, and is nested, such as:
-    #   Not (Not Field Eq 1)
-    # In this instance we treat the outer unary as a conjunction. With any other
-    # expression this would be the case, so that should make processing
-    # consistent.
-    if exp.first[:unary] && @lexer.level.zero?
-      exp.first[:conjunction] = conj
-      exp.first[:conjunction_level] = @lexer.level
-    else
-      exp.first[:unary] = conj
-      exp.first[:unary_level] = @lexer.level
-    end
-
-    exp
+  def tokenize_unary_conjunction(conj, operand)
+    { node: :unary, unary: conj, unary_level: @lexer.level, operand: operand }
   end
 
-  def tokenize_group(expressions)
+  def tokenize_group(operand)
     @lexer.leveldown
-    expressions
+    { node: :group, operand: operand }
   end
 
   def tokenize_arithmetic_group(lhs)
@@ -462,6 +493,101 @@ module Sparkql::ParserTools
   end
 
   private
+
+  # Runs the grammar, whose actions (#tokenize_expression,
+  # #tokenize_conjunction, #tokenize_unary_conjunction, #tokenize_group)
+  # build the raw tree: conjunctions chained left to right, before
+  # #apply_precedence.
+  # @return [Hash, nil, 0] the root node; nil on a syntax error; 0 when empty
+  def build_tree(str)
+    @lexer = Sparkql::Lexer.new(str)
+    @expression_count = 0
+    do_parse
+  end
+
+  ##
+  # Flattens a raw tree (straight from #build_tree, before #apply_precedence)
+  # into #parse's expression list, annotating each expression Hash in place.
+  #
+  # :level and :block_group were already set from the lexer as each
+  # expression was parsed. The conjunction and unary keys are applied here in
+  # the order the grammar reduces them -- bottom-up, left to right -- because
+  # the unary rule depends on what's already been applied: a Not in front of
+  # a group whose first expression already has a unary Not becomes that
+  # expression's :conjunction instead, e.g. "Not (Not Field Eq 1)".
+  #
+  # Annotates in place, so must run exactly once per parse.
+  def flatten_tree(node)
+    case node[:node]
+    when :expression
+      [node[:expression]]
+    when :group
+      flatten_tree(node[:operand])
+    when :unary
+      expressions = flatten_tree(node[:operand])
+      first = expressions.first
+      if first[:unary] && node[:unary_level].zero?
+        first[:conjunction] = node[:unary]
+        first[:conjunction_level] = node[:unary_level]
+      else
+        first[:unary] = node[:unary]
+        first[:unary_level] = node[:unary_level]
+      end
+      expressions
+    when :conjunction
+      left = flatten_tree(node[:left])
+      right = flatten_tree(node[:right])
+      right.first[:conjunction] = node[:conjunction]
+      right.first[:conjunction_level] = node[:conjunction_level]
+      left + right
+    end
+  end
+
+  ##
+  # Regroups the grammar's left-to-right conjunction chains so And/Not bind
+  # tighter than Or: "A Or B And C" becomes Or(A, And(B, C)). Returns new
+  # conjunction/unary/group nodes; expression nodes (and their Hashes) are
+  # shared with the input.
+  #
+  # The grammar's right operand is never itself a conjunction (only a
+  # comparison or a group), so a chain is the run of conjunctions down the
+  # left side of the tree.
+  def apply_precedence(node)
+    case node[:node]
+    when :conjunction
+      operators = []
+      operands = []
+      current = node
+      while current[:node] == :conjunction
+        operators.unshift(current)
+        operands.unshift(apply_precedence(current[:right]))
+        current = current[:left]
+      end
+      operands.unshift(apply_precedence(current))
+
+      or_operators = []
+      or_terms = []
+      term = operands.first
+      operators.each_with_index do |operator, i|
+        if operator[:conjunction] == Sparkql::Token::OR
+          or_operators << operator
+          or_terms << term
+          term = operands[i + 1]
+        else
+          term = operator.merge(left: term, right: operands[i + 1])
+        end
+      end
+      or_terms << term
+
+      or_terms.drop(1).each_with_index.inject(or_terms.first) do |left, (right, i)|
+        or_operators[i].merge(left: left, right: right)
+      end
+    when :unary, :group
+      node.merge(operand: apply_precedence(node[:operand]))
+    else
+      node
+    end
+  end
 
   def report_function_resolver_errors(resolver)
     resolver.errors.each do |error|
