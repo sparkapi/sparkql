@@ -430,6 +430,7 @@ module Sparkql::ParserTools
     end
   end
 
+  # TODO(2.0): stop slicing results here
   def validate_multiple_values(values)
     values = Array(values)
     if values.size > max_values
@@ -440,6 +441,7 @@ module Sparkql::ParserTools
     end
   end
 
+  # TODO(2.0): stop slicing results here
   def validate_multiple_arguments(args)
     args = Array(args)
     if args.size > max_values
