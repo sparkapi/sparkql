@@ -56,10 +56,16 @@ module Sparkql::ParserTools
     tree = build_tree(str)
     return unless tree.is_a?(Hash)
 
-    # Flattening also annotates each expression Hash with its flat metadata
-    # (so a tree's leaves match #parse's output) and enforces the expression
-    # count limit, same as #parse.
-    validate_expressions flatten_tree(tree)
+    # Annotates each leaf with #parse's flat metadata, so a tree's leaves
+    # match #parse's output. Must run on the raw tree, before
+    # #apply_precedence, and only once (see #flatten_tree).
+    expressions = flatten_tree(tree)
+
+    # Records the same fatal "maximum expression count" error #parse does.
+    # validate_expressions also truncates the list it's given, which only
+    # matters for #parse's return value -- here the list is discarded, so the
+    # tree keeps every expression; callers must check #errors either way.
+    validate_expressions(expressions)
     apply_precedence(tree)
   end
 
@@ -405,6 +411,16 @@ module Sparkql::ParserTools
     end
   end
 
+  # Records a fatal error past max_expressions and truncates results in
+  # place. Unlike the value/argument limits below, which trim mid-parse and
+  # so cap later work, this runs after parsing: the truncation only shortens
+  # the list #parse returns. The error is fatal, so callers shouldn't use
+  # the results anyway; kept for backward compatibility.
+  #
+  # TODO(2.0): stop slicing results here -- record the error and leave the
+  # list whole. A behavior change for #parse's return value (on an already
+  # fatal parse), so it waits for a major release. The value/argument
+  # slicing in validate_multiple_values/validate_multiple_arguments stays.
   def validate_expressions(results)
     if results.size > max_expressions
       compile_error(token: results[max_expressions][:field], expression: results[max_expressions],
