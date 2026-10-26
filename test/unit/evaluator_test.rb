@@ -189,6 +189,29 @@ class EvaluatorTest < Test::Unit::TestCase
     assert_equal 3, @evaluator.processed_count
   end
 
+  # And/Or precedence matches SQL's (And before Or), not just left to right.
+  def test_and_before_or
+    assert sample("Test Eq true Or Test Eq true And Test Eq false")
+    assert sample("Test Eq false And Test Eq false Or Test Eq true")
+    assert !sample("Test Eq false Or Test Eq true And Test Eq false")
+    assert sample("Test Eq true And Test Eq false Or Test Eq true And Test Eq true")
+  end
+
+  # Known issue 1 in Sparkql::Evaluator's class comment. These pend while the
+  # bug exists, and fail once it's fixed -- move them to real tests then.
+  def test_known_issue_sibling_groups_in_an_expressionless_group
+    pend("Evaluator mis-nests sibling groups -- see Sparkql::Evaluator KNOWN ISSUES") do
+      assert !sample("(Test Eq false) And ((Test Eq true) Or (Test Eq true))")
+    end
+  end
+
+  # Known issue 2 in Sparkql::Evaluator's class comment.
+  def test_known_issue_unary_not_on_a_multi_expression_group
+    pend("Evaluator negates only the group's first expression -- see Sparkql::Evaluator KNOWN ISSUES") do
+      assert !sample("Not (Test Eq true Or Test Eq true) And Test Eq true")
+    end
+  end
+
   # Here's some examples from prospector's tests that have been simplified a bit.
   def test_advanced
     assert !sample("MlsStatus Eq false And PropertyType Eq true And (City Eq true Or City Eq false)")
